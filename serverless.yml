@@ -1,0 +1,14 @@
+service: manga-scrapper-project
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  stage: production
+  region: ap-southeast-1
+  runtime: nodejs16.x
+
+functions:
+  api:
+    handler: handler.handler
+    events:
+      - httpApi: '*'

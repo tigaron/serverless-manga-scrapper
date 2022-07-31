@@ -6,6 +6,8 @@ provider:
   stage: production
   region: ap-southeast-1
   runtime: nodejs16.x
+  memorySize: 512
+  timeout: 30
 
 functions:
   api:

@@ -1,9 +1,27 @@
-const axios = require("axios");
-const cheerio = require("cheerio");
+import axios from "axios";
+import * as cheerio from "cheerio";
 
-module.exports.fetchMangaPage = async (url) => {
+const fetchMangaPage = async (url, needBypass) => {
+    const options = needBypass
+        ? {
+            method: "POST",
+            url: process.env.API_URL,
+            headers: {
+              "content-type": "application/json",
+              "X-RapidAPI-Key": process.env.API_KEY,
+              "X-RapidAPI-Host": process.env.API_HOST
+            },
+            data: {url}
+        }
+        : {
+            method: "GET",
+            url
+        };
     try {
-        const { data } = await axios.get(url);
+        const response = await axios.request(options);
+        const data = needBypass
+            ? response.data.body
+            : response.data;
         const $ = cheerio.load(data);
         const result = {};
 
@@ -26,3 +44,5 @@ module.exports.fetchMangaPage = async (url) => {
         return error;
     }
 }
+
+export default fetchMangaPage;

@@ -1,5 +1,8 @@
-const express = require("express");
-const scrape = require("./routes/scrape.js");
+import * as dotenv from "dotenv";
+dotenv.config();
+
+import express from "express";
+import scrape from "./routes/scrape.js";
 
 const app = express();
 app.use(express.urlencoded({ extended: true }));
@@ -7,7 +10,7 @@ app.use(express.json());
 app.use("/scrape", scrape);
 
 app.get("/", (req, res) => {
-    res.json("Welcome here!");
+    res.json("Welcome my friend!");
 });
 
 app.use((req, res) => {
@@ -16,4 +19,4 @@ app.use((req, res) => {
     });
 });
 
-module.exports = app;
+export default app;

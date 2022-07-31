@@ -1,5 +1,6 @@
 service: manga-scrapper-project
 frameworkVersion: '3'
+useDotenv: true
 
 provider:
   name: aws
@@ -12,5 +13,9 @@ provider:
 functions:
   api:
     handler: handler.handler
+    environment:
+      API_URL: ${env:API_URL}
+      API_KEY: ${env:API_KEY}
+      API_HOST: ${env:API_HOST}
     events:
       - httpApi: '*'

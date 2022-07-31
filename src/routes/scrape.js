@@ -6,7 +6,7 @@ const { fetchChapterPage } = require("../utils/fetchChapterPage.js");
 const router = express.Router();
 const urlList = {
     alpha: {
-        base: "https://alpha-scans.org/",
+        base: "https://alpha-scans.org",
         slug: "manga"
     },
     asura: {

@@ -1,7 +1,7 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
 
-const fetchListPage = async (url, needBypass) => {
+const fetchListPage = async (url, needBypass, isAsura) => {
     const options = needBypass
         ? {
             method: "POST",
@@ -28,7 +28,9 @@ const fetchListPage = async (url, needBypass) => {
             const item = {};
             item.title = $(element).text().trim() + "";
             item.url =  $(element).attr("href");
-            item.slug = item.url.split("/").slice(-2).shift();
+            item.slug = isAsura
+                ? item.url.split("/").slice(-3,-1).join("+")
+                : item.url.split("/").slice(-2).shift();
             result.push(item);
         };
         return result;

@@ -45,10 +45,12 @@ router.get("/list/:source", async (req, res) => {
         });
     }
     const needBypass = bypassList.includes(source);
+    const isAsura = source === "asura" ? true : false;
     try {
         const response = await fetchListPage(
             Object.values(urlList[source]).join("/") + "/list-mode/",
-            needBypass
+            needBypass,
+            isAsura
         );
         res.status(200).json(response);
     } catch (error) {
@@ -60,15 +62,22 @@ router.get("/list/:source", async (req, res) => {
 
 router.get("/manga/:source/:slug", async (req, res) => {
     const { source, slug } = req.params;
+    const parsedSlug = slug.includes("+")
+        ? slug.split("+").join("/")
+        : slug;
     if (!(source in urlList)) {
         return res.status(400).json({
             message: `${source} is not available for scraping`
         });
     }
     const needBypass = bypassList.includes(source);
+    const isAsura = source === "asura" ? true : false;
+    const url = isAsura
+        ? urlList[source].base + `/${parsedSlug}/`
+        : Object.values(urlList[source]).join("/") + `/${parsedSlug}/`;
     try {
         const response = await fetchMangaPage(
-            Object.values(urlList[source]).join("/") + `/${slug}/`,
+            url,
             needBypass
         );
         res.status(200).json(response);

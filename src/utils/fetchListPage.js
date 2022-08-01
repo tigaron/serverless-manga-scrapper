@@ -7,11 +7,11 @@ const fetchListPage = async (url, needBypass, isAsura) => {
             method: "POST",
             url: process.env.API_URL,
             headers: {
-              "content-type": "application/json",
-              "X-RapidAPI-Key": process.env.API_KEY,
-              "X-RapidAPI-Host": process.env.API_HOST
+                "content-type": "application/json",
+                "X-RapidAPI-Key": process.env.API_KEY,
+                "X-RapidAPI-Host": process.env.API_HOST
             },
-            data: {url}
+            data: { url }
         }
         : {
             method: "GET",
@@ -27,9 +27,9 @@ const fetchListPage = async (url, needBypass, isAsura) => {
         for (const element of $("a.series", "div.soralist", data)) {
             const item = {};
             item.title = $(element).text().trim() + "";
-            item.url =  $(element).attr("href");
+            item.url = $(element).attr("href");
             item.slug = isAsura
-                ? item.url.split("/").slice(-3,-1).join("+")
+                ? item.url.split("/").slice(-3, -1).join("+")
                 : item.url.split("/").slice(-2).shift();
             result.push(item);
         };

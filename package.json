@@ -1,13 +1,23 @@
 {
   "name": "manga-scrapper-project",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.5.0",
   "description": "",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest --watchAll",
+    "fulltest": "node --experimental-vm-modules node_modules/.bin/jest --coverage"
+  },
   "dependencies": {
     "axios": "^0.27.2",
     "cheerio": "^1.0.0-rc.12",
     "dotenv": "^16.0.1",
     "express": "^4.17.1",
     "serverless-http": "^2.7.0"
+  },
+  "devDependencies": {
+    "jest": "^28.1.3",
+    "nodemon": "^2.0.19",
+    "supertest": "^6.2.4"
   }
 }

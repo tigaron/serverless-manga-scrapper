@@ -19,12 +19,17 @@ const urlList = {
     luminous: {
         base: "https://luminousscans.com",
         slug: "series"
+    },
+    realm: {
+        base: "https://realmscans.com",
+        slug: "series"
     }
 };
 
 const bypassList = [
     "alpha",
     "asura",
+    "realm"
 ];
 
 router.get("/", async (req, res) => {
@@ -40,8 +45,8 @@ router.get("/list", async (req, res) => {
 router.get("/list/:source", async (req, res) => {
     const { source } = req.params;
     if (!(source in urlList)) {
-        return res.status(400).json({
-            message: `${source} is not available for scraping`
+        return res.status(404).json({
+            error: `${source} is not available for scraping`
         });
     }
     const needBypass = bypassList.includes(source);
@@ -55,7 +60,7 @@ router.get("/list/:source", async (req, res) => {
         res.status(200).json(response);
     } catch (error) {
         res.status(500).json({
-            message: error.message
+            error: error.message
         });
     }
 });
@@ -66,8 +71,8 @@ router.get("/manga/:source/:slug", async (req, res) => {
         ? slug.split("+").join("/")
         : slug;
     if (!(source in urlList)) {
-        return res.status(400).json({
-            message: `${source} is not available for scraping`
+        return res.status(404).json({
+            error: `${source} is not available for scraping`
         });
     }
     const needBypass = bypassList.includes(source);
@@ -80,10 +85,15 @@ router.get("/manga/:source/:slug", async (req, res) => {
             url,
             needBypass
         );
+        if (response?.response?.status !== undefined) {
+            return res.status(response.response.status).json({
+                error: response.response.statusText
+            });
+        }
         res.status(200).json(response);
     } catch (error) {
         res.status(500).json({
-            message: error.message
+            error: error.message
         });
     }
 });
@@ -91,8 +101,8 @@ router.get("/manga/:source/:slug", async (req, res) => {
 router.get("/chapter/:source/:slug", async (req, res) => {
     const { source, slug } = req.params;
     if (!(source in urlList)) {
-        return res.status(400).json({
-            message: `${source} is not available for scraping`
+        return res.status(404).json({
+            error: `${source} is not available for scraping`
         });
     }
     const needBypass = bypassList.includes(source);
@@ -101,10 +111,15 @@ router.get("/chapter/:source/:slug", async (req, res) => {
             urlList[source].base + `/${slug}/`,
             needBypass
         );
+        if (response?.response?.status !== undefined) {
+            return res.status(response.response.status).json({
+                error: response.response.statusText
+            });
+        }
         res.status(200).json(response);
     } catch (error) {
         res.status(500).json({
-            message: error.message
+            error: error.message
         });
     }
 });

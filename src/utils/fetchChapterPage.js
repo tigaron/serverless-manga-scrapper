@@ -7,11 +7,11 @@ const fetchChapterPage = async (url, needBypass) => {
             method: "POST",
             url: process.env.API_URL,
             headers: {
-              "content-type": "application/json",
-              "X-RapidAPI-Key": process.env.API_KEY,
-              "X-RapidAPI-Host": process.env.API_HOST
+                "content-type": "application/json",
+                "X-RapidAPI-Key": process.env.API_KEY,
+                "X-RapidAPI-Host": process.env.API_HOST
             },
-            data: {url}
+            data: { url }
         }
         : {
             method: "GET",
@@ -19,6 +19,14 @@ const fetchChapterPage = async (url, needBypass) => {
         };
     try {
         const response = await axios.request(options);
+        if (needBypass && response.data.info.statusCode !== 200) {
+            return {
+                response: {
+                    status: response.data.info.statusCode,
+                    statusText: "Cannot get that data"
+                }
+            }
+        }
         const data = needBypass
             ? response.data.body
             : response.data;

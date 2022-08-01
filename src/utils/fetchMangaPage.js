@@ -7,11 +7,11 @@ const fetchMangaPage = async (url, needBypass) => {
             method: "POST",
             url: process.env.API_URL,
             headers: {
-              "content-type": "application/json",
-              "X-RapidAPI-Key": process.env.API_KEY,
-              "X-RapidAPI-Host": process.env.API_HOST
+                "content-type": "application/json",
+                "X-RapidAPI-Key": process.env.API_KEY,
+                "X-RapidAPI-Host": process.env.API_HOST
             },
-            data: {url}
+            data: { url }
         }
         : {
             method: "GET",
@@ -19,6 +19,14 @@ const fetchMangaPage = async (url, needBypass) => {
         };
     try {
         const response = await axios.request(options);
+        if (needBypass && response.data.info.statusCode !== 200) {
+            return {
+                response: {
+                    status: response.data.info.statusCode,
+                    statusText: "Cannot get that data"
+                }
+            }
+        }
         const data = needBypass
             ? response.data.body
             : response.data;
@@ -35,7 +43,7 @@ const fetchMangaPage = async (url, needBypass) => {
             if (item.title.includes("\n")) {
                 item.title = item.title.split("\n").slice(-2).join(" ");
             }
-            item.url =  $(element).attr("href");
+            item.url = $(element).attr("href");
             item.slug = item.url.split("/").slice(-2).shift();
             result.chapters.push(item);
         };

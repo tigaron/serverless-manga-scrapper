@@ -10,13 +10,13 @@ app.use(express.json());
 app.use("/scrape", scrape);
 
 app.get("/", (req, res) => {
-    res.json("Welcome my friend!");
+  res.json("Welcome my friend!");
 });
 
 app.use((req, res) => {
-    return res.status(404).json({
-      error: "Not Found",
-    });
+  return res.status(404).json({
+    error: "Route does not exist",
+  });
 });
 
 export default app;

@@ -1,3 +1,5 @@
+coverage
+logs
 node_modules
 .serverless
 .env

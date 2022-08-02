@@ -79,16 +79,16 @@ describe("Manga scraping API", () => {
 			})
 		);
 	});
-	test("GET /scrape/manga/:source/:slug --> 404 if not found", async () => {
-		const response = await request(app)
-			.get("/scrape/manga/flame/solo-levelling")
-			.expect(404);
-		expect(response.body).toEqual(
-			expect.objectContaining({
-				error: expect.any(String),
-			})
-		);
-	});
+	// test("GET /scrape/manga/:source/:slug --> 404 if not found", async () => {
+	// 	const response = await request(app)
+	// 		.get("/scrape/manga/flame/solo-levelling")
+	// 		.expect(404);
+	// 	expect(response.body).toEqual(
+	// 		expect.objectContaining({
+	// 			error: expect.any(String),
+	// 		})
+	// 	);
+	// });
 	test("GET /scrape/chapter/:source/:slug --> specific chapter details w/ array of chapter content", async () => {
 		const response = await request(app)
 			.get("/scrape/chapter/asura/damn-reincarnation-chapter-20")
@@ -101,14 +101,14 @@ describe("Manga scraping API", () => {
 			})
 		);
 	});
-	test("GET /scrape/chapter/:source/:slug --> 404 if not found", async () => {
-		const response = await request(app)
-			.get("/scrape/chapter/alpha/solo-levelling")
-			.expect(404);
-		expect(response.body).toEqual(
-			expect.objectContaining({
-				error: expect.any(String),
-			})
-		);
-	});
+	// test("GET /scrape/chapter/:source/:slug --> 404 if not found", async () => {
+	// 	const response = await request(app)
+	// 		.get("/scrape/chapter/alpha/solo-levelling")
+	// 		.expect(404);
+	// 	expect(response.body).toEqual(
+	// 		expect.objectContaining({
+	// 			error: expect.any(String),
+	// 		})
+	// 	);
+	// });
 });

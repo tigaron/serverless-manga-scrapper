@@ -1,5 +1,5 @@
 import express from "express";
-import { fetchListPage, fetchMangaPage, fetchChapterPage } from "../utils/index.js";
+import scraper from "../libs/scraper.js";
 
 const router = express.Router();
 
@@ -26,12 +26,6 @@ const urlList = {
     }
 };
 
-const bypassList = [
-    "alpha",
-    "asura",
-    "realm"
-];
-
 router.get("/", async (req, res) => {
     res.redirect(301, "/scrape/list");
 });
@@ -49,13 +43,10 @@ router.get("/list/:source", async (req, res) => {
             error: `${source} is not available for scraping`
         });
     }
-    const needBypass = bypassList.includes(source);
-    const isAsura = source === "asura" ? true : false;
     try {
-        const response = await fetchListPage(
+        const response = await scraper(
             Object.values(urlList[source]).join("/") + "/list-mode/",
-            needBypass,
-            isAsura
+            "list"
         );
         res.status(200).json(response);
     } catch (error) {
@@ -67,29 +58,17 @@ router.get("/list/:source", async (req, res) => {
 
 router.get("/manga/:source/:slug", async (req, res) => {
     const { source, slug } = req.params;
-    const parsedSlug = slug.includes("+")
-        ? slug.split("+").join("/")
-        : slug;
+    const parsedSlug = slug.split("+").join("/");
     if (!(source in urlList)) {
         return res.status(404).json({
             error: `${source} is not available for scraping`
         });
     }
-    const needBypass = bypassList.includes(source);
-    const isAsura = source === "asura" ? true : false;
-    const url = isAsura
-        ? urlList[source].base + `/${parsedSlug}/`
-        : Object.values(urlList[source]).join("/") + `/${parsedSlug}/`;
     try {
-        const response = await fetchMangaPage(
-            url,
-            needBypass
+        const response = await scraper(
+            urlList[source].base + `/${parsedSlug}/`,
+            "manga"
         );
-        if (response?.response?.status !== undefined) {
-            return res.status(response.response.status).json({
-                error: response.response.statusText
-            });
-        }
         res.status(200).json(response);
     } catch (error) {
         res.status(500).json({
@@ -105,17 +84,13 @@ router.get("/chapter/:source/:slug", async (req, res) => {
             error: `${source} is not available for scraping`
         });
     }
-    const needBypass = bypassList.includes(source);
+    const isRealm = source === "realm" ? true : false;
     try {
-        const response = await fetchChapterPage(
+        const response = await scraper(
             urlList[source].base + `/${slug}/`,
-            needBypass
+            "chapter",
+            isRealm
         );
-        if (response?.response?.status !== undefined) {
-            return res.status(response.response.status).json({
-                error: response.response.statusText
-            });
-        }
         res.status(200).json(response);
     } catch (error) {
         res.status(500).json({

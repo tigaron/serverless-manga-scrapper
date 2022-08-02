@@ -2,11 +2,14 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 import express from "express";
+import morganMiddleware from "./middlewares/morganMiddleware.js";
 import scrape from "./routes/scrape.js";
 
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(morganMiddleware);
+
 app.use("/scrape", scrape);
 
 app.get("/", (req, res) => {

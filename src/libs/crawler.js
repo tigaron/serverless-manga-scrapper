@@ -24,11 +24,22 @@ const crawler = async (url) => {
             else request.continue();
         });
         logger.info(`Start crawling '${url}'`);
-        await page.goto(url, { waitUntil: "domcontentloaded" });
-        const content = await page.content();
-        return content;
+        const response = await page.goto(url, { waitUntil: "domcontentloaded" });
+        if (response.ok()) {
+            logger.info(`Crawl success!`);
+            const content = await page.content();
+            return content;
+        } else {
+            logger.warn(`Crawl failed!`);
+            const title = await page.title();
+            const exception = {
+                error: `Failed to fetch '${url}'`,
+                status: response.status(),
+                message: title
+            };
+            return exception;
+        }
     } catch (error) {
-        console.log(error)
         return error;
     } finally {
         await browser.close();

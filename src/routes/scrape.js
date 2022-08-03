@@ -69,7 +69,11 @@ router.get("/manga/:source/:slug", async (req, res) => {
             urlList[source].base + `/${parsedSlug}/`,
             "manga"
         );
-        res.status(200).json(response);
+        if (response.error) {
+            res.status(response.status).json(response);
+        } else {
+            res.status(200).json(response);
+        }
     } catch (error) {
         res.status(500).json({
             error: error.message
@@ -91,7 +95,11 @@ router.get("/chapter/:source/:slug", async (req, res) => {
             "chapter",
             isRealm
         );
-        res.status(200).json(response);
+        if (response.error) {
+            res.status(response.status).json(response);
+        } else {
+            res.status(200).json(response);
+        }
     } catch (error) {
         res.status(500).json({
             error: error.message

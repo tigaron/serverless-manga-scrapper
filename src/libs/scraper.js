@@ -66,10 +66,14 @@ const parse = async ($, type, isRealm) => {
 const scraper = async (url, type, isRealm) => {
     try {
         const html = await crawler(url)
-        const $ = await load(html);
-        logger.info(`Start scraping '${type}'`);
-        const result = await parse($, type, isRealm);
-        return result;
+        if (typeof(html) !== "string") {
+            return html;
+        } else {
+            const $ = await load(html);
+            logger.info(`Start scraping '${type}'`);
+            const result = await parse($, type, isRealm);
+            return result;
+        }
     } catch (error) {
         return error;
     }

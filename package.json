@@ -5,8 +5,10 @@
   "description": "An API to scrape manga data from scanlation's website.",
   "scripts": {
     "dev": "nodemon server.js",
+    "deploy": "serverless deploy --verbose",
+    "function": "serverless deploy function --function",
     "test": "node --experimental-vm-modules node_modules/.bin/jest --watchAll",
-    "fulltest": "node --experimental-vm-modules node_modules/.bin/jest --coverage"
+    "coverage": "node --experimental-vm-modules node_modules/.bin/jest --coverage"
   },
   "dependencies": {
     "@sparticuz/chrome-aws-lambda": "^15.5.0",
@@ -18,9 +20,11 @@
     "winston": "^3.8.1"
   },
   "devDependencies": {
+    "aws-sdk": "^2.1189.0",
     "jest": "^28.1.3",
     "nodemon": "^2.0.19",
     "puppeteer": "^15.5.0",
+    "serverless-offline": "^9.1.5",
     "supertest": "^6.2.4"
   }
 }

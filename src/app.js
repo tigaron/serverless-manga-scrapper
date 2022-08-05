@@ -1,5 +1,6 @@
 import express from "express";
 import morganMiddleware from "./middlewares/morganMiddleware.js";
+import fetch from "./routes/fetch.js";
 import scrape from "./routes/scrape.js";
 
 const app = express();
@@ -7,6 +8,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(morganMiddleware);
 
+app.use("/fetch", fetch);
 app.use("/scrape", scrape);
 
 app.get("/", (req, res) => {

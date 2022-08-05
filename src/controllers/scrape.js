@@ -1,12 +1,5 @@
 import scraper from "../libs/scraper.js";
-
-const sourceList = new Map([
-	["alpha", { base: "https://alpha-scans.org", slug: "manga" }],
-	["asura", { base: "https://www.asurascans.com", slug: "manga" }],
-	["flame", { base: "https://flamescans.org", slug: "series" }],
-	["luminous", { base: "https://luminousscans.com", slug: "series" }],
-	["realm", { base: "https://realmscans.com", slug: "series" }],
-]);
+import { sourceList } from "../libs/provider.js";
 
 export const getSourceList = (req, res) => {
 	return res.json({

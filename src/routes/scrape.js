@@ -1,110 +1,16 @@
 import express from "express";
-import scraper from "../libs/scraper.js";
+import { getSourceList, scrapeData } from "../controllers/scrape.js";
 
 const router = express.Router();
 
-const urlList = {
-    alpha: {
-        base: "https://alpha-scans.org",
-        slug: "manga"
-    },
-    asura: {
-        base: "https://www.asurascans.com",
-        slug: "manga"
-    },
-    flame: {
-        base: "https://flamescans.org",
-        slug: "series"
-    },
-    luminous: {
-        base: "https://luminousscans.com",
-        slug: "series"
-    },
-    realm: {
-        base: "https://realmscans.com",
-        slug: "series"
-    }
-};
+router.get("/", (req, res) => res.redirect(301, "/scrape/list"));
 
-router.get("/", async (req, res) => {
-    res.redirect(301, "/scrape/list");
-});
+router.route("/list").get(getSourceList);
 
-router.get("/list", async (req, res) => {
-    res.status(200).json({
-        "Available list for scraping:": Object.keys(urlList)
-    });
-});
+router.route("/manga/:source").get(scrapeData("list"));
 
-router.get("/list/:source", async (req, res) => {
-    const { source } = req.params;
-    if (!(source in urlList)) {
-        return res.status(404).json({
-            error: `${source} is not available for scraping`
-        });
-    }
-    try {
-        const response = await scraper(
-            Object.values(urlList[source]).join("/") + "/list-mode/",
-            "list"
-        );
-        res.status(200).json(response);
-    } catch (error) {
-        res.status(500).json({
-            error: error.message
-        });
-    }
-});
+router.route("/manga/:source/:slug").get(scrapeData("manga"));
 
-router.get("/manga/:source/:slug", async (req, res) => {
-    const { source, slug } = req.params;
-    const parsedSlug = slug.split("+").join("/");
-    if (!(source in urlList)) {
-        return res.status(404).json({
-            error: `${source} is not available for scraping`
-        });
-    }
-    try {
-        const response = await scraper(
-            urlList[source].base + `/${parsedSlug}/`,
-            "manga"
-        );
-        if (response.error) {
-            res.status(response.status).json(response);
-        } else {
-            res.status(200).json(response);
-        }
-    } catch (error) {
-        res.status(500).json({
-            error: error.message
-        });
-    }
-});
-
-router.get("/chapter/:source/:slug", async (req, res) => {
-    const { source, slug } = req.params;
-    if (!(source in urlList)) {
-        return res.status(404).json({
-            error: `${source} is not available for scraping`
-        });
-    }
-    const isRealm = source === "realm" ? true : false;
-    try {
-        const response = await scraper(
-            urlList[source].base + `/${slug}/`,
-            "chapter",
-            isRealm
-        );
-        if (response.error) {
-            res.status(response.status).json(response);
-        } else {
-            res.status(200).json(response);
-        }
-    } catch (error) {
-        res.status(500).json({
-            error: error.message
-        });
-    }
-});
+router.route("/chapter/:source/:slug").get(scrapeData("chapter"));
 
 export default router;

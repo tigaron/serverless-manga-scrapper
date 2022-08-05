@@ -1,8 +1,8 @@
 {
-  "name": "manga-scrapper-project",
+  "name": "manga-scraper-project",
   "type": "module",
-  "version": "1.5.0",
-  "description": "",
+  "version": "1.8.0",
+  "description": "An API to scrape manga data from scanlation's website.",
   "scripts": {
     "dev": "nodemon server.js",
     "test": "node --experimental-vm-modules node_modules/.bin/jest --watchAll",
@@ -11,7 +11,6 @@
   "dependencies": {
     "@sparticuz/chrome-aws-lambda": "^15.5.0",
     "cheerio": "^1.0.0-rc.12",
-    "dotenv": "^16.0.1",
     "express": "^4.17.1",
     "morgan": "^1.10.0",
     "puppeteer-core": "15.5.0",

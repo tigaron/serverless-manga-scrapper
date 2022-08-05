@@ -1,6 +1,3 @@
-import * as dotenv from "dotenv";
-dotenv.config();
-
 import express from "express";
 import morganMiddleware from "./middlewares/morganMiddleware.js";
 import scrape from "./routes/scrape.js";

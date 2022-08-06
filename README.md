@@ -4,16 +4,25 @@ An API to get manga data from scanlation group that use [MangaReader](https://th
 
 ## Available Website for Scraping
 
-- [`alpha`](https://7iwr725hi4.execute-api.ap-southeast-1.amazonaws.com/scrape/list/alpha)
-- [`asura`](https://7iwr725hi4.execute-api.ap-southeast-1.amazonaws.com/scrape/list/asura)
-- [`flame`](https://7iwr725hi4.execute-api.ap-southeast-1.amazonaws.com/scrape/list/flame)
-- [`luminous`](https://7iwr725hi4.execute-api.ap-southeast-1.amazonaws.com/scrape/list/luminous)
-- [`realm`](https://7iwr725hi4.execute-api.ap-southeast-1.amazonaws.com/scrape/list/realm)
+- [`alpha`](https://alpha-scans.org/)
+- [`asura`](https://asurascans.com/)
+- [`flame`](https://flamescans.org/)
+- [`luminous`](https://luminousscans.com/)
+- [`realm`](https://realmscans.com/)
+
 ## Available Endpoints
 
-|Description|Endpoint|
-|-|-|
-|GET available website source for scraping|[/scrape/list](https://7iwr725hi4.execute-api.ap-southeast-1.amazonaws.com/scrape/list/)|
-|GET manga list from a website source|/scrape/list/:source<br>e.g. [/scrape/list/asura](https://7iwr725hi4.execute-api.ap-southeast-1.amazonaws.com/scrape/list/asura)|
-|GET manga's detail from a website source|/scrape/manga/:source/:title<br>e.g. [/scrape/manga/realm/series+chronicles-of-a-returner](https://7iwr725hi4.execute-api.ap-southeast-1.amazonaws.com/scrape/manga/realm/series+chronicles-of-a-returner)|
-|GET chapter's content from a website source|/scrape/chapter/:source/:title<br>e.g. [/scrape/manga/flame/berserk-of-gluttony-chapter-39](https://7iwr725hi4.execute-api.ap-southeast-1.amazonaws.com/scrape/chapter/flame/berserk-of-gluttony-chapter-39)|
+|HTTP Method|Description|Endpoint|
+|-|-|-|
+|GET|Get available website source|/fetch/list|
+|GET|Get manga list from a website source|/fetch/manga/:source<br>e.g. `/fetch/manga/alpha`|
+|GET|Get manga's detail from a website source|/fetch/manga/:source/:title<br>e.g. `/fetch/manga/realm/series+chronicles-of-a-returner`|
+|GET|Get chapter's content from a website source|/fetch/chapter/:source/:title<br>e.g. `/fetch/chapter/asura/academys-undercover-professor-chapter-16`|
+|POST|Scrape a new manga list from a website source|/scrape/manga/:source<br>e.g. `/scrape/list/luminous`|
+|POST|Scrape a new manga's detail from a website source|/scrape/manga/:source/:title<br>e.g. `/scrape/manga/asura/comics+1649969363-solo-leveling`|
+|POST|Scrape a new chapter's content from a website source|/scrape/chapter/:source/:title<br>e.g. `/scrape/manga/flame/berserk-of-gluttony-chapter-39`|
+
+## My todo list
+- PUT: update specific item in database
+- DELETE: remove specific item in database
+- Authorization for POST, PUT, and DELETE method

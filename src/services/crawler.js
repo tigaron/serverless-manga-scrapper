@@ -25,25 +25,15 @@ const crawler = async (url) => {
 			if (shouldAbort) request.abort();
 			else request.continue();
 		});
-		logger.info(`Start crawling '${url}'`);
+		logger.info(`Crawl start: '${url}'`);
 		const response = await page.goto(url, { waitUntil: "domcontentloaded" });
-		if (response.ok()) {
-			logger.info(`Crawl success!`);
-			const content = await page.content();
-			return content;
-		} else {
-			logger.warn(`Crawl failed!`);
-			const exception = {
-				statusCode: response.status(),
-				statusText: `Failed to fetch '${url}'`,
-			};
-			return exception;
-		}
+		if (!response.ok()) throw new Error(`Failed to fetch '${url}`);
+		const content = await page.content();
+		logger.info(`Crawl success: '${url}'`);
+		return content;
 	} catch (error) {
-		return {
-			statusCode: 500,
-			statusText: error.message,
-		};
+		logger.debug(`Crawl fail: '${url}'`);
+		return error;
 	} finally {
 		await browser.close();
 	}

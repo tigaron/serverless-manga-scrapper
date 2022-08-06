@@ -1,19 +1,14 @@
-import scraper from "../libs/scraper.js";
-import { create, update } from "../libs/dynamodb.js";
-import { sourceList } from "../libs/provider.js";
-
-// Todo:
-// scraping specific manga data takes too long to wait...
-// perhaps we should return immediately with message about scraping job added to queue...
-// or there might be something we can do with the database process for adding chapters
+import { create, update } from "../services/dbqueries.js";
+import scraper from "../services/scraper.js";
+import { sourceList } from "../utils/provider.js";
 
 export const scrapeData = (type) => {
 	return async (req, res) => {
 		const { source, slug } = req.params;
 		if (!sourceList.has(source)) {
-			return res.status(404).json({
-				statusCode: 404,
-				statusText: `Unable to scrape data from '${source}'`,
+			return res.status(400).json({
+				statusCode: 400,
+				statusText: `Unknows source: '${source}'`,
 			});
 		}
 		const url =
@@ -22,8 +17,11 @@ export const scrapeData = (type) => {
 				: sourceList.get(source).base + `/${slug.split("+").join("/")}/`;
 		try {
 			const response = await scraper(url, type);
-			if (response.statusCode)
-				return res.status(response.statusCode).json(response);
+			if (response.message)
+				return res.status(400).json({
+					statusCode: 400,
+					statusText: `Unable to scrape: '${slug}'`
+				});
 			switch (type) {
 				case "list":
 					for await (const item of response) {

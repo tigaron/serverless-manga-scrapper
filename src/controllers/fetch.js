@@ -1,5 +1,5 @@
-import { get, list, chapters } from "../libs/dynamodb.js";
-import { sourceList } from "../libs/provider.js";
+import { get, list, chapters } from "../services/dbqueries.js";
+import { sourceList } from "../utils/provider.js";
 
 export const getSourceList = (req, res) => {
 	return res.status(200).json({
@@ -38,20 +38,15 @@ export const fetchData = (type) => {
 		if (!sourceList.has(source)) {
 			return res.status(404).json({
 				statusCode: 404,
-				statusText: `Unable to fetch data from '${source}'`,
+				statusText: `Unknows source: '${source}'`,
 			});
 		}
 		try {
 			const response = await get(source, type, slug);
-			if (response.$metadata?.httpStatusCode)
-				return res.status(response.$metadata.httpStatusCode).json({
-					statusCode: response.$metadata.httpStatusCode,
-					statusText: response.name,
-				});
 			if (response.message)
 				return res.status(404).json({
 					statusCode: 404,
-					statusText: `Unable to fetch data for '${slug}'`,
+					statusText: response.message,
 				});
 			if (type === "manga") {
 				response.chapters = await chapters(source, "chapter", slug);

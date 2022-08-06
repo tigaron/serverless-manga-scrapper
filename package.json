@@ -3,16 +3,20 @@
   "type": "module",
   "version": "1.8.0",
   "description": "An API to scrape manga data from scanlation's website.",
+  "author": "tigaron",
+  "license": "ISC",
   "scripts": {
     "dev": "nodemon server.js",
     "del": "serverless remove",
     "deploy": "serverless deploy --verbose",
-    "function": "serverless deploy function --function",
+    "function": "serverless deploy function -f scraper",
+    "local": "serverless invoke local -f scraper -p data.json",
     "test": "node --experimental-vm-modules node_modules/.bin/jest --watchAll",
     "coverage": "node --experimental-vm-modules node_modules/.bin/jest --coverage"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.142.0",
+    "@aws-sdk/lib-dynamodb": "^3.142.0",
     "@aws-sdk/util-dynamodb": "^3.142.0",
     "@sparticuz/chrome-aws-lambda": "^15.5.0",
     "cheerio": "^1.0.0-rc.12",

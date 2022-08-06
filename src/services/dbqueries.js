@@ -1,16 +1,9 @@
 import logger from "./logger.js";
-import {
-	DynamoDBClient,
-	PutItemCommand,
-	GetItemCommand,
-	UpdateItemCommand,
-	DeleteItemCommand,
-	QueryCommand,
-} from "@aws-sdk/client-dynamodb";
+import { dynamodb } from "../configs/dynamodb.js";
+import { PutItemCommand, GetItemCommand, UpdateItemCommand, DeleteItemCommand, QueryCommand, } from "@aws-sdk/client-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 
-const { TABLE_MANGA, REGION } = process.env;
-const dynamodb = new DynamoDBClient({ region: REGION });
+const { TABLE_MANGA } = process.env;
 
 export const create = async (item, table = TABLE_MANGA) => {
 	const params = {
@@ -38,6 +31,7 @@ export const get = async (provider, type, slug, table = TABLE_MANGA) => {
 	logger.info(`Get start: ${provider}-${type} | ${slug}`);
 	try {
 		const { Item } = await dynamodb.send(new GetItemCommand(params));
+		if (Item == undefined) throw new Error(`Unable to find data for '${slug}'`);
 		logger.info(`Get success: ${provider}-${type} | ${slug}`);
 		return unmarshall(Item);
 	} catch (error) {
@@ -78,24 +72,6 @@ export const update = async (
 		logger.info(`Update success: ${provider}-${type} | ${slug}`);
 	} catch (error) {
 		logger.debug(`Update fail: ${provider}-${type} | ${slug}`);
-		logger.debug(error);
-	}
-};
-
-export const remove = async (provider, type, slug, table = TABLE_MANGA) => {
-	const params = {
-		TableName: table,
-		Key: {
-			"Provider-Type": { S: `${provider}-${type}` },
-			Slug: { S: `${slug}` },
-		},
-	};
-	logger.info(`Starting: DeleteItemCommand`);
-	try {
-		const data = await dynamodb.send(new DeleteItemCommand(params));
-		logger.info(`Finished: DeleteItemCommand`);
-	} catch (error) {
-		logger.debug(`Failed: DeleteItemCommand`);
 		logger.debug(error);
 	}
 };

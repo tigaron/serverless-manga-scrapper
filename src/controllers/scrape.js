@@ -4,13 +4,22 @@ import { sourceList } from "../utils/provider.js";
 
 export const scrapeData = (type) => {
 	return async (req, res) => {
-		const { source, slug } = req.params;
-		if (!sourceList.has(source)) {
+		if (req.is("json") !== "json")
+			return res.status(406).json({
+				statusCode: 406,
+				statusText: `Content is not acceptable`,
+			});
+		const { source, slug } = req.body;
+		if (!sourceList.has(source))
 			return res.status(400).json({
 				statusCode: 400,
 				statusText: `Unknows source: '${source}'`,
 			});
-		}
+		if (type !== "list" && !slug)
+			return res.status(400).json({
+				statusCode: 400,
+				statusText: `'slug' is empty`,
+			});
 		const url =
 			type === "list"
 				? Object.values(sourceList.get(source)).join("/") + "/list-mode/"
@@ -20,7 +29,7 @@ export const scrapeData = (type) => {
 			if (response.message)
 				return res.status(400).json({
 					statusCode: 400,
-					statusText: `Unable to scrape: '${slug}'`
+					statusText: `Unable to scrape: '${slug}'`,
 				});
 			switch (type) {
 				case "list":

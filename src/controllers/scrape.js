@@ -3,10 +3,9 @@ import { create, update } from "../libs/dynamodb.js";
 import { sourceList } from "../libs/provider.js";
 
 // Todo:
-// scraping manga list from source returns {"message": "Internal Server Error"} instead of 201
 // scraping specific manga data takes too long to wait...
-   // perhaps we should return immediately with message about scraping job added to queue...
-   // or there might be something we can do with the database process for adding chapters
+// perhaps we should return immediately with message about scraping job added to queue...
+// or there might be something we can do with the database process for adding chapters
 
 export const scrapeData = (type) => {
 	return async (req, res) => {
@@ -29,32 +28,34 @@ export const scrapeData = (type) => {
 				case "list":
 					for await (const item of response) {
 						await create({
-							"Provider-Type": { S: `${source}-${type}` },
-							Slug: { S: `${item.slug}` },
-							Title: { S: `${item.title}` },
-							Url: { S: `${item.url}` },
+							"Provider-Type": `${source}-${type}`,
+							Slug: `${item.slug}`,
+							Title: `${item.title}`,
+							Url: `${item.url}`,
 						});
 					}
 					break;
 				case "manga":
 					await create({
-						"Provider-Type": { S: `${source}-${type}` },
-						Slug: { S: `${slug}` },
-						Title: { S: `${response.title}` },
-						Cover: { S: `${response.cover}` },
-						Synopsis: { S: `${response.synopsis}` },
+						"Provider-Type": `${source}-${type}`,
+						Slug: `${slug}`,
+						Title: `${response.title}`,
+						Cover: `${response.cover}`,
+						Synopsis: `${response.synopsis}`,
 					});
 					for await (const item of response.chapters) {
 						await create({
-							"Provider-Type": { S: `${source}-chapter` },
-							Slug: { S: `${item.slug}` },
-							Title: { S: `${item.title}` },
-							Url: { S: `${item.url}` },
+							"Provider-Type": `${source}-chapter`,
+							Slug: `${item.slug}`,
+							Title: `${item.title}`,
+							Url: `${item.url}`,
+							MangaSlug: `${slug}`,
+							MangaTitle: `${response.title}`,
 						});
 					}
 					break;
 				case "chapter":
-					await update(source, type, slug, response.img);
+					await update(source, type, slug, response.img, response.title);
 					break;
 			}
 			return res.status(201).json({

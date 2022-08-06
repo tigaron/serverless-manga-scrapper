@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.142.0",
+    "@aws-sdk/util-dynamodb": "^3.142.0",
     "@sparticuz/chrome-aws-lambda": "^15.5.0",
     "cheerio": "^1.0.0-rc.12",
     "express": "^4.17.1",

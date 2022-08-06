@@ -7,6 +7,7 @@ import {
 	DeleteItemCommand,
 	QueryCommand,
 } from "@aws-sdk/client-dynamodb";
+import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 
 const { TABLE_MANGA, REGION } = process.env;
 const dynamodb = new DynamoDBClient({ region: REGION });
@@ -14,15 +15,15 @@ const dynamodb = new DynamoDBClient({ region: REGION });
 export const create = async (item, table = TABLE_MANGA) => {
 	const params = {
 		TableName: table,
-		Item: item,
+		Item: marshall(item),
 	};
-	logger.info(`Starting: PutItemCommand`);
+	logger.info(`Put start: ${item["Provider-Type"]} | ${item["Slug"]}`);
 	try {
 		await dynamodb.send(new PutItemCommand(params));
-		logger.info(`Finished: PutItemCommand`);
+		logger.info(`Put success: ${item["Provider-Type"]} | ${item["Slug"]}`);
 	} catch (error) {
-		logger.warn(`Failed: PutItemCommand`);
-		return error;
+		logger.debug(`Put fail: ${item["Provider-Type"]} | ${item["Slug"]}`);
+		logger.debug(error);
 	}
 };
 
@@ -34,47 +35,50 @@ export const get = async (provider, type, slug, table = TABLE_MANGA) => {
 			Slug: { S: `${slug}` },
 		},
 	};
-	logger.info(`Starting: GetItemCommand`);
+	logger.info(`Get start: ${provider}-${type} | ${slug}`);
 	try {
-		const data = await dynamodb.send(new GetItemCommand(params));
-		logger.info(`Finished: GetItemCommand`);
-		return data;
+		const { Item } = await dynamodb.send(new GetItemCommand(params));
+		logger.info(`Get success: ${provider}-${type} | ${slug}`);
+		return unmarshall(Item);
 	} catch (error) {
-		logger.warn(`Failed: GetItemCommand`);
+		logger.debug(`Get fail: ${provider}-${type} | ${slug}`);
 		return error;
 	}
 };
 
-// Todo:
-// fix passing value of images content, currently returned list of nothing
-
-export const update = async (provider, type, slug, items, table = TABLE_MANGA) => {
+export const update = async (
+	provider,
+	type,
+	slug,
+	items,
+	title,
+	table = TABLE_MANGA
+) => {
 	const params = {
 		TableName: table,
 		Key: {
 			"Provider-Type": { S: `${provider}-${type}` },
 			Slug: { S: `${slug}` },
 		},
-		UpdateExpression: "set Content = :c",
+		ExpressionAttributeNames: {
+			"#C": "Content",
+			"#T": "Title",
+		},
 		ExpressionAttributeValues: {
 			":c": {
-				L: [
-					items.forEach((item) => {
-						return { S: item };
-					}),
-				],
+				L: items.map((item) => ({ S: item })),
 			},
+			":t": { S: title },
 		},
-		ReturnValues: "ALL_NEW"
+		UpdateExpression: "SET #C = :c, #T = :t",
 	};
-	logger.info(`Starting: UpdateItemCommand`);
+	logger.info(`Update start: ${provider}-${type} | ${slug}`);
 	try {
-		const data = await dynamodb.send(new UpdateItemCommand(params));
-		logger.info(`Finished: UpdateItemCommand`);
-		return data;
+		await dynamodb.send(new UpdateItemCommand(params));
+		logger.info(`Update success: ${provider}-${type} | ${slug}`);
 	} catch (error) {
-		logger.warn(`Failed: UpdateItemCommand`);
-		return error;
+		logger.debug(`Update fail: ${provider}-${type} | ${slug}`);
+		logger.debug(error);
 	}
 };
 
@@ -85,34 +89,61 @@ export const remove = async (provider, type, slug, table = TABLE_MANGA) => {
 			"Provider-Type": { S: `${provider}-${type}` },
 			Slug: { S: `${slug}` },
 		},
-		ReturnValues: "ALL_OLD",
 	};
 	logger.info(`Starting: DeleteItemCommand`);
 	try {
 		const data = await dynamodb.send(new DeleteItemCommand(params));
 		logger.info(`Finished: DeleteItemCommand`);
-		return data;
 	} catch (error) {
-		logger.info(`Failed: DeleteItemCommand`);
-		return error;
+		logger.debug(`Failed: DeleteItemCommand`);
+		logger.debug(error);
 	}
 };
 
 export const list = async (provider, type, table = TABLE_MANGA) => {
 	const params = {
 		TableName: table,
+		ExpressionAttributeNames: {
+			"#PT": "Provider-Type",
+		},
 		ExpressionAttributeValues: {
 			":pt": { S: `${provider}-${type}` },
 		},
-		KeyConditionExpression: "Provider-Type = :pt",
+		KeyConditionExpression: "#PT = :pt",
 	};
-	logger.info(`Starting: QueryCommand`);
+	logger.info(`Query start: ${provider}-${type}`);
 	try {
-		const data = await dynamodb.send(new QueryCommand(params));
-		logger.info(`Finished: QueryCommand`);
-		return data.Items;
+		const { Items } = await dynamodb.send(new QueryCommand(params));
+		logger.info(`Query success: ${provider}-${type}`);
+		return Items.map((item) => unmarshall(item));
 	} catch (error) {
-		logger.info(`Failed: QueryCommand`);
+		logger.debug(`Query fail: ${provider}-${type}`);
+		return error;
+	}
+};
+
+export const chapters = async (provider, type, slug, table = TABLE_MANGA) => {
+	const params = {
+		TableName: table,
+		ExpressionAttributeNames: {
+			"#PT": "Provider-Type",
+			"#U": "Url",
+		},
+		ExpressionAttributeValues: {
+			":pt": { S: `${provider}-${type}` },
+			":ms": { S: `${slug}` },
+		},
+		KeyConditionExpression: "#PT = :pt",
+		FilterExpression: "contains (MangaSlug, :ms)",
+		ProjectionExpression: "Title, Slug, #U",
+	};
+	logger.info(`Query start: ${provider}-${type} | ${slug}`);
+	try {
+		const { Items } = await dynamodb.send(new QueryCommand(params));
+		logger.info(`Query success: ${provider}-${type} | ${slug}`);
+		return Items.map((item) => unmarshall(item));
+	} catch (error) {
+		logger.debug(`Query fail: ${provider}-${type} | ${slug}`);
 		return error;
 	}
 };

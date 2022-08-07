@@ -1,0 +1,14 @@
+version: 0.2
+phases:
+  install:
+    commands:
+      - npm install
+      - npm install -g serverless
+  build:
+    commands:
+      - npm test
+      - serverless deploy --stage test -v
+      - npm run-script integration
+  post_build:
+      commands:
+        - serverless remove --stage test -v

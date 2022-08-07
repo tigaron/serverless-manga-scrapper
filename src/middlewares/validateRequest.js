@@ -12,7 +12,7 @@ export const checkSource = (req, res, next) => {
 };
 
 export const checkBody = (type) => {
-	return async (req, res, next) => {
+	return (req, res, next) => {
 		if (!req.is("json"))
 			return res.status(406).json({
 				statusCode: 406,

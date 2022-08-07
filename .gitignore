@@ -1,7 +1,9 @@
 coverage
 logs
 node_modules
+.jest
 .serverless
 .env
 data.json
 todo
+.dynamodb

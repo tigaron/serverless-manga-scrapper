@@ -1,25 +1,11 @@
-import { create, update } from "../services/dbqueries.js";
+import { v4 as uuidv4 } from "uuid";
+import { create, update, updateStatus } from "../services/dbqueries.js";
 import scraper from "../services/scraper.js";
 import { sourceList } from "../utils/provider.js";
 
 export const scrapeData = (type) => {
 	return async (req, res) => {
-		if (req.is("json") !== "json")
-			return res.status(406).json({
-				statusCode: 406,
-				statusText: `Content is not acceptable`,
-			});
 		const { source, slug } = req.body;
-		if (!sourceList.has(source))
-			return res.status(400).json({
-				statusCode: 400,
-				statusText: `Unknows source: '${source}'`,
-			});
-		if (type !== "list" && !slug)
-			return res.status(400).json({
-				statusCode: 400,
-				statusText: `'slug' is empty`,
-			});
 		const url =
 			type === "list"
 				? Object.values(sourceList.get(source)).join("/") + "/list-mode/"
@@ -31,6 +17,13 @@ export const scrapeData = (type) => {
 					statusCode: 400,
 					statusText: `Unable to scrape: '${slug}'`,
 				});
+			const requestId = uuidv4();
+			res.status(202).json({
+				statusCode: 202,
+				statusText: "Processing data ...",
+				requestId: requestId,
+			});
+			await updateStatus(requestId, "pending");
 			switch (type) {
 				case "list":
 					for await (const item of response) {
@@ -65,11 +58,7 @@ export const scrapeData = (type) => {
 					await update(source, type, slug, response.img, response.title);
 					break;
 			}
-			return res.status(201).json({
-				statusCode: 201,
-				statusText: "Created",
-				data: response,
-			});
+			await updateStatus(requestId, "completed");
 		} catch (error) {
 			return res.status(500).json({
 				statusCode: 500,

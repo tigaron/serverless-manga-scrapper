@@ -24,6 +24,7 @@
     "morgan": "^1.10.0",
     "puppeteer-core": "15.5.0",
     "serverless-http": "^2.7.0",
+    "uuid": "^8.3.2",
     "winston": "^3.8.1"
   },
   "devDependencies": {

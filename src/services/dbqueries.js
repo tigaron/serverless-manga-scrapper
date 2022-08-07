@@ -15,6 +15,15 @@ export const create = async (item, table = TABLE_MANGA) => {
 	const params = {
 		TableName: table,
 		Item: marshall(item),
+		ExpressionAttributeNames: {
+			"#PT": "Provider-Type",
+			"#S": "Slug",
+		},
+		ExpressionAttributeValues: {
+			":pt": marshall(item["Provider-Type"]),
+			":s": marshall(item["Slug"]),
+		},
+		ConditionExpression: "(NOT #PT = :pt) AND (NOT #S = :s)",
 	};
 	logger.info(`Put start: ${item["Provider-Type"]} | ${item["Slug"]}`);
 	try {
@@ -46,7 +55,31 @@ export const get = async (provider, type, slug, table = TABLE_MANGA) => {
 	}
 };
 
-export const update = async (
+export const update = async (item, table = TABLE_MANGA) => {
+	const params = {
+		TableName: table,
+		Item: marshall(item),
+		ExpressionAttributeNames: {
+			"#PT": "Provider-Type",
+			"#S": "Slug",
+		},
+		ExpressionAttributeValues: {
+			":pt": marshall(item["Provider-Type"]),
+			":s": marshall(item["Slug"]),
+		},
+		ConditionExpression: "#PT = :pt AND #S = :s",
+	};
+	logger.info(`Put start: ${item["Provider-Type"]} | ${item["Slug"]}`);
+	try {
+		await dynamodb.send(new PutItemCommand(params));
+		logger.info(`Put success: ${item["Provider-Type"]} | ${item["Slug"]}`);
+	} catch (error) {
+		logger.debug(`Put fail: ${item["Provider-Type"]} | ${item["Slug"]}`);
+		logger.debug(error);
+	}
+};
+
+export const updateChapter = async (
 	provider,
 	type,
 	slug,

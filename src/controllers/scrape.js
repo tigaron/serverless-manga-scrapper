@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { create, update, updateStatus } from "../services/dbqueries.js";
+import { create, updateChapter, updateStatus } from "../services/dbqueries.js";
 import scraper from "../services/scraper.js";
 import { sourceList } from "../utils/provider.js";
 
@@ -55,7 +55,7 @@ export const scrapeData = (type) => {
 					}
 					break;
 				case "chapter":
-					await update(source, type, slug, response.img, response.title);
+					await updateChapter(source, type, slug, response.img, response.title);
 					break;
 			}
 			await updateStatus(requestId, "completed");

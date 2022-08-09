@@ -443,7 +443,7 @@ var updateStatus = /*#__PURE__*/function () {
             item = {
               "Provider-Type": "request-status",
               Slug: id,
-              Request: "".concat(type, " | ").concat(req),
+              Request: req ? "".concat(type, " | ").concat(req) : "".concat(type),
               Status: status,
               FailedItems: failed ? failed : []
             };

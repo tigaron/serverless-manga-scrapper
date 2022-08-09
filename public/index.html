@@ -1,0 +1,124 @@
+<html>
+
+<head>
+  <title>Manga Scraper API</title>
+  <style>
+    body {
+      padding: 50px;
+      font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+      text-align: center
+    }
+
+    table {
+      margin: auto;
+      border-collapse: collapse;
+      font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+      width: 70%;
+    }
+
+    td,
+    th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+    }
+
+    tr:nth-child(even) {
+      background-color: #dddddd;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Welcome to Manga Scraper API!</h1>
+    <p>Available Endpoints:</p>
+  </header>
+  <main>
+    <table>
+      <tr>
+        <th>HTTP Method</th>
+        <th>Endpoint</th>
+        <th>Description</th>
+        <th>Example</th>
+      </tr>
+      <tr>
+        <td>GET</td>
+        <td>/fetch/list</td>
+        <td>Fetch available website sources</td>
+        <td>path: <a href="/fetch/list">/fetch/list</a></td>
+      </tr>
+      <tr>
+        <td>GET</td>
+        <td>/fetch/manga/{source}</td>
+        <td>Fetch manga list from a website source</td>
+        <td>path: <a href="/fetch/manga/alpha">
+            /fetch/manga/alpha
+          </a>
+        </td>
+      </tr>
+      <tr>
+        <td>GET</td>
+        <td>/fetch/manga/{source}/{slug}</td>
+        <td>Fetch information of a specific manga from a website source</td>
+        <td>path: <a href="/fetch/manga/realm/series+chronicles-of-a-returner">
+            /fetch/manga/realm/series+chronicles-of-a-returner
+          </a>
+        </td>
+      </tr>
+      <tr>
+        <td>GET</td>
+        <td>/fetch/chapters/{source}/{slug}</td>
+        <td>Fetch chapter list of a specific manga from a website source</td>
+        <td>path: <a href="/fetch/chapters/asura/comics+worthless-regression">
+            /fetch/chapters/asura/comics+worthless-regression
+          </a>
+        </td>
+      </tr>
+      <tr>
+        <td>GET</td>
+        <td>/fetch/chapter/{source}/{slug}</td>
+        <td>Fetch content of a specific chapter from a website source</td>
+        <td>path: <a href="/fetch/chapter/asura/academys-undercover-professor-chapter-16">
+            /fetch/chapter/asura/academys-undercover-professor-chapter-16
+          </a>
+        </td>
+      </tr>
+      <tr>
+        <td>POST</td>
+        <td>/scrape/list</td>
+        <td>Scrape a new manga list from a website source</td>
+        <td>path: /scrape/list
+          <br>
+          headers: { "content-type": "application/json" }
+          <br>
+          body: { "source": "luminous" }
+        </td>
+      </tr>
+      <tr>
+        <td>POST</td>
+        <td>/scrape/manga</td>
+        <td>Scrape new information for a specific manga from a website source</td>
+        <td>path: /scrape/manga
+          <br>
+          headers: { "content-type": "application/json" }
+          <br>
+          body: { "source": "asura", "slug": "comics+1649969363-solo-leveling"}
+        </td>
+      </tr>
+      <tr>
+        <td>POST</td>
+        <td>/scrape/chapter</td>
+        <td>Scrape new content for a specific chapter from a website source</td>
+        <td>path: /scrape/list
+          <br>
+          headers: { "content-type": "application/json" }
+          <br>
+          body: { "source": "flame", "slug": "berserk-of-gluttony-chapter-39"}
+        </td>
+      </tr>
+    </table>
+  </main>
+</body>
+
+</html>

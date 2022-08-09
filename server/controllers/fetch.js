@@ -16,7 +16,7 @@ export const fetchStatus = async (req, res) => {
 		return res.status(200).json({
 			statusCode: 200,
 			statusText: "OK",
-			data: response,
+			data: Object.fromEntries(response),
 		});
 	} catch (error) {
 		logger.error(error.message);

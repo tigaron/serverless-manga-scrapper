@@ -53,19 +53,28 @@ var createEntry = /*#__PURE__*/function () {
             return _dynamodb.dynamodb.send(new _clientDynamodb.PutItemCommand(params));
 
           case 5:
-            _context.next = 11;
+            _context.next = 16;
             break;
 
           case 7:
             _context.prev = 7;
             _context.t0 = _context["catch"](2);
 
-            // TODO return failed item to be recorded
             _logger["default"].debug("Put fail: ".concat(item["Provider-Type"], " | ").concat(item["Slug"]));
 
             _logger["default"].warn(_context.t0.message);
 
-          case 11:
+            if (!(_context.t0.message === "The conditional request failed")) {
+              _context.next = 15;
+              break;
+            }
+
+            return _context.abrupt("return", "Already exist in database: ".concat(item["Provider-Type"], " | ").concat(item["Slug"]));
+
+          case 15:
+            return _context.abrupt("return", "Failed to add to database: ".concat(item["Provider-Type"], " | ").concat(item["Slug"]));
+
+          case 16:
           case "end":
             return _context.stop();
         }
@@ -202,7 +211,7 @@ var updateEntry = /*#__PURE__*/function () {
 exports.updateEntry = updateEntry;
 
 var updateChapter = /*#__PURE__*/function () {
-  var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(provider, type, slug, items, title) {
+  var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(provider, type, slug, items, title, timestamp) {
     var table,
         params,
         _args4 = arguments;
@@ -210,7 +219,7 @@ var updateChapter = /*#__PURE__*/function () {
       while (1) {
         switch (_context4.prev = _context4.next) {
           case 0:
-            table = _args4.length > 5 && _args4[5] !== undefined ? _args4[5] : TABLE_MANGA;
+            table = _args4.length > 6 && _args4[6] !== undefined ? _args4[6] : TABLE_MANGA;
             params = {
               TableName: table,
               Key: {
@@ -223,7 +232,8 @@ var updateChapter = /*#__PURE__*/function () {
               },
               ExpressionAttributeNames: {
                 "#C": "Content",
-                "#T": "Title"
+                "#T": "Title",
+                "#UT": "UpdatedAt"
               },
               ExpressionAttributeValues: {
                 ":c": {
@@ -235,9 +245,12 @@ var updateChapter = /*#__PURE__*/function () {
                 },
                 ":t": {
                   S: title
+                },
+                ":ut": {
+                  S: timestamp
                 }
               },
-              UpdateExpression: "SET #C = :c, #T = :t"
+              UpdateExpression: "SET #C = :c, #T = :t, #UT = :ut"
             };
             _context4.prev = 2;
             _context4.next = 5;
@@ -263,7 +276,7 @@ var updateChapter = /*#__PURE__*/function () {
     }, _callee4, null, [[2, 7]]);
   }));
 
-  return function updateChapter(_x6, _x7, _x8, _x9, _x10) {
+  return function updateChapter(_x6, _x7, _x8, _x9, _x10, _x11) {
     return _ref4.apply(this, arguments);
   };
 }();
@@ -333,7 +346,7 @@ var getMangaList = /*#__PURE__*/function () {
     }, _callee5, null, [[2, 12]]);
   }));
 
-  return function getMangaList(_x11) {
+  return function getMangaList(_x12) {
     return _ref5.apply(this, arguments);
   };
 }();
@@ -409,7 +422,7 @@ var getChapterList = /*#__PURE__*/function () {
     }, _callee6, null, [[2, 12]]);
   }));
 
-  return function getChapterList(_x12, _x13) {
+  return function getChapterList(_x13, _x14) {
     return _ref6.apply(this, arguments);
   };
 }();
@@ -417,7 +430,7 @@ var getChapterList = /*#__PURE__*/function () {
 exports.getChapterList = getChapterList;
 
 var updateStatus = /*#__PURE__*/function () {
-  var _ref7 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee7(id, state, type, req) {
+  var _ref7 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee7(id, status, type, req, failed) {
     var table,
         item,
         params,
@@ -426,14 +439,13 @@ var updateStatus = /*#__PURE__*/function () {
       while (1) {
         switch (_context7.prev = _context7.next) {
           case 0:
-            table = _args7.length > 4 && _args7[4] !== undefined ? _args7[4] : TABLE_MANGA;
-            // TODO add new attribute for failed item
+            table = _args7.length > 5 && _args7[5] !== undefined ? _args7[5] : TABLE_MANGA;
             item = {
               "Provider-Type": "request-status",
-              Slug: "".concat(id),
-              Request: "".concat(req),
-              Type: "".concat(type),
-              State: "".concat(state)
+              Slug: id,
+              Request: "".concat(type, " | ").concat(req),
+              Status: status,
+              FailedItems: failed ? failed : []
             };
             params = {
               TableName: table,
@@ -463,7 +475,7 @@ var updateStatus = /*#__PURE__*/function () {
     }, _callee7, null, [[3, 8]]);
   }));
 
-  return function updateStatus(_x14, _x15, _x16, _x17) {
+  return function updateStatus(_x15, _x16, _x17, _x18, _x19) {
     return _ref7.apply(this, arguments);
   };
 }();
@@ -476,6 +488,8 @@ var checkStatus = /*#__PURE__*/function () {
         params,
         _yield$dynamodb$send4,
         Item,
+        unmappedItems,
+        result,
         _args8 = arguments;
 
     return _regeneratorRuntime().wrap(function _callee8$(_context8) {
@@ -510,10 +524,17 @@ var checkStatus = /*#__PURE__*/function () {
             throw new Error("Unable to find data for '".concat(id, "'"));
 
           case 9:
-            return _context8.abrupt("return", (0, _utilDynamodb.unmarshall)(Item));
+            unmappedItems = (0, _utilDynamodb.unmarshall)(Item);
+            result = new Map();
+            result.set("Provider-Type", unmappedItems["Provider-Type"]);
+            result.set("Slug", unmappedItems["Slug"]);
+            result.set("Request", unmappedItems["Request"]);
+            result.set("Status", unmappedItems["Status"]);
+            result.set("FailedItems", unmappedItems["FailedItems"]);
+            return _context8.abrupt("return", result);
 
-          case 12:
-            _context8.prev = 12;
+          case 19:
+            _context8.prev = 19;
             _context8.t0 = _context8["catch"](2);
 
             _logger["default"].debug("Get fail: request-status | ".concat(id));
@@ -522,15 +543,15 @@ var checkStatus = /*#__PURE__*/function () {
 
             return _context8.abrupt("return", _context8.t0);
 
-          case 17:
+          case 24:
           case "end":
             return _context8.stop();
         }
       }
-    }, _callee8, null, [[2, 12]]);
+    }, _callee8, null, [[2, 19]]);
   }));
 
-  return function checkStatus(_x18) {
+  return function checkStatus(_x20) {
     return _ref8.apply(this, arguments);
   };
 }();

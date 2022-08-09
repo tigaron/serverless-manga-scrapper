@@ -28,9 +28,13 @@ export const createEntry = async (item, table = TABLE_MANGA) => {
 	try {
 		await dynamodb.send(new PutItemCommand(params));
 	} catch (error) {
-		// TODO return failed item to be recorded
 		logger.debug(`Put fail: ${item["Provider-Type"]} | ${item["Slug"]}`);
 		logger.warn(error.message);
+		if (error.message === "The conditional request failed") {
+			return `Already exist in database: ${item["Provider-Type"]} | ${item["Slug"]}`;
+		} else {
+			return `Failed to add to database: ${item["Provider-Type"]} | ${item["Slug"]}`;
+		}
 	}
 };
 
@@ -44,7 +48,7 @@ export const getEntry = async (provider, type, slug, table = TABLE_MANGA) => {
 	};
 	try {
 		const { Item } = await dynamodb.send(new GetItemCommand(params));
-		
+
 		if (Item == undefined) throw new Error(`Unable to find data for '${slug}'`);
 
 		return unmarshall(Item);
@@ -83,6 +87,7 @@ export const updateChapter = async (
 	slug,
 	items,
 	title,
+	timestamp,
 	table = TABLE_MANGA
 ) => {
 	const params = {
@@ -94,14 +99,16 @@ export const updateChapter = async (
 		ExpressionAttributeNames: {
 			"#C": "Content",
 			"#T": "Title",
+			"#UT": "UpdatedAt",
 		},
 		ExpressionAttributeValues: {
 			":c": {
 				L: items.map((item) => ({ S: item })),
 			},
 			":t": { S: title },
+			":ut": { S: timestamp },
 		},
-		UpdateExpression: "SET #C = :c, #T = :t",
+		UpdateExpression: "SET #C = :c, #T = :t, #UT = :ut",
 	};
 	try {
 		await dynamodb.send(new UpdateItemCommand(params));
@@ -125,7 +132,8 @@ export const getMangaList = async (provider, table = TABLE_MANGA) => {
 	try {
 		const { Items } = await dynamodb.send(new QueryCommand(params));
 
-		if (Items == undefined) throw new Error(`Unable to find data for '${provider}'`);
+		if (Items == undefined)
+			throw new Error(`Unable to find data for '${provider}'`);
 
 		return Items.map((item) => unmarshall(item));
 	} catch (error) {
@@ -153,7 +161,8 @@ export const getChapterList = async (provider, slug, table = TABLE_MANGA) => {
 	try {
 		const { Items } = await dynamodb.send(new QueryCommand(params));
 
-		if (Items == undefined) throw new Error(`Unable to find data for '${slug}'`);
+		if (Items == undefined)
+			throw new Error(`Unable to find data for '${slug}'`);
 
 		return Items.map((item) => unmarshall(item));
 	} catch (error) {
@@ -163,14 +172,20 @@ export const getChapterList = async (provider, slug, table = TABLE_MANGA) => {
 	}
 };
 
-export const updateStatus = async (id, state, type, req, table = TABLE_MANGA) => {
-	// TODO add new attribute for failed item
+export const updateStatus = async (
+	id,
+	status,
+	type,
+	req,
+	failed,
+	table = TABLE_MANGA
+) => {
 	const item = {
-		"Provider-Type": `request-status`,
-		Slug: `${id}`,
-		Request: `${req}`,
-		Type: `${type}`,
-		State: `${state}`,
+		"Provider-Type": "request-status",
+		Slug: id,
+		Request: `${type} | ${req}`,
+		Status: status,
+		FailedItems: failed ? failed : [],
 	};
 	const params = {
 		TableName: table,
@@ -197,7 +212,14 @@ export const checkStatus = async (id, table = TABLE_MANGA) => {
 
 		if (Item == undefined) throw new Error(`Unable to find data for '${id}'`);
 
-		return unmarshall(Item);
+		const unmappedItems = unmarshall(Item);
+		const result = new Map();
+		result.set("Provider-Type", unmappedItems["Provider-Type"]);
+		result.set("Slug", unmappedItems["Slug"]);
+		result.set("Request", unmappedItems["Request"]);
+		result.set("Status", unmappedItems["Status"]);
+		result.set("FailedItems", unmappedItems["FailedItems"]);
+		return result;
 	} catch (error) {
 		logger.debug(`Get fail: request-status | ${id}`);
 		logger.warn(error.message);

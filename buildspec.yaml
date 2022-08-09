@@ -1,0 +1,15 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 16
+    commands:
+      - rm package-lock.json
+      - npm install --silent --progress=false -g npm
+      - npm install --silent --progress=false -g serverless
+      - npm install --silent --progress=false
+      - npm --version
+  build:
+    commands:
+      - serverless deploy --stage production --verbose

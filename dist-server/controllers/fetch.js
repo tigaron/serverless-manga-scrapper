@@ -50,7 +50,7 @@ var fetchStatus = /*#__PURE__*/function () {
             return _context.abrupt("return", res.status(200).json({
               statusCode: 200,
               statusText: "OK",
-              data: response
+              data: Object.fromEntries(response)
             }));
 
           case 10:

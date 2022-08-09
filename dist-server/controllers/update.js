@@ -32,7 +32,7 @@ function AsyncFromSyncIterator(s) { function AsyncFromSyncIteratorContinuation(r
 var updateData = function updateData(type) {
   return /*#__PURE__*/function () {
     var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(req, res) {
-      var _req$body, source, slug, url, response, requestId, _iteratorAbruptCompletion, _didIteratorError, _iteratorError, _iterator, _step, item, _iteratorAbruptCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, _item;
+      var _req$body, source, slug, url, response, requestId, timestamp, failedItems, result, _iteratorAbruptCompletion, _didIteratorError, _iteratorError, _iterator, _step, item, _iteratorAbruptCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, _item;
 
       return _regeneratorRuntime().wrap(function _callee$(_context) {
         while (1) {
@@ -68,181 +68,200 @@ var updateData = function updateData(type) {
                 statusText: "Processing data ...",
                 requestId: requestId
               });
+              timestamp = new Date();
+              failedItems = [];
               _context.t0 = type;
-              _context.next = _context.t0 === "list" ? 15 : _context.t0 === "manga" ? 45 : _context.t0 === "chapter" ? 77 : 80;
+              _context.next = _context.t0 === "list" ? 17 : _context.t0 === "manga" ? 49 : _context.t0 === "chapter" ? 85 : 90;
               break;
 
-            case 15:
+            case 17:
               _iteratorAbruptCompletion = false;
               _didIteratorError = false;
-              _context.prev = 17;
+              _context.prev = 19;
               _iterator = _asyncIterator(response);
 
-            case 19:
-              _context.next = 21;
+            case 21:
+              _context.next = 23;
               return _iterator.next();
 
-            case 21:
+            case 23:
               if (!(_iteratorAbruptCompletion = !(_step = _context.sent).done)) {
-                _context.next = 28;
+                _context.next = 32;
                 break;
               }
 
               item = _step.value;
-              _context.next = 25;
+              _context.next = 27;
               return _dbqueries.dbService.updateEntry({
                 "Provider-Type": "".concat(source, "-").concat(type),
                 Slug: "".concat(item.Slug),
                 Title: "".concat(item.Title),
-                Url: "".concat(item.Url)
+                Url: "".concat(item.Url),
+                UpdatedAt: "".concat(timestamp.toUTCString())
               });
 
-            case 25:
+            case 27:
+              result = _context.sent;
+              if (result) failedItems.push(result);
+
+            case 29:
               _iteratorAbruptCompletion = false;
-              _context.next = 19;
+              _context.next = 21;
               break;
 
-            case 28:
-              _context.next = 34;
+            case 32:
+              _context.next = 38;
               break;
-
-            case 30:
-              _context.prev = 30;
-              _context.t1 = _context["catch"](17);
-              _didIteratorError = true;
-              _iteratorError = _context.t1;
 
             case 34:
               _context.prev = 34;
-              _context.prev = 35;
+              _context.t1 = _context["catch"](19);
+              _didIteratorError = true;
+              _iteratorError = _context.t1;
+
+            case 38:
+              _context.prev = 38;
+              _context.prev = 39;
 
               if (!(_iteratorAbruptCompletion && _iterator["return"] != null)) {
-                _context.next = 39;
+                _context.next = 43;
                 break;
               }
 
-              _context.next = 39;
+              _context.next = 43;
               return _iterator["return"]();
 
-            case 39:
-              _context.prev = 39;
+            case 43:
+              _context.prev = 43;
 
               if (!_didIteratorError) {
-                _context.next = 42;
+                _context.next = 46;
                 break;
               }
 
               throw _iteratorError;
 
-            case 42:
-              return _context.finish(39);
+            case 46:
+              return _context.finish(43);
 
-            case 43:
-              return _context.finish(34);
+            case 47:
+              return _context.finish(38);
 
-            case 44:
-              return _context.abrupt("break", 80);
+            case 48:
+              return _context.abrupt("break", 90);
 
-            case 45:
-              _context.next = 47;
+            case 49:
+              _context.next = 51;
               return _dbqueries.dbService.updateEntry({
                 "Provider-Type": "".concat(source, "-").concat(type),
                 Slug: "".concat(slug),
                 Title: "".concat(response.Title),
                 Cover: "".concat(response.Cover),
-                Synopsis: "".concat(response.Synopsis)
+                Synopsis: "".concat(response.Synopsis),
+                UpdatedAt: "".concat(timestamp.toUTCString())
               });
 
-            case 47:
+            case 51:
+              result = _context.sent;
+              if (result) failedItems.push(result);
               _iteratorAbruptCompletion2 = false;
               _didIteratorError2 = false;
-              _context.prev = 49;
+              _context.prev = 55;
               _iterator2 = _asyncIterator(response.Chapters);
 
-            case 51:
-              _context.next = 53;
+            case 57:
+              _context.next = 59;
               return _iterator2.next();
 
-            case 53:
+            case 59:
               if (!(_iteratorAbruptCompletion2 = !(_step2 = _context.sent).done)) {
-                _context.next = 60;
+                _context.next = 68;
                 break;
               }
 
               _item = _step2.value;
-              _context.next = 57;
+              _context.next = 63;
               return _dbqueries.dbService.updateEntry({
                 "Provider-Type": "".concat(source, "-chapter"),
                 Slug: "".concat(_item.Slug),
                 Title: "".concat(_item.Title),
                 Url: "".concat(_item.Url),
                 MangaSlug: "".concat(slug),
-                MangaTitle: "".concat(response.Title)
+                MangaTitle: "".concat(response.Title),
+                UpdatedAt: "".concat(timestamp.toUTCString())
               });
 
-            case 57:
+            case 63:
+              result = _context.sent;
+              if (result) failedItems.push(result);
+
+            case 65:
               _iteratorAbruptCompletion2 = false;
-              _context.next = 51;
+              _context.next = 57;
               break;
 
-            case 60:
-              _context.next = 66;
+            case 68:
+              _context.next = 74;
               break;
 
-            case 62:
-              _context.prev = 62;
-              _context.t2 = _context["catch"](49);
+            case 70:
+              _context.prev = 70;
+              _context.t2 = _context["catch"](55);
               _didIteratorError2 = true;
               _iteratorError2 = _context.t2;
 
-            case 66:
-              _context.prev = 66;
-              _context.prev = 67;
+            case 74:
+              _context.prev = 74;
+              _context.prev = 75;
 
               if (!(_iteratorAbruptCompletion2 && _iterator2["return"] != null)) {
-                _context.next = 71;
+                _context.next = 79;
                 break;
               }
 
-              _context.next = 71;
+              _context.next = 79;
               return _iterator2["return"]();
 
-            case 71:
-              _context.prev = 71;
+            case 79:
+              _context.prev = 79;
 
               if (!_didIteratorError2) {
-                _context.next = 74;
+                _context.next = 82;
                 break;
               }
 
               throw _iteratorError2;
 
-            case 74:
-              return _context.finish(71);
-
-            case 75:
-              return _context.finish(66);
-
-            case 76:
-              return _context.abrupt("break", 80);
-
-            case 77:
-              _context.next = 79;
-              return _dbqueries.dbService.updateChapter(source, type, slug, response.Content, response.Title);
-
-            case 79:
-              return _context.abrupt("break", 80);
-
-            case 80:
-              _context.next = 82;
-              return _dbqueries.dbService.updateStatus(requestId, "completed", "".concat(source, "-").concat(type), slug);
-
             case 82:
-              _context.next = 88;
-              break;
+              return _context.finish(79);
+
+            case 83:
+              return _context.finish(74);
 
             case 84:
-              _context.prev = 84;
+              return _context.abrupt("break", 90);
+
+            case 85:
+              _context.next = 87;
+              return _dbqueries.dbService.updateChapter(source, type, slug, response.Content, response.Title, timestamp.toUTCString());
+
+            case 87:
+              result = _context.sent;
+              if (result) failedItems.push(result);
+              return _context.abrupt("break", 90);
+
+            case 90:
+              _context.next = 92;
+              return _dbqueries.dbService.updateStatus(requestId, "completed", "".concat(source, "-").concat(type), slug, failedItems.filter(function (item) {
+                return item;
+              }));
+
+            case 92:
+              _context.next = 98;
+              break;
+
+            case 94:
+              _context.prev = 94;
               _context.t3 = _context["catch"](2);
 
               _logger["default"].error(_context.t3.message);
@@ -252,12 +271,12 @@ var updateData = function updateData(type) {
                 statusText: _context.t3.message
               }));
 
-            case 88:
+            case 98:
             case "end":
               return _context.stop();
           }
         }
-      }, _callee, null, [[2, 84], [17, 30, 34, 44], [35,, 39, 43], [49, 62, 66, 76], [67,, 71, 75]]);
+      }, _callee, null, [[2, 94], [19, 34, 38, 48], [39,, 43, 47], [55, 70, 74, 84], [75,, 79, 83]]);
     }));
 
     return function (_x, _x2) {

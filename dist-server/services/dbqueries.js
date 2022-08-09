@@ -184,7 +184,7 @@ var updateEntry = /*#__PURE__*/function () {
             return _dynamodb.dynamodb.send(new _clientDynamodb.PutItemCommand(params));
 
           case 5:
-            _context3.next = 11;
+            _context3.next = 12;
             break;
 
           case 7:
@@ -195,7 +195,9 @@ var updateEntry = /*#__PURE__*/function () {
 
             _logger["default"].warn(_context3.t0.message);
 
-          case 11:
+            return _context3.abrupt("return", "Failed to update database entry: ".concat(item["Provider-Type"], " | ").concat(item["Slug"]));
+
+          case 12:
           case "end":
             return _context3.stop();
         }

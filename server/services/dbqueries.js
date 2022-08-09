@@ -78,6 +78,7 @@ export const updateEntry = async (item, table = TABLE_MANGA) => {
 	} catch (error) {
 		logger.debug(`Put fail: ${item["Provider-Type"]} | ${item["Slug"]}`);
 		logger.warn(error.message);
+		return `Failed to update database entry: ${item["Provider-Type"]} | ${item["Slug"]}`;
 	}
 };
 

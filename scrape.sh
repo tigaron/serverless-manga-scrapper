@@ -38,7 +38,7 @@ postChapter() {
 		--data '{ "source": "'$1'", "slug": "'$2'" }'
 }
 
-scrapeMangaList() {
+scrapeMangaData() {
 	mapfile -t sourceList < <(fetchList | jq -r ".data[]")
 	for x in "${!sourceList[@]}"; do
 		postList "${sourceList[${x}]}"
@@ -47,15 +47,6 @@ scrapeMangaList() {
 		for y in "${!mangaList[@]}"; do
 			postManga "${sourceList[x]}" "${mangaList[${y}]}"
 			echo
-		done
-	done
-}
-
-scrapeAllChapters() {
-	mapfile -t sourceList < <(fetchList | jq -r ".data[]")
-	for x in "${!sourceList[@]}"; do
-		mapfile -t mangaList < <(fetchMangaList "${sourceList[x]}" | jq -r ".data[].Slug")
-		for y in "${!mangaList[@]}"; do
 			mapfile -t chapterList < <(fetchChapterList "${sourceList[x]}" "${mangaList[${y}]}" | jq -r ".data[].Slug")
 			for z in "${!chapterList[@]}"; do
 				postChapter "${sourceList[x]}" "${chapterList[${z}]}"
@@ -65,4 +56,4 @@ scrapeAllChapters() {
 	done
 }
 
-scrapeAllChapters
+scrapeMangaData

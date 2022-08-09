@@ -4,6 +4,7 @@ import { scraper } from "../services/scraper";
 import { sourceList } from "../utils/provider";
 import logger from "../services/logger";
 
+// TODO modify post behaviour to check existing database first before scraping to save resources
 export const scrapeData = (type) => {
 	return async (req, res) => {
 		const { source, slug } = req.body;
@@ -31,7 +32,9 @@ export const scrapeData = (type) => {
 
 			res.status(202).json({
 				statusCode: 202,
-				statusText: "Processing data ...",
+				statusText: slug
+					? `Processing data for ${source}-${type} | ${slug}`
+					: `Processing data for ${source}-${type}`,
 				requestId: requestId,
 			});
 
@@ -100,7 +103,7 @@ export const scrapeData = (type) => {
 				"completed",
 				`${source}-${type}`,
 				slug,
-				failedItems.filter(item => item)
+				failedItems.filter((item) => item)
 			);
 		} catch (error) {
 			logger.error(error.message);

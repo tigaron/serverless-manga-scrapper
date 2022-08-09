@@ -183,7 +183,7 @@ export const updateStatus = async (
 	const item = {
 		"Provider-Type": "request-status",
 		Slug: id,
-		Request: `${type} | ${req}`,
+		Request: req ? `${type} | ${req}` : `${type}`,
 		Status: status,
 		FailedItems: failed ? failed : [],
 	};

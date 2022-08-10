@@ -78,7 +78,7 @@ var convertImg = /*#__PURE__*/function () {
 
           case 20:
             if (!(_iteratorAbruptCompletion = !(_step = _context.sent).done)) {
-              _context.next = 30;
+              _context.next = 29;
               break;
             }
 
@@ -88,79 +88,71 @@ var convertImg = /*#__PURE__*/function () {
 
           case 24:
             newUrl = _context.sent;
-
-            _logger["default"].debug(newUrl);
-
             convertResult.push(newUrl);
 
-          case 27:
+          case 26:
             _iteratorAbruptCompletion = false;
             _context.next = 18;
             break;
 
-          case 30:
-            _context.next = 36;
+          case 29:
+            _context.next = 35;
             break;
 
-          case 32:
-            _context.prev = 32;
+          case 31:
+            _context.prev = 31;
             _context.t0 = _context["catch"](16);
             _didIteratorError = true;
             _iteratorError = _context.t0;
 
-          case 36:
+          case 35:
+            _context.prev = 35;
             _context.prev = 36;
-            _context.prev = 37;
 
             if (!(_iteratorAbruptCompletion && _iterator["return"] != null)) {
-              _context.next = 41;
+              _context.next = 40;
               break;
             }
 
-            _context.next = 41;
+            _context.next = 40;
             return _iterator["return"]();
 
-          case 41:
-            _context.prev = 41;
+          case 40:
+            _context.prev = 40;
 
             if (!_didIteratorError) {
-              _context.next = 44;
+              _context.next = 43;
               break;
             }
 
             throw _iteratorError;
 
+          case 43:
+            return _context.finish(40);
+
           case 44:
-            return _context.finish(41);
+            return _context.finish(35);
 
           case 45:
-            return _context.finish(36);
-
-          case 46:
-            _logger["default"].debug(convertResult);
-
             timestamp = new Date();
             failedItems = [];
-            _context.next = 51;
+            _context.next = 49;
             return _db["default"].updateContent(source, slug, convertResult, timestamp.toUTCString());
 
-          case 51:
+          case 49:
             result = _context.sent;
-
-            _logger["default"].debug(result);
-
             if (result) failedItems.push(result);
-            _context.next = 56;
+            _context.next = 53;
             return _db["default"].updateStatus(requestId, "completed", "".concat(source, "-chapter"), slug, failedItems.filter(function (item) {
               return item;
             }));
 
-          case 56:
-            _context.next = 62;
+          case 53:
+            _context.next = 59;
             break;
 
-          case 58:
-            _context.prev = 58;
+          case 55:
+            _context.prev = 55;
             _context.t1 = _context["catch"](1);
 
             _logger["default"].error(_context.t1.message);
@@ -170,12 +162,12 @@ var convertImg = /*#__PURE__*/function () {
               statusText: _context.t1.message
             }));
 
-          case 62:
+          case 59:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee, null, [[1, 58], [16, 32, 36, 46], [37,, 41, 45]]);
+    }, _callee, null, [[1, 55], [16, 31, 35, 45], [36,, 40, 44]]);
   }));
 
   return function convertImg(_x, _x2) {

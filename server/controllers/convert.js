@@ -27,10 +27,8 @@ export const convertImg = async (req, res) => {
 		const convertResult = [];
 		for await (const item of imgUrl) {
 			const newUrl = await imgConverter(source, slug, MangaSlug, item);
-		logger.debug(newUrl);
-		convertResult.push(newUrl);
+			convertResult.push(newUrl);
 		}
-		logger.debug(convertResult);
 		const timestamp = new Date();
 		let failedItems = [];
 		const result = await db.updateContent(
@@ -39,7 +37,6 @@ export const convertImg = async (req, res) => {
 			convertResult,
 			timestamp.toUTCString()
 		);
-		logger.debug(result);
 
 		if (result) failedItems.push(result);
 

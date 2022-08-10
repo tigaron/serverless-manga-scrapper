@@ -91,7 +91,6 @@ const updateContent = async (
 		UpdateExpression: "SET #C = :c, #UT = :ut",
 	};
 	try {
-		logger.debug(params);
 		await dbclient.send(new UpdateItemCommand(params));
 	} catch (error) {
 		logger.debug(`Update fail: ${provider}-${type} | ${slug}`);

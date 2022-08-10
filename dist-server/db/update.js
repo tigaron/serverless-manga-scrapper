@@ -193,30 +193,27 @@ var updateContent = /*#__PURE__*/function () {
               UpdateExpression: "SET #C = :c, #UT = :ut"
             };
             _context3.prev = 2;
-
-            _logger["default"].debug(params);
-
-            _context3.next = 6;
+            _context3.next = 5;
             return _configs.dbclient.send(new _clientDynamodb.UpdateItemCommand(params));
 
-          case 6:
-            _context3.next = 12;
+          case 5:
+            _context3.next = 11;
             break;
 
-          case 8:
-            _context3.prev = 8;
+          case 7:
+            _context3.prev = 7;
             _context3.t0 = _context3["catch"](2);
 
             _logger["default"].debug("Update fail: ".concat(provider, "-").concat(type, " | ").concat(slug));
 
             _logger["default"].debug(_context3.t0.message);
 
-          case 12:
+          case 11:
           case "end":
             return _context3.stop();
         }
       }
-    }, _callee3, null, [[2, 8]]);
+    }, _callee3, null, [[2, 7]]);
   }));
 
   return function updateContent(_x8, _x9, _x10, _x11) {

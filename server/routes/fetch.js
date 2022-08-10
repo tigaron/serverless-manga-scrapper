@@ -8,7 +8,7 @@ router.get("/", (req, res) => res.redirect(301, "/fetch/list"));
 router.route("/status/:id").get(fetchStatus);
 
 router.route("/list").get(fetchSourceList);
-// TODO 404 if no data in database
+
 router.route("/list/:source").get(validateSource, fetchData("list"));
 
 router.route("/manga/:source/:slug").get(validateSource, fetchData("manga"));

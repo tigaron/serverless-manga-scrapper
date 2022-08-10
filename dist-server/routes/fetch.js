@@ -19,8 +19,7 @@ router.get("/", function (req, res) {
   return res.redirect(301, "/fetch/list");
 });
 router.route("/status/:id").get(_fetch.fetchStatus);
-router.route("/list").get(_fetch.fetchSourceList); // TODO 404 if no data in database
-
+router.route("/list").get(_fetch.fetchSourceList);
 router.route("/list/:source").get(_validateRequest.validateSource, (0, _fetch.fetchData)("list"));
 router.route("/manga/:source/:slug").get(_validateRequest.validateSource, (0, _fetch.fetchData)("manga"));
 router.route("/chapters/:source/:slug").get(_validateRequest.validateSource, (0, _fetch.fetchData)("chapters"));

@@ -7,7 +7,7 @@ export const fetchStatus = async (req, res) => {
 		const { id } = req.params;
 		const response = await dbService.checkStatus(id);
 
-		if (response.message)
+		if (response.message || !response.data)
 			return res.status(404).json({
 				statusCode: 404,
 				statusText: response.message,
@@ -55,7 +55,7 @@ export const fetchData = (type) => {
 					break;
 			}
 
-			if (response.message)
+			if (response.message || !response.data)
 				return res.status(404).json({
 					statusCode: 404,
 					statusText: response.message,

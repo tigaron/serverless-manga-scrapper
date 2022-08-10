@@ -36,7 +36,7 @@ var fetchStatus = /*#__PURE__*/function () {
           case 4:
             response = _context.sent;
 
-            if (!response.message) {
+            if (!(response.message || !response.data)) {
               _context.next = 7;
               break;
             }
@@ -129,7 +129,7 @@ var fetchData = function fetchData(type) {
               return _context2.abrupt("break", 17);
 
             case 17:
-              if (!response.message) {
+              if (!(response.message || !response.data)) {
                 _context2.next = 19;
                 break;
               }

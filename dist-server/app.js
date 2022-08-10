@@ -19,6 +19,8 @@ var _scrape = _interopRequireDefault(require("./routes/scrape"));
 
 var _update = _interopRequireDefault(require("./routes/update"));
 
+var _convert = _interopRequireDefault(require("./routes/convert"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 var app = (0, _express["default"])();
@@ -33,5 +35,6 @@ app.use("/", _index["default"]);
 app.use("/fetch", _fetch["default"]);
 app.use("/scrape", _scrape["default"]);
 app.use("/update", _update["default"]);
+app.use("/convert", _convert["default"]);
 var _default = app;
 exports["default"] = _default;

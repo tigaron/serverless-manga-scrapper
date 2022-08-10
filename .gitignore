@@ -5,3 +5,4 @@ logs
 node_modules
 .env
 data.json
+serverless.yml

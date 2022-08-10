@@ -6,6 +6,7 @@ import indexRouter from "./routes/index";
 import fetchRouter from "./routes/fetch";
 import scrapeRouter from "./routes/scrape";
 import updateRouter from "./routes/update";
+import convertRouter from "./routes/convert";
 
 var app = express();
 
@@ -19,5 +20,6 @@ app.use("/", indexRouter);
 app.use("/fetch", fetchRouter);
 app.use("/scrape", scrapeRouter);
 app.use("/update", updateRouter);
+app.use("/convert", convertRouter);
 
 export default app;

@@ -36,14 +36,14 @@ var fetchStatus = /*#__PURE__*/function () {
           case 4:
             response = _context.sent;
 
-            if (!(response.message || !response.data)) {
+            if (!(response.message || Array.isArray(response) && response.length === 0 || response.constructor === Object && Object.keys(response).length === 0)) {
               _context.next = 7;
               break;
             }
 
             return _context.abrupt("return", res.status(404).json({
               statusCode: 404,
-              statusText: response.message
+              statusText: response.message ? response.message : "Unable to find data for '".concat(slug, "'")
             }));
 
           case 7:
@@ -129,14 +129,14 @@ var fetchData = function fetchData(type) {
               return _context2.abrupt("break", 17);
 
             case 17:
-              if (!(response.message || !response.data)) {
+              if (!(response.message || Array.isArray(response) && response.length === 0 || response.constructor === Object && Object.keys(response).length === 0)) {
                 _context2.next = 19;
                 break;
               }
 
               return _context2.abrupt("return", res.status(404).json({
                 statusCode: 404,
-                statusText: response.message
+                statusText: response.message ? response.message : "Unable to find data for '".concat(slug, "'")
               }));
 
             case 19:

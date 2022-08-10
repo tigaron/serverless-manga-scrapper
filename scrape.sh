@@ -56,4 +56,13 @@ scrapeMangaData() {
 	done
 }
 
-scrapeMangaData
+scrapeSpecificManga() {
+	postManga "luminous" "series+avant-garde-covert-agent"
+	echo
+			mapfile -t chapterList < <(fetchChapterList "luminous" "series+avant-garde-covert-agent" | jq -r ".data[].Slug")
+			for z in "${!chapterList[@]}"; do
+				postChapter "luminous" "${chapterList[${z}]}"
+				echo
+			done
+}
+scrapeSpecificManga

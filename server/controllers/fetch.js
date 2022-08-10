@@ -7,10 +7,16 @@ export const fetchStatus = async (req, res) => {
 		const { id } = req.params;
 		const response = await dbService.checkStatus(id);
 
-		if (response.message || !response.data)
+		if (
+			response.message ||
+			(Array.isArray(response) && response.length === 0) ||
+			(response.constructor === Object && Object.keys(response).length === 0)
+		)
 			return res.status(404).json({
 				statusCode: 404,
-				statusText: response.message,
+				statusText: response.message
+					? response.message
+					: `Unable to find data for '${slug}'`,
 			});
 
 		return res.status(200).json({
@@ -55,10 +61,16 @@ export const fetchData = (type) => {
 					break;
 			}
 
-			if (response.message || !response.data)
+			if (
+				response.message ||
+				(Array.isArray(response) && response.length === 0) ||
+				(response.constructor === Object && Object.keys(response).length === 0)
+			)
 				return res.status(404).json({
 					statusCode: 404,
-					statusText: response.message,
+					statusText: response.message
+						? response.message
+						: `Unable to find data for '${slug}'`,
 				});
 
 			return res.status(200).json({

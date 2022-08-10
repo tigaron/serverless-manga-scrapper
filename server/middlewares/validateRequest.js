@@ -1,4 +1,4 @@
-import { sourceList } from "../utils/provider";
+import sourceList from "../utils";
 
 export const validateSource = (req, res, next) => {
 	const { source } = req.params;
@@ -24,8 +24,8 @@ export const validateBody = (type) => {
 		const { source, slug } = req.body;
 
 		if (!sourceList.has(source))
-			return res.status(400).json({
-				statusCode: 400,
+			return res.status(404).json({
+				statusCode: 404,
 				statusText: `Unknown source: '${source}'`,
 			});
 

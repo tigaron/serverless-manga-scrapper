@@ -5,15 +5,15 @@ function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" =
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.updateStatus = exports.updateEntry = exports.updateChapter = exports.getMangaList = exports.getEntry = exports.getChapterList = exports.dbService = exports.createEntry = exports.checkStatus = void 0;
-
-var _logger = _interopRequireDefault(require("./logger"));
-
-var _dynamodb = require("../configs/dynamodb");
+exports.getStatus = exports.getMangaList = exports.getEntry = exports.getChapterList = void 0;
 
 var _clientDynamodb = require("@aws-sdk/client-dynamodb");
 
 var _utilDynamodb = require("@aws-sdk/util-dynamodb");
+
+var _configs = require("../configs");
+
+var _logger = _interopRequireDefault(require("../services/logger"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -25,85 +25,21 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
 var TABLE_MANGA = process.env.TABLE_MANGA;
 
-var createEntry = /*#__PURE__*/function () {
-  var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(item) {
-    var table,
+var getEntry = /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(provider, type, slug) {
+    var tableName,
         params,
+        _yield$dbclient$send,
+        Item,
         _args = arguments;
+
     return _regeneratorRuntime().wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            table = _args.length > 1 && _args[1] !== undefined ? _args[1] : TABLE_MANGA;
+            tableName = _args.length > 3 && _args[3] !== undefined ? _args[3] : TABLE_MANGA;
             params = {
-              TableName: table,
-              Item: (0, _utilDynamodb.marshall)(item),
-              ExpressionAttributeNames: {
-                "#PT": "Provider-Type",
-                "#S": "Slug"
-              },
-              ExpressionAttributeValues: {
-                ":pt": (0, _utilDynamodb.marshall)(item["Provider-Type"]),
-                ":s": (0, _utilDynamodb.marshall)(item["Slug"])
-              },
-              ConditionExpression: "(NOT #PT = :pt) AND (NOT #S = :s)"
-            };
-            _context.prev = 2;
-            _context.next = 5;
-            return _dynamodb.dynamodb.send(new _clientDynamodb.PutItemCommand(params));
-
-          case 5:
-            _context.next = 16;
-            break;
-
-          case 7:
-            _context.prev = 7;
-            _context.t0 = _context["catch"](2);
-
-            _logger["default"].debug("Put fail: ".concat(item["Provider-Type"], " | ").concat(item["Slug"]));
-
-            _logger["default"].warn(_context.t0.message);
-
-            if (!(_context.t0.message === "The conditional request failed")) {
-              _context.next = 15;
-              break;
-            }
-
-            return _context.abrupt("return", "Already exist in database: ".concat(item["Provider-Type"], " | ").concat(item["Slug"]));
-
-          case 15:
-            return _context.abrupt("return", "Failed to add to database: ".concat(item["Provider-Type"], " | ").concat(item["Slug"]));
-
-          case 16:
-          case "end":
-            return _context.stop();
-        }
-      }
-    }, _callee, null, [[2, 7]]);
-  }));
-
-  return function createEntry(_x) {
-    return _ref.apply(this, arguments);
-  };
-}();
-
-exports.createEntry = createEntry;
-
-var getEntry = /*#__PURE__*/function () {
-  var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(provider, type, slug) {
-    var table,
-        params,
-        _yield$dynamodb$send,
-        Item,
-        _args2 = arguments;
-
-    return _regeneratorRuntime().wrap(function _callee2$(_context2) {
-      while (1) {
-        switch (_context2.prev = _context2.next) {
-          case 0:
-            table = _args2.length > 3 && _args2[3] !== undefined ? _args2[3] : TABLE_MANGA;
-            params = {
-              TableName: table,
+              TableName: tableName,
               Key: {
                 "Provider-Type": {
                   S: "".concat(provider, "-").concat(type)
@@ -113,31 +49,101 @@ var getEntry = /*#__PURE__*/function () {
                 }
               }
             };
-            _context2.prev = 2;
-            _context2.next = 5;
-            return _dynamodb.dynamodb.send(new _clientDynamodb.GetItemCommand(params));
+            _context.prev = 2;
+            _context.next = 5;
+            return _configs.dbclient.send(new _clientDynamodb.GetItemCommand(params));
 
           case 5:
-            _yield$dynamodb$send = _context2.sent;
-            Item = _yield$dynamodb$send.Item;
+            _yield$dbclient$send = _context.sent;
+            Item = _yield$dbclient$send.Item;
 
             if (!(Item == undefined)) {
-              _context2.next = 9;
+              _context.next = 9;
               break;
             }
 
             throw new Error("Unable to find data for '".concat(slug, "'"));
 
           case 9:
-            return _context2.abrupt("return", (0, _utilDynamodb.unmarshall)(Item));
+            return _context.abrupt("return", (0, _utilDynamodb.unmarshall)(Item));
+
+          case 12:
+            _context.prev = 12;
+            _context.t0 = _context["catch"](2);
+
+            _logger["default"].debug("Get fail: ".concat(provider, "-").concat(type, " | ").concat(slug));
+
+            _logger["default"].debug(_context.t0.message);
+
+            return _context.abrupt("return", _context.t0);
+
+          case 17:
+          case "end":
+            return _context.stop();
+        }
+      }
+    }, _callee, null, [[2, 12]]);
+  }));
+
+  return function getEntry(_x, _x2, _x3) {
+    return _ref.apply(this, arguments);
+  };
+}();
+
+exports.getEntry = getEntry;
+
+var getMangaList = /*#__PURE__*/function () {
+  var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(provider) {
+    var tableName,
+        params,
+        _yield$dbclient$send2,
+        Items,
+        _args2 = arguments;
+
+    return _regeneratorRuntime().wrap(function _callee2$(_context2) {
+      while (1) {
+        switch (_context2.prev = _context2.next) {
+          case 0:
+            tableName = _args2.length > 1 && _args2[1] !== undefined ? _args2[1] : TABLE_MANGA;
+            params = {
+              TableName: tableName,
+              ExpressionAttributeNames: {
+                "#PT": "Provider-Type"
+              },
+              ExpressionAttributeValues: {
+                ":pt": {
+                  S: "".concat(provider, "-list")
+                }
+              },
+              KeyConditionExpression: "#PT = :pt"
+            };
+            _context2.prev = 2;
+            _context2.next = 5;
+            return _configs.dbclient.send(new _clientDynamodb.QueryCommand(params));
+
+          case 5:
+            _yield$dbclient$send2 = _context2.sent;
+            Items = _yield$dbclient$send2.Items;
+
+            if (!(Items == undefined)) {
+              _context2.next = 9;
+              break;
+            }
+
+            throw new Error("Unable to find data for '".concat(provider, "'"));
+
+          case 9:
+            return _context2.abrupt("return", Items.map(function (item) {
+              return (0, _utilDynamodb.unmarshall)(item);
+            }));
 
           case 12:
             _context2.prev = 12;
             _context2.t0 = _context2["catch"](2);
 
-            _logger["default"].debug("Get fail: ".concat(provider, "-").concat(type, " | ").concat(slug));
+            _logger["default"].debug("Query fail: ".concat(provider, "-list"));
 
-            _logger["default"].warn(_context2.t0.message);
+            _logger["default"].debug(_context2.t0.message);
 
             return _context2.abrupt("return", _context2.t0);
 
@@ -149,227 +155,28 @@ var getEntry = /*#__PURE__*/function () {
     }, _callee2, null, [[2, 12]]);
   }));
 
-  return function getEntry(_x2, _x3, _x4) {
+  return function getMangaList(_x4) {
     return _ref2.apply(this, arguments);
-  };
-}();
-
-exports.getEntry = getEntry;
-
-var updateEntry = /*#__PURE__*/function () {
-  var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3(item) {
-    var table,
-        params,
-        _args3 = arguments;
-    return _regeneratorRuntime().wrap(function _callee3$(_context3) {
-      while (1) {
-        switch (_context3.prev = _context3.next) {
-          case 0:
-            table = _args3.length > 1 && _args3[1] !== undefined ? _args3[1] : TABLE_MANGA;
-            params = {
-              TableName: table,
-              Item: (0, _utilDynamodb.marshall)(item),
-              ExpressionAttributeNames: {
-                "#PT": "Provider-Type",
-                "#S": "Slug"
-              },
-              ExpressionAttributeValues: {
-                ":pt": (0, _utilDynamodb.marshall)(item["Provider-Type"]),
-                ":s": (0, _utilDynamodb.marshall)(item["Slug"])
-              },
-              ConditionExpression: "#PT = :pt AND #S = :s"
-            };
-            _context3.prev = 2;
-            _context3.next = 5;
-            return _dynamodb.dynamodb.send(new _clientDynamodb.PutItemCommand(params));
-
-          case 5:
-            _context3.next = 12;
-            break;
-
-          case 7:
-            _context3.prev = 7;
-            _context3.t0 = _context3["catch"](2);
-
-            _logger["default"].debug("Put fail: ".concat(item["Provider-Type"], " | ").concat(item["Slug"]));
-
-            _logger["default"].warn(_context3.t0.message);
-
-            return _context3.abrupt("return", "Failed to update database entry: ".concat(item["Provider-Type"], " | ").concat(item["Slug"]));
-
-          case 12:
-          case "end":
-            return _context3.stop();
-        }
-      }
-    }, _callee3, null, [[2, 7]]);
-  }));
-
-  return function updateEntry(_x5) {
-    return _ref3.apply(this, arguments);
-  };
-}();
-
-exports.updateEntry = updateEntry;
-
-var updateChapter = /*#__PURE__*/function () {
-  var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(provider, type, slug, items, title, timestamp) {
-    var table,
-        params,
-        _args4 = arguments;
-    return _regeneratorRuntime().wrap(function _callee4$(_context4) {
-      while (1) {
-        switch (_context4.prev = _context4.next) {
-          case 0:
-            table = _args4.length > 6 && _args4[6] !== undefined ? _args4[6] : TABLE_MANGA;
-            params = {
-              TableName: table,
-              Key: {
-                "Provider-Type": {
-                  S: "".concat(provider, "-").concat(type)
-                },
-                Slug: {
-                  S: "".concat(slug)
-                }
-              },
-              ExpressionAttributeNames: {
-                "#C": "Content",
-                "#T": "Title",
-                "#UT": "UpdatedAt"
-              },
-              ExpressionAttributeValues: {
-                ":c": {
-                  L: items.map(function (item) {
-                    return {
-                      S: item
-                    };
-                  })
-                },
-                ":t": {
-                  S: title
-                },
-                ":ut": {
-                  S: timestamp
-                }
-              },
-              UpdateExpression: "SET #C = :c, #T = :t, #UT = :ut"
-            };
-            _context4.prev = 2;
-            _context4.next = 5;
-            return _dynamodb.dynamodb.send(new _clientDynamodb.UpdateItemCommand(params));
-
-          case 5:
-            _context4.next = 11;
-            break;
-
-          case 7:
-            _context4.prev = 7;
-            _context4.t0 = _context4["catch"](2);
-
-            _logger["default"].debug("Update fail: ".concat(provider, "-").concat(type, " | ").concat(slug));
-
-            _logger["default"].warn(_context4.t0.message);
-
-          case 11:
-          case "end":
-            return _context4.stop();
-        }
-      }
-    }, _callee4, null, [[2, 7]]);
-  }));
-
-  return function updateChapter(_x6, _x7, _x8, _x9, _x10, _x11) {
-    return _ref4.apply(this, arguments);
-  };
-}();
-
-exports.updateChapter = updateChapter;
-
-var getMangaList = /*#__PURE__*/function () {
-  var _ref5 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee5(provider) {
-    var table,
-        params,
-        _yield$dynamodb$send2,
-        Items,
-        _args5 = arguments;
-
-    return _regeneratorRuntime().wrap(function _callee5$(_context5) {
-      while (1) {
-        switch (_context5.prev = _context5.next) {
-          case 0:
-            table = _args5.length > 1 && _args5[1] !== undefined ? _args5[1] : TABLE_MANGA;
-            params = {
-              TableName: table,
-              ExpressionAttributeNames: {
-                "#PT": "Provider-Type"
-              },
-              ExpressionAttributeValues: {
-                ":pt": {
-                  S: "".concat(provider, "-list")
-                }
-              },
-              KeyConditionExpression: "#PT = :pt"
-            };
-            _context5.prev = 2;
-            _context5.next = 5;
-            return _dynamodb.dynamodb.send(new _clientDynamodb.QueryCommand(params));
-
-          case 5:
-            _yield$dynamodb$send2 = _context5.sent;
-            Items = _yield$dynamodb$send2.Items;
-
-            if (!(Items == undefined)) {
-              _context5.next = 9;
-              break;
-            }
-
-            throw new Error("Unable to find data for '".concat(provider, "'"));
-
-          case 9:
-            return _context5.abrupt("return", Items.map(function (item) {
-              return (0, _utilDynamodb.unmarshall)(item);
-            }));
-
-          case 12:
-            _context5.prev = 12;
-            _context5.t0 = _context5["catch"](2);
-
-            _logger["default"].debug("Query fail: ".concat(provider, "-list"));
-
-            _logger["default"].warn(_context5.t0.message);
-
-            return _context5.abrupt("return", _context5.t0);
-
-          case 17:
-          case "end":
-            return _context5.stop();
-        }
-      }
-    }, _callee5, null, [[2, 12]]);
-  }));
-
-  return function getMangaList(_x12) {
-    return _ref5.apply(this, arguments);
   };
 }();
 
 exports.getMangaList = getMangaList;
 
 var getChapterList = /*#__PURE__*/function () {
-  var _ref6 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee6(provider, slug) {
-    var table,
+  var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3(provider, slug) {
+    var tableName,
         params,
-        _yield$dynamodb$send3,
+        _yield$dbclient$send3,
         Items,
-        _args6 = arguments;
+        _args3 = arguments;
 
-    return _regeneratorRuntime().wrap(function _callee6$(_context6) {
+    return _regeneratorRuntime().wrap(function _callee3$(_context3) {
       while (1) {
-        switch (_context6.prev = _context6.next) {
+        switch (_context3.prev = _context3.next) {
           case 0:
-            table = _args6.length > 2 && _args6[2] !== undefined ? _args6[2] : TABLE_MANGA;
+            tableName = _args3.length > 2 && _args3[2] !== undefined ? _args3[2] : TABLE_MANGA;
             params = {
-              TableName: table,
+              TableName: tableName,
               ExpressionAttributeNames: {
                 "#PT": "Provider-Type",
                 "#U": "Url"
@@ -386,121 +193,68 @@ var getChapterList = /*#__PURE__*/function () {
               FilterExpression: "contains (MangaSlug, :ms)",
               ProjectionExpression: "Title, Slug, #U"
             };
-            _context6.prev = 2;
-            _context6.next = 5;
-            return _dynamodb.dynamodb.send(new _clientDynamodb.QueryCommand(params));
+            _context3.prev = 2;
+            _context3.next = 5;
+            return _configs.dbclient.send(new _clientDynamodb.QueryCommand(params));
 
           case 5:
-            _yield$dynamodb$send3 = _context6.sent;
-            Items = _yield$dynamodb$send3.Items;
+            _yield$dbclient$send3 = _context3.sent;
+            Items = _yield$dbclient$send3.Items;
 
             if (!(Items == undefined)) {
-              _context6.next = 9;
+              _context3.next = 9;
               break;
             }
 
             throw new Error("Unable to find data for '".concat(slug, "'"));
 
           case 9:
-            return _context6.abrupt("return", Items.map(function (item) {
+            return _context3.abrupt("return", Items.map(function (item) {
               return (0, _utilDynamodb.unmarshall)(item);
             }));
 
           case 12:
-            _context6.prev = 12;
-            _context6.t0 = _context6["catch"](2);
+            _context3.prev = 12;
+            _context3.t0 = _context3["catch"](2);
 
             _logger["default"].debug("Query fail: ".concat(provider, "-chapter | ").concat(slug));
 
-            _logger["default"].warn(_context6.t0.message);
+            _logger["default"].debug(_context3.t0.message);
 
-            return _context6.abrupt("return", _context6.t0);
+            return _context3.abrupt("return", _context3.t0);
 
           case 17:
           case "end":
-            return _context6.stop();
+            return _context3.stop();
         }
       }
-    }, _callee6, null, [[2, 12]]);
+    }, _callee3, null, [[2, 12]]);
   }));
 
-  return function getChapterList(_x13, _x14) {
-    return _ref6.apply(this, arguments);
+  return function getChapterList(_x5, _x6) {
+    return _ref3.apply(this, arguments);
   };
 }();
 
 exports.getChapterList = getChapterList;
 
-var updateStatus = /*#__PURE__*/function () {
-  var _ref7 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee7(id, status, type, req, failed) {
-    var table,
-        item,
+var getStatus = /*#__PURE__*/function () {
+  var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(id) {
+    var tableName,
         params,
-        _args7 = arguments;
-    return _regeneratorRuntime().wrap(function _callee7$(_context7) {
-      while (1) {
-        switch (_context7.prev = _context7.next) {
-          case 0:
-            table = _args7.length > 5 && _args7[5] !== undefined ? _args7[5] : TABLE_MANGA;
-            item = {
-              "Provider-Type": "request-status",
-              Slug: id,
-              Request: req ? "".concat(type, " | ").concat(req) : "".concat(type),
-              Status: status,
-              FailedItems: failed ? failed : []
-            };
-            params = {
-              TableName: table,
-              Item: (0, _utilDynamodb.marshall)(item)
-            };
-            _context7.prev = 3;
-            _context7.next = 6;
-            return _dynamodb.dynamodb.send(new _clientDynamodb.PutItemCommand(params));
-
-          case 6:
-            _context7.next = 12;
-            break;
-
-          case 8:
-            _context7.prev = 8;
-            _context7.t0 = _context7["catch"](3);
-
-            _logger["default"].debug("Put fail: ".concat(item["Provider-Type"], " | ").concat(item["Slug"]));
-
-            _logger["default"].warn(_context7.t0.message);
-
-          case 12:
-          case "end":
-            return _context7.stop();
-        }
-      }
-    }, _callee7, null, [[3, 8]]);
-  }));
-
-  return function updateStatus(_x15, _x16, _x17, _x18, _x19) {
-    return _ref7.apply(this, arguments);
-  };
-}();
-
-exports.updateStatus = updateStatus;
-
-var checkStatus = /*#__PURE__*/function () {
-  var _ref8 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee8(id) {
-    var table,
-        params,
-        _yield$dynamodb$send4,
+        _yield$dbclient$send4,
         Item,
         unmappedItems,
         result,
-        _args8 = arguments;
+        _args4 = arguments;
 
-    return _regeneratorRuntime().wrap(function _callee8$(_context8) {
+    return _regeneratorRuntime().wrap(function _callee4$(_context4) {
       while (1) {
-        switch (_context8.prev = _context8.next) {
+        switch (_context4.prev = _context4.next) {
           case 0:
-            table = _args8.length > 1 && _args8[1] !== undefined ? _args8[1] : TABLE_MANGA;
+            tableName = _args4.length > 1 && _args4[1] !== undefined ? _args4[1] : TABLE_MANGA;
             params = {
-              TableName: table,
+              TableName: tableName,
               Key: {
                 "Provider-Type": {
                   S: "request-status"
@@ -510,16 +264,16 @@ var checkStatus = /*#__PURE__*/function () {
                 }
               }
             };
-            _context8.prev = 2;
-            _context8.next = 5;
-            return _dynamodb.dynamodb.send(new _clientDynamodb.GetItemCommand(params));
+            _context4.prev = 2;
+            _context4.next = 5;
+            return _configs.dbclient.send(new _clientDynamodb.GetItemCommand(params));
 
           case 5:
-            _yield$dynamodb$send4 = _context8.sent;
-            Item = _yield$dynamodb$send4.Item;
+            _yield$dbclient$send4 = _context4.sent;
+            Item = _yield$dbclient$send4.Item;
 
             if (!(Item == undefined)) {
-              _context8.next = 9;
+              _context4.next = 9;
               break;
             }
 
@@ -527,46 +281,30 @@ var checkStatus = /*#__PURE__*/function () {
 
           case 9:
             unmappedItems = (0, _utilDynamodb.unmarshall)(Item);
-            result = new Map();
-            result.set("Provider-Type", unmappedItems["Provider-Type"]);
-            result.set("Slug", unmappedItems["Slug"]);
-            result.set("Request", unmappedItems["Request"]);
-            result.set("Status", unmappedItems["Status"]);
-            result.set("FailedItems", unmappedItems["FailedItems"]);
-            return _context8.abrupt("return", result);
+            result = new Map([["Provider-Type", unmappedItems["Provider-Type"]], ["Slug", unmappedItems["Slug"]], ["Request", unmappedItems["Request"]], ["Status", unmappedItems["Status"]], ["FailedItems", unmappedItems["FailedItems"]]]);
+            return _context4.abrupt("return", result);
 
-          case 19:
-            _context8.prev = 19;
-            _context8.t0 = _context8["catch"](2);
+          case 14:
+            _context4.prev = 14;
+            _context4.t0 = _context4["catch"](2);
 
             _logger["default"].debug("Get fail: request-status | ".concat(id));
 
-            _logger["default"].warn(_context8.t0.message);
+            _logger["default"].debug(_context4.t0.message);
 
-            return _context8.abrupt("return", _context8.t0);
+            return _context4.abrupt("return", _context4.t0);
 
-          case 24:
+          case 19:
           case "end":
-            return _context8.stop();
+            return _context4.stop();
         }
       }
-    }, _callee8, null, [[2, 19]]);
+    }, _callee4, null, [[2, 14]]);
   }));
 
-  return function checkStatus(_x20) {
-    return _ref8.apply(this, arguments);
+  return function getStatus(_x7) {
+    return _ref4.apply(this, arguments);
   };
 }();
 
-exports.checkStatus = checkStatus;
-var dbService = {
-  createEntry: createEntry,
-  updateEntry: updateEntry,
-  updateChapter: updateChapter,
-  getEntry: getEntry,
-  getMangaList: getMangaList,
-  getChapterList: getChapterList,
-  checkStatus: checkStatus,
-  updateStatus: updateStatus
-};
-exports.dbService = dbService;
+exports.getStatus = getStatus;

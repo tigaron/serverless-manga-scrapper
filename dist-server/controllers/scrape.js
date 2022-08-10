@@ -9,13 +9,13 @@ exports.scrapeData = void 0;
 
 var _uuid = require("uuid");
 
-var _dbqueries = require("../services/dbqueries");
-
-var _scraper = require("../services/scraper");
-
-var _provider = require("../utils/provider");
+var _scraper = _interopRequireDefault(require("../services/scraper"));
 
 var _logger = _interopRequireDefault(require("../services/logger"));
+
+var _utils = _interopRequireDefault(require("../utils"));
+
+var _db = _interopRequireDefault(require("../db"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -40,10 +40,10 @@ var scrapeData = function scrapeData(type) {
           switch (_context.prev = _context.next) {
             case 0:
               _req$body = req.body, source = _req$body.source, slug = _req$body.slug;
-              url = type === "list" ? Object.values(_provider.sourceList.get(source)).join("/") + "/list-mode/" : _provider.sourceList.get(source).base + "/".concat(slug.split("+").join("/"), "/");
+              url = type === "list" ? Object.values(_utils["default"].get(source)).join("/") + "/list-mode/" : _utils["default"].get(source).base + "/".concat(slug.split("+").join("/"), "/");
               _context.prev = 2;
               _context.next = 5;
-              return (0, _scraper.scraper)(url, type);
+              return (0, _scraper["default"])(url, type);
 
             case 5:
               response = _context.sent;
@@ -53,15 +53,15 @@ var scrapeData = function scrapeData(type) {
                 break;
               }
 
-              return _context.abrupt("return", res.status(400).json({
-                statusCode: 400,
+              return _context.abrupt("return", res.status(404).json({
+                statusCode: 404,
                 statusText: "Unable to scrape: '".concat(slug, "'")
               }));
 
             case 8:
               requestId = (0, _uuid.v4)();
               _context.next = 11;
-              return _dbqueries.dbService.updateStatus(requestId, "pending", "".concat(source, "-").concat(type), slug);
+              return _db["default"].updateStatus(requestId, "pending", "".concat(source, "-").concat(type), slug);
 
             case 11:
               res.status(202).json({
@@ -93,7 +93,7 @@ var scrapeData = function scrapeData(type) {
 
               item = _step.value;
               _context.next = 27;
-              return _dbqueries.dbService.createEntry({
+              return _db["default"].createEntry({
                 "Provider-Type": "".concat(source, "-").concat(type),
                 Slug: "".concat(item.Slug),
                 Title: "".concat(item.Title),
@@ -154,7 +154,7 @@ var scrapeData = function scrapeData(type) {
 
             case 49:
               _context.next = 51;
-              return _dbqueries.dbService.createEntry({
+              return _db["default"].createEntry({
                 "Provider-Type": "".concat(source, "-").concat(type),
                 Slug: "".concat(slug),
                 Title: "".concat(response.Title),
@@ -184,7 +184,7 @@ var scrapeData = function scrapeData(type) {
 
               _item = _step2.value;
               _context.next = 63;
-              return _dbqueries.dbService.createEntry({
+              return _db["default"].createEntry({
                 "Provider-Type": "".concat(source, "-chapter"),
                 Slug: "".concat(_item.Slug),
                 Title: "".concat(_item.Title),
@@ -247,7 +247,7 @@ var scrapeData = function scrapeData(type) {
 
             case 85:
               _context.next = 87;
-              return _dbqueries.dbService.updateChapter(source, type, slug, response.Content, response.Title, timestamp.toUTCString());
+              return _db["default"].updateChapter(source, type, slug, response.Content, response.Title, timestamp.toUTCString());
 
             case 87:
               result = _context.sent;
@@ -256,7 +256,7 @@ var scrapeData = function scrapeData(type) {
 
             case 90:
               _context.next = 92;
-              return _dbqueries.dbService.updateStatus(requestId, "completed", "".concat(source, "-").concat(type), slug, failedItems.filter(function (item) {
+              return _db["default"].updateStatus(requestId, "completed", "".concat(source, "-").concat(type), slug, failedItems.filter(function (item) {
                 return item;
               }));
 

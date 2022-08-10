@@ -5,15 +5,15 @@ function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" =
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.urlSafeBase64 = exports.urlConverter = exports.sign = exports.imgConverter = exports.hexDecode = exports.convertService = void 0;
-
-var _createHmac = _interopRequireDefault(require("create-hmac"));
+exports["default"] = void 0;
 
 var _got = _interopRequireDefault(require("got"));
 
+var _createHmac = _interopRequireDefault(require("create-hmac"));
+
 var _clientS = require("@aws-sdk/client-s3");
 
-var _s3client = require("../configs/s3client");
+var _configs = require("../configs");
 
 var _logger = _interopRequireDefault(require("./logger"));
 
@@ -29,19 +29,16 @@ var _process$env = process.env,
     IMGPROXY_URL = _process$env.IMGPROXY_URL,
     IMGPROXY_KEY = _process$env.IMGPROXY_KEY,
     IMGPROXY_SALT = _process$env.IMGPROXY_SALT,
-    BUCKET_MANGA = _process$env.BUCKET_MANGA;
+    BUCKET_MANGA = _process$env.BUCKET_MANGA,
+    REGION = _process$env.REGION;
 
 var urlSafeBase64 = function urlSafeBase64(url) {
   return Buffer.from(url).toString("base64").replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
 };
 
-exports.urlSafeBase64 = urlSafeBase64;
-
 var hexDecode = function hexDecode(hex) {
   return Buffer.from(hex, "hex");
 };
-
-exports.hexDecode = hexDecode;
 
 var sign = function sign(salt, target, key) {
   var hmac = (0, _createHmac["default"])("sha256", hexDecode(key));
@@ -50,78 +47,85 @@ var sign = function sign(salt, target, key) {
   return urlSafeBase64(hmac.digest());
 };
 
-exports.sign = sign;
-
 var urlConverter = function urlConverter(url) {
   var api = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : IMGPROXY_URL;
   var salt = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : IMGPROXY_SALT;
   var key = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : IMGPROXY_KEY;
   var path = "/".concat(urlSafeBase64(url));
   var signature = sign(salt, path, key);
-  var result = "".concat(api, "/").concat(signature).concat(path);
-  return result;
+  return "".concat(api, "/").concat(signature).concat(path);
 };
 
-exports.urlConverter = urlConverter;
-
 var imgConverter = /*#__PURE__*/function () {
-  var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(url) {
+  var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(source, slug, parent, url) {
     var bucketName,
+        region,
         proxyUrl,
         fileName,
         response,
         params,
-        data,
+        _yield$s3client$send,
+        $metadata,
         _args = arguments;
+
     return _regeneratorRuntime().wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            bucketName = _args.length > 1 && _args[1] !== undefined ? _args[1] : BUCKET_MANGA;
-            _context.prev = 1;
+            bucketName = _args.length > 4 && _args[4] !== undefined ? _args[4] : BUCKET_MANGA;
+            region = _args.length > 5 && _args[5] !== undefined ? _args[5] : REGION;
+            _context.prev = 2;
             proxyUrl = urlConverter(url);
-            fileName = url.split("/").pop();
-            _context.next = 6;
+            fileName = "".concat(source, "/").concat(parent, "/").concat(slug, "/") + url.split("/").pop();
+            _context.next = 7;
             return (0, _got["default"])(proxyUrl).buffer();
 
-          case 6:
+          case 7:
             response = _context.sent;
             params = {
               Bucket: bucketName,
               Key: fileName,
               Body: response
             };
-            _context.next = 10;
-            return _s3client.s3client.send(new _clientS.PutObjectCommand(params));
+            _context.next = 11;
+            return _configs.s3client.send(new _clientS.PutObjectCommand(params));
 
-          case 10:
-            data = _context.sent;
-            return _context.abrupt("return", data.Location);
+          case 11:
+            _yield$s3client$send = _context.sent;
+            $metadata = _yield$s3client$send.$metadata;
 
-          case 14:
-            _context.prev = 14;
-            _context.t0 = _context["catch"](1);
+            _logger["default"].debug($metadata.httpStatusCode);
+
+            if (!($metadata.httpStatusCode !== 200)) {
+              _context.next = 16;
+              break;
+            }
+
+            throw new Error("Unable to convert ".concat(url));
+
+          case 16:
+            return _context.abrupt("return", "https://".concat(bucketName, ".s3.").concat(region, ".amazonaws.com/").concat(fileName));
+
+          case 19:
+            _context.prev = 19;
+            _context.t0 = _context["catch"](2);
 
             _logger["default"].debug("Upload fail: ".concat(url));
 
-            _logger["default"].warn(_context.t0.message);
+            _logger["default"].debug(_context.t0.message);
 
-          case 18:
+          case 23:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee, null, [[1, 14]]);
+    }, _callee, null, [[2, 19]]);
   }));
 
-  return function imgConverter(_x) {
+  return function imgConverter(_x, _x2, _x3, _x4) {
     return _ref.apply(this, arguments);
   };
 }();
 
-exports.imgConverter = imgConverter;
-var convertService = {
-  urlConverter: urlConverter,
-  imgConverter: imgConverter
-};
-exports.convertService = convertService;
+var _default = imgConverter;
+exports["default"] = _default;

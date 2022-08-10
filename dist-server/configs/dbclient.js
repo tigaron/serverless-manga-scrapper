@@ -3,12 +3,30 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.dbclient = void 0;
+exports["default"] = void 0;
 
 var _clientDynamodb = require("@aws-sdk/client-dynamodb");
 
+var _libDynamodb = require("@aws-sdk/lib-dynamodb");
+
 var REGION = process.env.REGION;
-var dbclient = new _clientDynamodb.DynamoDBClient({
+var dynamodb = new _clientDynamodb.DynamoDBClient({
   region: REGION
 });
-exports.dbclient = dbclient;
+var marshallOptions = {
+  convertEmptyValues: true,
+  removeUndefinedValues: true,
+  convertClassInstanceToMap: false
+};
+var unmarshallOptions = {
+  wrapNumbers: false
+};
+var translateConfig = {
+  marshallOptions: marshallOptions,
+  unmarshallOptions: unmarshallOptions
+};
+
+var dbclient = _libDynamodb.DynamoDBDocumentClient.from(dynamodb, translateConfig);
+
+var _default = dbclient;
+exports["default"] = _default;

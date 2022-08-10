@@ -5,11 +5,15 @@ function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" =
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.crawler = exports.crawlService = void 0;
+exports["default"] = void 0;
 
-var _chromeAwsLambda = _interopRequireDefault(require("@sparticuz/chrome-aws-lambda"));
+var _clientDynamodb = require("@aws-sdk/client-dynamodb");
 
-var _logger = _interopRequireDefault(require("./logger"));
+var _utilDynamodb = require("@aws-sdk/util-dynamodb");
+
+var _configs = require("../configs");
+
+var _logger = _interopRequireDefault(require("../services/logger"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -19,106 +23,69 @@ function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
-var crawler = /*#__PURE__*/function () {
-  var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(url) {
-    var browser, page, response, content;
+var TABLE_MANGA = process.env.TABLE_MANGA;
+
+var createEntry = /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(item) {
+    var tableName,
+        params,
+        _args = arguments;
     return _regeneratorRuntime().wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            _context.t0 = _chromeAwsLambda["default"].puppeteer;
-            _context.t1 = _chromeAwsLambda["default"].args;
-            _context.t2 = _chromeAwsLambda["default"].defaultViewport;
+            tableName = _args.length > 1 && _args[1] !== undefined ? _args[1] : TABLE_MANGA;
+            params = {
+              TableName: tableName,
+              Item: (0, _utilDynamodb.marshall)(item),
+              ExpressionAttributeNames: {
+                "#PT": "Provider-Type",
+                "#S": "Slug"
+              },
+              ExpressionAttributeValues: {
+                ":pt": (0, _utilDynamodb.marshall)(item["Provider-Type"]),
+                ":s": (0, _utilDynamodb.marshall)(item["Slug"])
+              },
+              ConditionExpression: "(NOT #PT = :pt) AND (NOT #S = :s)"
+            };
+            _context.prev = 2;
             _context.next = 5;
-            return _chromeAwsLambda["default"].executablePath;
+            return _configs.dbclient.send(new _clientDynamodb.PutItemCommand(params));
 
           case 5:
-            _context.t3 = _context.sent;
-            _context.t4 = {
-              args: _context.t1,
-              defaultViewport: _context.t2,
-              executablePath: _context.t3,
-              headless: true
-            };
-            _context.next = 9;
-            return _context.t0.launch.call(_context.t0, _context.t4);
-
-          case 9:
-            browser = _context.sent;
-            _context.prev = 10;
-            _context.next = 13;
-            return browser.newPage();
-
-          case 13:
-            page = _context.sent;
             _context.next = 16;
-            return page.setUserAgent("Mozilla/5.0 (Windows NT 5.1; rv:5.0) Gecko/20100101 Firefox/5.0");
+            break;
 
-          case 16:
-            _context.next = 18;
-            return page.setRequestInterception(true);
+          case 7:
+            _context.prev = 7;
+            _context.t0 = _context["catch"](2);
 
-          case 18:
-            page.on("request", function (request) {
-              var shouldAbort = request.resourceType() === "script" || request.resourceType() === "font" || request.resourceType() === "image" || request.resourceType() === "xhr" || request.resourceType() === "stylesheet" || request.resourceType() === "media";
-              if (shouldAbort) request.abort();else request["continue"]();
-            });
-            _context.next = 21;
-            return page["goto"](url, {
-              waitUntil: "domcontentloaded"
-            });
+            _logger["default"].debug("Put fail: ".concat(item["Provider-Type"], " | ").concat(item["Slug"]));
 
-          case 21:
-            response = _context.sent;
+            _logger["default"].debug(_context.t0.message);
 
-            if (response.ok()) {
-              _context.next = 24;
+            if (!(_context.t0.message === "The conditional request failed")) {
+              _context.next = 15;
               break;
             }
 
-            throw new Error("Failed to fetch '".concat(url));
+            return _context.abrupt("return", "Already exist in database: ".concat(item["Provider-Type"], " | ").concat(item["Slug"]));
 
-          case 24:
-            _context.next = 26;
-            return page.content();
+          case 15:
+            return _context.abrupt("return", "Failed to add to database: ".concat(item["Provider-Type"], " | ").concat(item["Slug"]));
 
-          case 26:
-            content = _context.sent;
-            return _context.abrupt("return", content);
-
-          case 30:
-            _context.prev = 30;
-            _context.t5 = _context["catch"](10);
-
-            _logger["default"].debug("Crawl fail: '".concat(url, "'"));
-
-            _logger["default"].warn(_context.t5.message);
-
-            return _context.abrupt("return", _context.t5);
-
-          case 35:
-            _context.prev = 35;
-            _context.next = 38;
-            return browser.close();
-
-          case 38:
-            return _context.finish(35);
-
-          case 39:
+          case 16:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee, null, [[10, 30, 35, 39]]);
+    }, _callee, null, [[2, 7]]);
   }));
 
-  return function crawler(_x) {
+  return function createEntry(_x) {
     return _ref.apply(this, arguments);
   };
 }();
 
-exports.crawler = crawler;
-var crawlService = {
-  crawler: crawler
-};
-exports.crawlService = crawlService;
+var _default = createEntry;
+exports["default"] = _default;

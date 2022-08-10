@@ -1,8 +1,8 @@
 import { v4 as uuidv4 } from "uuid";
-import { dbService } from "../services/dbqueries";
-import { scraper } from "../services/scraper";
-import { sourceList } from "../utils/provider";
+import scraper from "../services/scraper";
 import logger from "../services/logger";
+import sourceList from "../utils";
+import db from "../db";
 
 // TODO modify post behaviour to check existing database first before scraping to save resources
 export const scrapeData = (type) => {
@@ -17,13 +17,13 @@ export const scrapeData = (type) => {
 			const response = await scraper(url, type);
 
 			if (response.message)
-				return res.status(400).json({
-					statusCode: 400,
+				return res.status(404).json({
+					statusCode: 404,
 					statusText: `Unable to scrape: '${slug}'`,
 				});
 
 			const requestId = uuidv4();
-			await dbService.updateStatus(
+			await db.updateStatus(
 				requestId,
 				"pending",
 				`${source}-${type}`,
@@ -41,10 +41,11 @@ export const scrapeData = (type) => {
 			const timestamp = new Date();
 			let failedItems = [];
 			let result;
+			
 			switch (type) {
 				case "list":
 					for await (const item of response) {
-						result = await dbService.createEntry({
+						result = await db.createEntry({
 							"Provider-Type": `${source}-${type}`,
 							Slug: `${item.Slug}`,
 							Title: `${item.Title}`,
@@ -57,7 +58,7 @@ export const scrapeData = (type) => {
 					}
 					break;
 				case "manga":
-					result = await dbService.createEntry({
+					result = await db.createEntry({
 						"Provider-Type": `${source}-${type}`,
 						Slug: `${slug}`,
 						Title: `${response.Title}`,
@@ -70,7 +71,7 @@ export const scrapeData = (type) => {
 					if (result) failedItems.push(result);
 
 					for await (const item of response.Chapters) {
-						result = await dbService.createEntry({
+						result = await db.createEntry({
 							"Provider-Type": `${source}-chapter`,
 							Slug: `${item.Slug}`,
 							Title: `${item.Title}`,
@@ -85,7 +86,7 @@ export const scrapeData = (type) => {
 					}
 					break;
 				case "chapter":
-					result = await dbService.updateChapter(
+					result = await db.updateChapter(
 						source,
 						type,
 						slug,
@@ -98,7 +99,7 @@ export const scrapeData = (type) => {
 					break;
 			}
 
-			await dbService.updateStatus(
+			await db.updateStatus(
 				requestId,
 				"completed",
 				`${source}-${type}`,

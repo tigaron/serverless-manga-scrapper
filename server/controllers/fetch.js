@@ -1,11 +1,11 @@
-import { dbService } from "../services/dbqueries";
-import { sourceList } from "../utils/provider";
 import logger from "../services/logger";
+import sourceList from "../utils";
+import db from "../db";
 
 export const fetchStatus = async (req, res) => {
 	try {
 		const { id } = req.params;
-		const response = await dbService.checkStatus(id);
+		const response = await db.getStatus(id);
 
 		if (
 			response.message ||
@@ -50,14 +50,14 @@ export const fetchData = (type) => {
 
 			switch (type) {
 				case "list":
-					response = await dbService.getMangaList(source);
+					response = await db.getMangaList(source);
 					break;
 				case "manga":
 				case "chapter":
-					response = await dbService.getEntry(source, type, slug);
+					response = await db.getEntry(source, type, slug);
 					break;
 				case "chapters":
-					response = await dbService.getChapterList(source, slug);
+					response = await db.getChapterList(source, slug);
 					break;
 			}
 

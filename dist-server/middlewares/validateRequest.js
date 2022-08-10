@@ -5,12 +5,14 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.validateSource = exports.validateBody = void 0;
 
-var _provider = require("../utils/provider");
+var _utils = _interopRequireDefault(require("../utils"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 var validateSource = function validateSource(req, res, next) {
   var source = req.params.source;
 
-  if (!_provider.sourceList.has(source)) {
+  if (!_utils["default"].has(source)) {
     return res.status(404).json({
       statusCode: 404,
       statusText: "Unknown source: '".concat(source, "'")
@@ -31,8 +33,8 @@ var validateBody = function validateBody(type) {
     var _req$body = req.body,
         source = _req$body.source,
         slug = _req$body.slug;
-    if (!_provider.sourceList.has(source)) return res.status(400).json({
-      statusCode: 400,
+    if (!_utils["default"].has(source)) return res.status(404).json({
+      statusCode: 404,
       statusText: "Unknown source: '".concat(source, "'")
     });
     if (type !== "list" && !slug) return res.status(400).json({

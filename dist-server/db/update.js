@@ -5,17 +5,15 @@ function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" =
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.updateData = void 0;
+exports.updateStatus = exports.updateEntry = exports.updateContent = exports.updateChapter = void 0;
 
-var _uuid = require("uuid");
+var _clientDynamodb = require("@aws-sdk/client-dynamodb");
 
-var _scraper = _interopRequireDefault(require("../services/scraper"));
+var _utilDynamodb = require("@aws-sdk/util-dynamodb");
+
+var _configs = require("../configs");
 
 var _logger = _interopRequireDefault(require("../services/logger"));
-
-var _utils = _interopRequireDefault(require("../utils"));
-
-var _db = _interopRequireDefault(require("../db"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -25,264 +23,258 @@ function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
-function _asyncIterator(iterable) { var method, async, sync, retry = 2; for ("undefined" != typeof Symbol && (async = Symbol.asyncIterator, sync = Symbol.iterator); retry--;) { if (async && null != (method = iterable[async])) return method.call(iterable); if (sync && null != (method = iterable[sync])) return new AsyncFromSyncIterator(method.call(iterable)); async = "@@asyncIterator", sync = "@@iterator"; } throw new TypeError("Object is not async iterable"); }
+var TABLE_MANGA = process.env.TABLE_MANGA;
 
-function AsyncFromSyncIterator(s) { function AsyncFromSyncIteratorContinuation(r) { if (Object(r) !== r) return Promise.reject(new TypeError(r + " is not an object.")); var done = r.done; return Promise.resolve(r.value).then(function (value) { return { value: value, done: done }; }); } return AsyncFromSyncIterator = function AsyncFromSyncIterator(s) { this.s = s, this.n = s.next; }, AsyncFromSyncIterator.prototype = { s: null, n: null, next: function next() { return AsyncFromSyncIteratorContinuation(this.n.apply(this.s, arguments)); }, "return": function _return(value) { var ret = this.s["return"]; return void 0 === ret ? Promise.resolve({ value: value, done: !0 }) : AsyncFromSyncIteratorContinuation(ret.apply(this.s, arguments)); }, "throw": function _throw(value) { var thr = this.s["return"]; return void 0 === thr ? Promise.reject(value) : AsyncFromSyncIteratorContinuation(thr.apply(this.s, arguments)); } }, new AsyncFromSyncIterator(s); }
+var updateEntry = /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(item) {
+    var tableName,
+        params,
+        _args = arguments;
+    return _regeneratorRuntime().wrap(function _callee$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            tableName = _args.length > 1 && _args[1] !== undefined ? _args[1] : TABLE_MANGA;
+            params = {
+              TableName: tableName,
+              Item: (0, _utilDynamodb.marshall)(item),
+              ExpressionAttributeNames: {
+                "#PT": "Provider-Type",
+                "#S": "Slug"
+              },
+              ExpressionAttributeValues: {
+                ":pt": (0, _utilDynamodb.marshall)(item["Provider-Type"]),
+                ":s": (0, _utilDynamodb.marshall)(item["Slug"])
+              },
+              ConditionExpression: "#PT = :pt AND #S = :s"
+            };
+            _context.prev = 2;
+            _context.next = 5;
+            return _configs.dbclient.send(new _clientDynamodb.PutItemCommand(params));
 
-var updateData = function updateData(type) {
-  return /*#__PURE__*/function () {
-    var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(req, res) {
-      var _req$body, source, slug, url, response, requestId, timestamp, failedItems, result, _iteratorAbruptCompletion, _didIteratorError, _iteratorError, _iterator, _step, item, _iteratorAbruptCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, _item;
+          case 5:
+            _context.next = 12;
+            break;
 
-      return _regeneratorRuntime().wrap(function _callee$(_context) {
-        while (1) {
-          switch (_context.prev = _context.next) {
-            case 0:
-              _req$body = req.body, source = _req$body.source, slug = _req$body.slug;
-              url = type === "list" ? Object.values(_utils["default"].get(source)).join("/") + "/list-mode/" : _utils["default"].get(source).base + "/".concat(slug.split("+").join("/"), "/");
-              _context.prev = 2;
-              _context.next = 5;
-              return (0, _scraper["default"])(url, type);
+          case 7:
+            _context.prev = 7;
+            _context.t0 = _context["catch"](2);
 
-            case 5:
-              response = _context.sent;
+            _logger["default"].debug("Put fail: ".concat(item["Provider-Type"], " | ").concat(item["Slug"]));
 
-              if (!response.message) {
-                _context.next = 8;
-                break;
-              }
+            _logger["default"].debug(_context.t0.message);
 
-              return _context.abrupt("return", res.status(404).json({
-                statusCode: 404,
-                statusText: "Unable to scrape: '".concat(slug, "'")
-              }));
+            return _context.abrupt("return", "Failed to update database entry: ".concat(item["Provider-Type"], " | ").concat(item["Slug"]));
 
-            case 8:
-              requestId = (0, _uuid.v4)();
-              _context.next = 11;
-              return _db["default"].updateStatus(requestId, "pending", "".concat(source, "-").concat(type), slug);
-
-            case 11:
-              res.status(202).json({
-                statusCode: 202,
-                statusText: slug ? "Processing data for ".concat(source, "-").concat(type, " | ").concat(slug) : "Processing data for ".concat(source, "-").concat(type),
-                requestId: requestId
-              });
-              timestamp = new Date();
-              failedItems = [];
-              _context.t0 = type;
-              _context.next = _context.t0 === "list" ? 17 : _context.t0 === "manga" ? 49 : _context.t0 === "chapter" ? 85 : 90;
-              break;
-
-            case 17:
-              _iteratorAbruptCompletion = false;
-              _didIteratorError = false;
-              _context.prev = 19;
-              _iterator = _asyncIterator(response);
-
-            case 21:
-              _context.next = 23;
-              return _iterator.next();
-
-            case 23:
-              if (!(_iteratorAbruptCompletion = !(_step = _context.sent).done)) {
-                _context.next = 32;
-                break;
-              }
-
-              item = _step.value;
-              _context.next = 27;
-              return _db["default"].updateEntry({
-                "Provider-Type": "".concat(source, "-").concat(type),
-                Slug: "".concat(item.Slug),
-                Title: "".concat(item.Title),
-                Url: "".concat(item.Url),
-                UpdatedAt: "".concat(timestamp.toUTCString())
-              });
-
-            case 27:
-              result = _context.sent;
-              if (result) failedItems.push(result);
-
-            case 29:
-              _iteratorAbruptCompletion = false;
-              _context.next = 21;
-              break;
-
-            case 32:
-              _context.next = 38;
-              break;
-
-            case 34:
-              _context.prev = 34;
-              _context.t1 = _context["catch"](19);
-              _didIteratorError = true;
-              _iteratorError = _context.t1;
-
-            case 38:
-              _context.prev = 38;
-              _context.prev = 39;
-
-              if (!(_iteratorAbruptCompletion && _iterator["return"] != null)) {
-                _context.next = 43;
-                break;
-              }
-
-              _context.next = 43;
-              return _iterator["return"]();
-
-            case 43:
-              _context.prev = 43;
-
-              if (!_didIteratorError) {
-                _context.next = 46;
-                break;
-              }
-
-              throw _iteratorError;
-
-            case 46:
-              return _context.finish(43);
-
-            case 47:
-              return _context.finish(38);
-
-            case 48:
-              return _context.abrupt("break", 90);
-
-            case 49:
-              _context.next = 51;
-              return _db["default"].updateEntry({
-                "Provider-Type": "".concat(source, "-").concat(type),
-                Slug: "".concat(slug),
-                Title: "".concat(response.Title),
-                Cover: "".concat(response.Cover),
-                Synopsis: "".concat(response.Synopsis),
-                UpdatedAt: "".concat(timestamp.toUTCString())
-              });
-
-            case 51:
-              result = _context.sent;
-              if (result) failedItems.push(result);
-              _iteratorAbruptCompletion2 = false;
-              _didIteratorError2 = false;
-              _context.prev = 55;
-              _iterator2 = _asyncIterator(response.Chapters);
-
-            case 57:
-              _context.next = 59;
-              return _iterator2.next();
-
-            case 59:
-              if (!(_iteratorAbruptCompletion2 = !(_step2 = _context.sent).done)) {
-                _context.next = 68;
-                break;
-              }
-
-              _item = _step2.value;
-              _context.next = 63;
-              return _db["default"].updateEntry({
-                "Provider-Type": "".concat(source, "-chapter"),
-                Slug: "".concat(_item.Slug),
-                Title: "".concat(_item.Title),
-                Url: "".concat(_item.Url),
-                MangaSlug: "".concat(slug),
-                MangaTitle: "".concat(response.Title),
-                UpdatedAt: "".concat(timestamp.toUTCString())
-              });
-
-            case 63:
-              result = _context.sent;
-              if (result) failedItems.push(result);
-
-            case 65:
-              _iteratorAbruptCompletion2 = false;
-              _context.next = 57;
-              break;
-
-            case 68:
-              _context.next = 74;
-              break;
-
-            case 70:
-              _context.prev = 70;
-              _context.t2 = _context["catch"](55);
-              _didIteratorError2 = true;
-              _iteratorError2 = _context.t2;
-
-            case 74:
-              _context.prev = 74;
-              _context.prev = 75;
-
-              if (!(_iteratorAbruptCompletion2 && _iterator2["return"] != null)) {
-                _context.next = 79;
-                break;
-              }
-
-              _context.next = 79;
-              return _iterator2["return"]();
-
-            case 79:
-              _context.prev = 79;
-
-              if (!_didIteratorError2) {
-                _context.next = 82;
-                break;
-              }
-
-              throw _iteratorError2;
-
-            case 82:
-              return _context.finish(79);
-
-            case 83:
-              return _context.finish(74);
-
-            case 84:
-              return _context.abrupt("break", 90);
-
-            case 85:
-              _context.next = 87;
-              return _db["default"].updateChapter(source, type, slug, response.Content, response.Title, timestamp.toUTCString());
-
-            case 87:
-              result = _context.sent;
-              if (result) failedItems.push(result);
-              return _context.abrupt("break", 90);
-
-            case 90:
-              _context.next = 92;
-              return _db["default"].updateStatus(requestId, "completed", "".concat(source, "-").concat(type), slug, failedItems.filter(function (item) {
-                return item;
-              }));
-
-            case 92:
-              _context.next = 98;
-              break;
-
-            case 94:
-              _context.prev = 94;
-              _context.t3 = _context["catch"](2);
-
-              _logger["default"].error(_context.t3.message);
-
-              return _context.abrupt("return", res.status(500).json({
-                statusCode: 500,
-                statusText: _context.t3.message
-              }));
-
-            case 98:
-            case "end":
-              return _context.stop();
-          }
+          case 12:
+          case "end":
+            return _context.stop();
         }
-      }, _callee, null, [[2, 94], [19, 34, 38, 48], [39,, 43, 47], [55, 70, 74, 84], [75,, 79, 83]]);
-    }));
+      }
+    }, _callee, null, [[2, 7]]);
+  }));
 
-    return function (_x, _x2) {
-      return _ref.apply(this, arguments);
-    };
-  }();
-};
+  return function updateEntry(_x) {
+    return _ref.apply(this, arguments);
+  };
+}();
 
-exports.updateData = updateData;
+exports.updateEntry = updateEntry;
+
+var updateChapter = /*#__PURE__*/function () {
+  var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(provider, type, slug, items, title, timestamp) {
+    var tableName,
+        params,
+        _args2 = arguments;
+    return _regeneratorRuntime().wrap(function _callee2$(_context2) {
+      while (1) {
+        switch (_context2.prev = _context2.next) {
+          case 0:
+            tableName = _args2.length > 6 && _args2[6] !== undefined ? _args2[6] : TABLE_MANGA;
+            params = {
+              TableName: tableName,
+              Key: {
+                "Provider-Type": {
+                  S: "".concat(provider, "-").concat(type)
+                },
+                Slug: {
+                  S: "".concat(slug)
+                }
+              },
+              ExpressionAttributeNames: {
+                "#C": "Content",
+                "#T": "Title",
+                "#UT": "UpdatedAt"
+              },
+              ExpressionAttributeValues: {
+                ":c": {
+                  L: items.map(function (item) {
+                    return {
+                      S: item
+                    };
+                  })
+                },
+                ":t": {
+                  S: title
+                },
+                ":ut": {
+                  S: timestamp
+                }
+              },
+              UpdateExpression: "SET #C = :c, #T = :t, #UT = :ut"
+            };
+            _context2.prev = 2;
+            _context2.next = 5;
+            return _configs.dbclient.send(new _clientDynamodb.UpdateItemCommand(params));
+
+          case 5:
+            _context2.next = 11;
+            break;
+
+          case 7:
+            _context2.prev = 7;
+            _context2.t0 = _context2["catch"](2);
+
+            _logger["default"].debug("Update fail: ".concat(provider, "-").concat(type, " | ").concat(slug));
+
+            _logger["default"].debug(_context2.t0.message);
+
+          case 11:
+          case "end":
+            return _context2.stop();
+        }
+      }
+    }, _callee2, null, [[2, 7]]);
+  }));
+
+  return function updateChapter(_x2, _x3, _x4, _x5, _x6, _x7) {
+    return _ref2.apply(this, arguments);
+  };
+}();
+
+exports.updateChapter = updateChapter;
+
+var updateContent = /*#__PURE__*/function () {
+  var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3(provider, slug, items, timestamp) {
+    var tableName,
+        params,
+        _args3 = arguments;
+    return _regeneratorRuntime().wrap(function _callee3$(_context3) {
+      while (1) {
+        switch (_context3.prev = _context3.next) {
+          case 0:
+            tableName = _args3.length > 4 && _args3[4] !== undefined ? _args3[4] : TABLE_MANGA;
+            params = {
+              TableName: tableName,
+              Key: {
+                "Provider-Type": {
+                  S: "".concat(provider, "-chapter")
+                },
+                Slug: {
+                  S: "".concat(slug)
+                }
+              },
+              ExpressionAttributeNames: {
+                "#C": "ConvertedContent",
+                "#UT": "UpdatedAt"
+              },
+              ExpressionAttributeValues: {
+                ":c": {
+                  L: items.map(function (item) {
+                    return {
+                      S: item
+                    };
+                  })
+                },
+                ":ut": {
+                  S: timestamp
+                }
+              },
+              UpdateExpression: "SET #C = :c, #UT = :ut"
+            };
+            _context3.prev = 2;
+
+            _logger["default"].debug(params);
+
+            _context3.next = 6;
+            return _configs.dbclient.send(new _clientDynamodb.UpdateItemCommand(params));
+
+          case 6:
+            _context3.next = 12;
+            break;
+
+          case 8:
+            _context3.prev = 8;
+            _context3.t0 = _context3["catch"](2);
+
+            _logger["default"].debug("Update fail: ".concat(provider, "-").concat(type, " | ").concat(slug));
+
+            _logger["default"].debug(_context3.t0.message);
+
+          case 12:
+          case "end":
+            return _context3.stop();
+        }
+      }
+    }, _callee3, null, [[2, 8]]);
+  }));
+
+  return function updateContent(_x8, _x9, _x10, _x11) {
+    return _ref3.apply(this, arguments);
+  };
+}();
+
+exports.updateContent = updateContent;
+
+var updateStatus = /*#__PURE__*/function () {
+  var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(id, status, type, req, failed) {
+    var tableName,
+        item,
+        params,
+        _args4 = arguments;
+    return _regeneratorRuntime().wrap(function _callee4$(_context4) {
+      while (1) {
+        switch (_context4.prev = _context4.next) {
+          case 0:
+            tableName = _args4.length > 5 && _args4[5] !== undefined ? _args4[5] : TABLE_MANGA;
+            item = {
+              "Provider-Type": "request-status",
+              Slug: id,
+              Request: req ? "".concat(type, " | ").concat(req) : "".concat(type),
+              Status: status,
+              FailedItems: failed ? failed : []
+            };
+            params = {
+              TableName: tableName,
+              Item: (0, _utilDynamodb.marshall)(item)
+            };
+            _context4.prev = 3;
+            _context4.next = 6;
+            return _configs.dbclient.send(new _clientDynamodb.PutItemCommand(params));
+
+          case 6:
+            _context4.next = 12;
+            break;
+
+          case 8:
+            _context4.prev = 8;
+            _context4.t0 = _context4["catch"](3);
+
+            _logger["default"].debug("Put fail: ".concat(item["Provider-Type"], " | ").concat(item["Slug"]));
+
+            _logger["default"].debug(_context4.t0.message);
+
+          case 12:
+          case "end":
+            return _context4.stop();
+        }
+      }
+    }, _callee4, null, [[3, 8]]);
+  }));
+
+  return function updateStatus(_x12, _x13, _x14, _x15, _x16) {
+    return _ref4.apply(this, arguments);
+  };
+}();
+
+exports.updateStatus = updateStatus;

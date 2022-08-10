@@ -1,34 +1,55 @@
-// import { v4 as uuidv4 } from "uuid";
-import { dbService } from "../services/dbqueries";
-import { imgConverter } from "../services/converter";
+import { v4 as uuidv4 } from "uuid";
+import imgConverter from "../services/converter";
 import logger from "../services/logger";
+import db from "../db";
 
 export const convertImg = async (req, res) => {
 	const { source, slug } = req.body;
 	try {
-		const response = await dbService.getEntry(source, "chapter", slug);
-		if (
-			response.message ||
-			(Array.isArray(response) && response.length === 0) ||
-			(response.constructor === Object && Object.keys(response).length === 0)
-		)
+		const response = await db.getEntry(source, "chapter", slug);
+		if (response.message)
 			return res.status(404).json({
 				statusCode: 404,
-				statusText: response.message
-					? response.message
-					: `Unable to find data for '${slug}'`,
+				statusText: response.message,
 			});
-		const imgUrl = response.Content;
-		const resArr = [];
-		for await (element of imgUrl) {
-			const result = imgConverter(element);
-			resArr.push(result);
-		}
-		return res.status(201).json({
-			statusCode: 201,
-			statusText: "Created",
-			data: resArr,
+
+		const requestId = uuidv4();
+		await db.updateStatus(requestId, "pending", `${source}-chapter`, slug);
+
+		res.status(202).json({
+			statusCode: 202,
+			statusText: `Processing content conversion for ${source}-chapter | ${slug}`,
+			requestId: requestId,
 		});
+
+		const imgUrl = response.Content;
+		const MangaSlug = response.MangaSlug;
+		const convertResult = [];
+		for await (const item of imgUrl) {
+			const newUrl = await imgConverter(source, slug, MangaSlug, item);
+		logger.debug(newUrl);
+		convertResult.push(newUrl);
+		}
+		logger.debug(convertResult);
+		const timestamp = new Date();
+		let failedItems = [];
+		const result = await db.updateContent(
+			source,
+			slug,
+			convertResult,
+			timestamp.toUTCString()
+		);
+		logger.debug(result);
+
+		if (result) failedItems.push(result);
+
+		await db.updateStatus(
+			requestId,
+			"completed",
+			`${source}-chapter`,
+			slug,
+			failedItems.filter((item) => item)
+		);
 	} catch (error) {
 		logger.error(error.message);
 		return res.status(500).json({

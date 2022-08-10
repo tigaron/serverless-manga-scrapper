@@ -7,11 +7,13 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.convertImg = void 0;
 
-var _dbqueries = require("../services/dbqueries");
+var _uuid = require("uuid");
 
-var _converter = require("../services/converter");
+var _converter = _interopRequireDefault(require("../services/converter"));
 
 var _logger = _interopRequireDefault(require("../services/logger"));
+
+var _db = _interopRequireDefault(require("../db"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -27,7 +29,7 @@ function AsyncFromSyncIterator(s) { function AsyncFromSyncIteratorContinuation(r
 
 var convertImg = /*#__PURE__*/function () {
   var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(req, res) {
-    var _req$body, source, slug, response, imgUrl, resArr, _iteratorAbruptCompletion, _didIteratorError, _iteratorError, _iterator, _step, result;
+    var _req$body, source, slug, response, requestId, imgUrl, MangaSlug, convertResult, _iteratorAbruptCompletion, _didIteratorError, _iteratorError, _iterator, _step, item, newUrl, timestamp, failedItems, result;
 
     return _regeneratorRuntime().wrap(function _callee$(_context) {
       while (1) {
@@ -36,95 +38,129 @@ var convertImg = /*#__PURE__*/function () {
             _req$body = req.body, source = _req$body.source, slug = _req$body.slug;
             _context.prev = 1;
             _context.next = 4;
-            return _dbqueries.dbService.getEntry(source, "chapter", slug);
+            return _db["default"].getEntry(source, "chapter", slug);
 
           case 4:
             response = _context.sent;
 
-            if (!(response.message || Array.isArray(response) && response.length === 0 || response.constructor === Object && Object.keys(response).length === 0)) {
+            if (!response.message) {
               _context.next = 7;
               break;
             }
 
             return _context.abrupt("return", res.status(404).json({
               statusCode: 404,
-              statusText: response.message ? response.message : "Unable to find data for '".concat(slug, "'")
+              statusText: response.message
             }));
 
           case 7:
+            requestId = (0, _uuid.v4)();
+            _context.next = 10;
+            return _db["default"].updateStatus(requestId, "pending", "".concat(source, "-chapter"), slug);
+
+          case 10:
+            res.status(202).json({
+              statusCode: 202,
+              statusText: "Processing content conversion for ".concat(source, "-chapter | ").concat(slug),
+              requestId: requestId
+            });
             imgUrl = response.Content;
-            resArr = [];
+            MangaSlug = response.MangaSlug;
+            convertResult = [];
             _iteratorAbruptCompletion = false;
             _didIteratorError = false;
-            _context.prev = 11;
+            _context.prev = 16;
             _iterator = _asyncIterator(imgUrl);
 
-          case 13:
-            _context.next = 15;
+          case 18:
+            _context.next = 20;
             return _iterator.next();
 
-          case 15:
+          case 20:
             if (!(_iteratorAbruptCompletion = !(_step = _context.sent).done)) {
-              _context.next = 22;
+              _context.next = 30;
               break;
             }
 
-            element = _step.value;
-            result = (0, _converter.imgConverter)(element);
-            resArr.push(result);
-
-          case 19:
-            _iteratorAbruptCompletion = false;
-            _context.next = 13;
-            break;
-
-          case 22:
-            _context.next = 28;
-            break;
+            item = _step.value;
+            _context.next = 24;
+            return (0, _converter["default"])(source, slug, MangaSlug, item);
 
           case 24:
-            _context.prev = 24;
-            _context.t0 = _context["catch"](11);
+            newUrl = _context.sent;
+
+            _logger["default"].debug(newUrl);
+
+            convertResult.push(newUrl);
+
+          case 27:
+            _iteratorAbruptCompletion = false;
+            _context.next = 18;
+            break;
+
+          case 30:
+            _context.next = 36;
+            break;
+
+          case 32:
+            _context.prev = 32;
+            _context.t0 = _context["catch"](16);
             _didIteratorError = true;
             _iteratorError = _context.t0;
 
-          case 28:
-            _context.prev = 28;
-            _context.prev = 29;
+          case 36:
+            _context.prev = 36;
+            _context.prev = 37;
 
             if (!(_iteratorAbruptCompletion && _iterator["return"] != null)) {
-              _context.next = 33;
+              _context.next = 41;
               break;
             }
 
-            _context.next = 33;
+            _context.next = 41;
             return _iterator["return"]();
 
-          case 33:
-            _context.prev = 33;
+          case 41:
+            _context.prev = 41;
 
             if (!_didIteratorError) {
-              _context.next = 36;
+              _context.next = 44;
               break;
             }
 
             throw _iteratorError;
 
-          case 36:
-            return _context.finish(33);
+          case 44:
+            return _context.finish(41);
 
-          case 37:
-            return _context.finish(28);
+          case 45:
+            return _context.finish(36);
 
-          case 38:
-            return _context.abrupt("return", res.status(201).json({
-              statusCode: 201,
-              statusText: "Created",
-              data: resArr
+          case 46:
+            _logger["default"].debug(convertResult);
+
+            timestamp = new Date();
+            failedItems = [];
+            _context.next = 51;
+            return _db["default"].updateContent(source, slug, convertResult, timestamp.toUTCString());
+
+          case 51:
+            result = _context.sent;
+
+            _logger["default"].debug(result);
+
+            if (result) failedItems.push(result);
+            _context.next = 56;
+            return _db["default"].updateStatus(requestId, "completed", "".concat(source, "-chapter"), slug, failedItems.filter(function (item) {
+              return item;
             }));
 
-          case 41:
-            _context.prev = 41;
+          case 56:
+            _context.next = 62;
+            break;
+
+          case 58:
+            _context.prev = 58;
             _context.t1 = _context["catch"](1);
 
             _logger["default"].error(_context.t1.message);
@@ -134,12 +170,12 @@ var convertImg = /*#__PURE__*/function () {
               statusText: _context.t1.message
             }));
 
-          case 45:
+          case 62:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee, null, [[1, 41], [11, 24, 28, 38], [29,, 33, 37]]);
+    }, _callee, null, [[1, 58], [16, 32, 36, 46], [37,, 41, 45]]);
   }));
 
   return function convertImg(_x, _x2) {

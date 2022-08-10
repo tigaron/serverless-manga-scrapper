@@ -7,11 +7,11 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.fetchStatus = exports.fetchSourceList = exports.fetchData = void 0;
 
-var _dbqueries = require("../services/dbqueries");
-
-var _provider = require("../utils/provider");
-
 var _logger = _interopRequireDefault(require("../services/logger"));
+
+var _utils = _interopRequireDefault(require("../utils"));
+
+var _db = _interopRequireDefault(require("../db"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -31,7 +31,7 @@ var fetchStatus = /*#__PURE__*/function () {
             _context.prev = 0;
             id = req.params.id;
             _context.next = 4;
-            return _dbqueries.dbService.checkStatus(id);
+            return _db["default"].getStatus(id);
 
           case 4:
             response = _context.sent;
@@ -83,7 +83,7 @@ var fetchSourceList = function fetchSourceList(req, res) {
   return res.status(200).json({
     statusCode: 200,
     statusText: "OK",
-    data: Array.from(_provider.sourceList.keys())
+    data: Array.from(_utils["default"].keys())
   });
 };
 
@@ -106,7 +106,7 @@ var fetchData = function fetchData(type) {
 
             case 5:
               _context2.next = 7;
-              return _dbqueries.dbService.getMangaList(source);
+              return _db["default"].getMangaList(source);
 
             case 7:
               response = _context2.sent;
@@ -114,7 +114,7 @@ var fetchData = function fetchData(type) {
 
             case 9:
               _context2.next = 11;
-              return _dbqueries.dbService.getEntry(source, type, slug);
+              return _db["default"].getEntry(source, type, slug);
 
             case 11:
               response = _context2.sent;
@@ -122,7 +122,7 @@ var fetchData = function fetchData(type) {
 
             case 13:
               _context2.next = 15;
-              return _dbqueries.dbService.getChapterList(source, slug);
+              return _db["default"].getChapterList(source, slug);
 
             case 15:
               response = _context2.sent;

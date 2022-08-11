@@ -96,32 +96,35 @@ var crawler = /*#__PURE__*/function () {
 
           case 26:
             content = _context.sent;
+
+            _logger["default"].debug("Crawl success: '".concat(url, "'"));
+
             return _context.abrupt("return", content);
 
-          case 30:
-            _context.prev = 30;
+          case 31:
+            _context.prev = 31;
             _context.t5 = _context["catch"](10);
 
             _logger["default"].debug("Crawl fail: '".concat(url, "'"));
 
-            _logger["default"].warn(_context.t5.message);
+            _logger["default"].debug(_context.t5.message);
 
             return _context.abrupt("return", _context.t5);
 
-          case 35:
-            _context.prev = 35;
-            _context.next = 38;
+          case 36:
+            _context.prev = 36;
+            _context.next = 39;
             return browser.close();
 
-          case 38:
-            return _context.finish(35);
-
           case 39:
+            return _context.finish(36);
+
+          case 40:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee, null, [[10, 30, 35, 39]]);
+    }, _callee, null, [[10, 31, 36, 40]]);
   }));
 
   return function crawler(_x) {
@@ -266,24 +269,26 @@ var scraper = /*#__PURE__*/function () {
             return _context2.abrupt("break", 16);
 
           case 16:
+            _logger["default"].debug("Scrape success: '".concat(url, "'"));
+
             return _context2.abrupt("return", result);
 
-          case 19:
-            _context2.prev = 19;
+          case 20:
+            _context2.prev = 20;
             _context2.t1 = _context2["catch"](0);
 
             _logger["default"].debug("Scrape fail: '".concat(url, "'"));
 
-            _logger["default"].warn(_context2.t1.message);
+            _logger["default"].debug(_context2.t1.message);
 
             return _context2.abrupt("return", _context2.t1);
 
-          case 24:
+          case 25:
           case "end":
             return _context2.stop();
         }
       }
-    }, _callee2, null, [[0, 19]]);
+    }, _callee2, null, [[0, 20]]);
   }));
 
   return function scraper(_x2, _x3, _x4) {

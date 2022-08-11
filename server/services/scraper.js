@@ -34,10 +34,11 @@ const crawler = async (url) => {
 		if (!response.ok()) throw new Error(`Failed to fetch '${url}`);
 
 		const content = await page.content();
+		logger.debug(`Crawl success: '${url}'`);
 		return content;
 	} catch (error) {
 		logger.debug(`Crawl fail: '${url}'`);
-		logger.warn(error.message);
+		logger.debug(error.message);
 		return error;
 	} finally {
 		await browser.close();
@@ -111,10 +112,11 @@ const scraper = async (url, type, isRealm) => {
 				result = parseChapter($, isRealm);
 				break;
 		}
+		logger.debug(`Scrape success: '${url}'`);
 		return result;
 	} catch (error) {
 		logger.debug(`Scrape fail: '${url}'`);
-		logger.warn(error.message);
+		logger.debug(error.message);
 		return error;
 	}
 };

@@ -55,6 +55,7 @@ const imgConverter = async (
 		const { $metadata } = await s3client.send(new PutObjectCommand(params));
 		if ($metadata.httpStatusCode !== 200)
 			throw new Error(`Unable to convert ${url}`);
+		logger.debug(`Upload success: ${url}`);
 		return `https://${bucketName}.s3.${region}.amazonaws.com/${encodeURIComponent(fileName)}`;
 	} catch (error) {
 		logger.debug(`Upload fail: ${url}`);

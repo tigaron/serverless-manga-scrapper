@@ -102,22 +102,24 @@ var imgConverter = /*#__PURE__*/function () {
             throw new Error("Unable to convert ".concat(url));
 
           case 15:
+            _logger["default"].debug("Upload success: ".concat(url));
+
             return _context.abrupt("return", "https://".concat(bucketName, ".s3.").concat(region, ".amazonaws.com/").concat(encodeURIComponent(fileName)));
 
-          case 18:
-            _context.prev = 18;
+          case 19:
+            _context.prev = 19;
             _context.t0 = _context["catch"](2);
 
             _logger["default"].debug("Upload fail: ".concat(url));
 
             _logger["default"].debug(_context.t0.message);
 
-          case 22:
+          case 23:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee, null, [[2, 18]]);
+    }, _callee, null, [[2, 19]]);
   }));
 
   return function imgConverter(_x, _x2, _x3, _x4) {

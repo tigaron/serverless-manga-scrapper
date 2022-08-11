@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-url="https://el0uvhdr9i.execute-api.ap-southeast-1.amazonaws.com"
+url="https://hhoro6n3dfudiuzf45ju35q7ii0fekxw.lambda-url.ap-southeast-1.on.aws"
 
 fetchList() {
 	curl --request GET \
@@ -38,6 +38,13 @@ postChapter() {
 		--data '{ "source": "'$1'", "slug": "'$2'" }'
 }
 
+putContent() {
+	curl --request PUT \
+		--url "${url}/convert/chapter" \
+		--header 'content-type: application/json' \
+		--data '{ "source": "'$1'", "slug": "'$2'" }'
+}
+
 scrapeMangaData() {
 	mapfile -t sourceList < <(fetchList | jq -r ".data[]")
 	for x in "${!sourceList[@]}"; do
@@ -56,13 +63,16 @@ scrapeMangaData() {
 	done
 }
 
-scrapeSpecificManga() {
-	postManga "luminous" "series+avant-garde-covert-agent"
+convertContent() {
+	mapfile -t mangaList < <(fetchMangaList "asura" | jq -r ".data[].Slug")
 	echo
-			mapfile -t chapterList < <(fetchChapterList "luminous" "series+avant-garde-covert-agent" | jq -r ".data[].Slug")
-			for z in "${!chapterList[@]}"; do
-				postChapter "luminous" "${chapterList[${z}]}"
-				echo
-			done
+	for y in "${!mangaList[@]}"; do
+		mapfile -t chapterList < <(fetchChapterList "asura" "${mangaList[${y}]}" | jq -r ".data[].Slug")
+		for z in "${!chapterList[@]}"; do
+			putContent "asura" "${chapterList[${z}]}"
+			echo
+		done
+	done
 }
-scrapeSpecificManga
+
+convertContent

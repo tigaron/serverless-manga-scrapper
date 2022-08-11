@@ -12,7 +12,7 @@
     "fun:dev": "serverless deploy function --function scraper --stage development --verbose",
     "offline": "serverless offline start",
     "local": "serverless invoke local --function scraper --path data.json",
-    "dev": "NODE_ENV=development npm-run-all build server",
+    "dev": "NODE_ENV=development npm-run-all build offline",
     "server": "node ./dist-server/bin/www",
     "transpile": "babel ./server --out-dir dist-server",
     "clean": "rimraf dist-server",

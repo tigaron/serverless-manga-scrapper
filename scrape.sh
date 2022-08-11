@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-url="https://hhoro6n3dfudiuzf45ju35q7ii0fekxw.lambda-url.ap-southeast-1.on.aws"
+url="https://o7m7nsil5gkwfauk5g34cm2ewe0hzhhm.lambda-url.ap-southeast-1.on.aws"
 
 fetchList() {
 	curl --request GET \

@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import imgConverter from "../services/converter";
+import urlConverter from "../services/converter";
 import logger from "../services/logger";
 import db from "../db";
 
@@ -25,8 +25,8 @@ export const convertImg = async (req, res) => {
 		const imgUrl = response.Content;
 		const MangaSlug = response.MangaSlug;
 		const convertResult = [];
-		for await (const item of imgUrl) {
-			const newUrl = await imgConverter(source, slug, MangaSlug, item);
+		for (const item of imgUrl) {
+			const newUrl = urlConverter(item);
 			convertResult.push(newUrl);
 		}
 		const timestamp = new Date();

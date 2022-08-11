@@ -63,4 +63,4 @@ const imgConverter = async (
 	}
 };
 
-export default imgConverter;
+export default urlConverter;

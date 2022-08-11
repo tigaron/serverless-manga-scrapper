@@ -166,10 +166,8 @@ var getChapterList = /*#__PURE__*/function () {
   var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3(provider, slug) {
     var tableName,
         params,
-        _yield$dbclient$send3,
-        Items,
+        data,
         _args3 = arguments;
-
     return _regeneratorRuntime().wrap(function _callee3$(_context3) {
       while (1) {
         switch (_context3.prev = _context3.next) {
@@ -179,7 +177,7 @@ var getChapterList = /*#__PURE__*/function () {
               TableName: tableName,
               ExpressionAttributeNames: {
                 "#PT": "Provider-Type",
-                "#U": "Url"
+                "#MS": "MangaSlug"
               },
               ExpressionAttributeValues: {
                 ":pt": {
@@ -190,31 +188,29 @@ var getChapterList = /*#__PURE__*/function () {
                 }
               },
               KeyConditionExpression: "#PT = :pt",
-              FilterExpression: "contains (MangaSlug, :ms)",
-              ProjectionExpression: "Title, Slug, #U"
+              FilterExpression: "#MS = :ms"
             };
             _context3.prev = 2;
             _context3.next = 5;
             return _configs.dbclient.send(new _clientDynamodb.QueryCommand(params));
 
           case 5:
-            _yield$dbclient$send3 = _context3.sent;
-            Items = _yield$dbclient$send3.Items;
+            data = _context3.sent;
 
-            if (!(Items == undefined)) {
-              _context3.next = 9;
+            if (!(data.Items == undefined)) {
+              _context3.next = 8;
               break;
             }
 
             throw new Error("Unable to find data for '".concat(slug, "'"));
 
-          case 9:
-            return _context3.abrupt("return", Items.map(function (item) {
+          case 8:
+            return _context3.abrupt("return", data.Items.map(function (item) {
               return (0, _utilDynamodb.unmarshall)(item);
             }));
 
-          case 12:
-            _context3.prev = 12;
+          case 11:
+            _context3.prev = 11;
             _context3.t0 = _context3["catch"](2);
 
             _logger["default"].debug("Query fail: ".concat(provider, "-chapter | ").concat(slug));
@@ -223,12 +219,12 @@ var getChapterList = /*#__PURE__*/function () {
 
             return _context3.abrupt("return", _context3.t0);
 
-          case 17:
+          case 16:
           case "end":
             return _context3.stop();
         }
       }
-    }, _callee3, null, [[2, 12]]);
+    }, _callee3, null, [[2, 11]]);
   }));
 
   return function getChapterList(_x5, _x6) {
@@ -242,7 +238,7 @@ var getStatus = /*#__PURE__*/function () {
   var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(id) {
     var tableName,
         params,
-        _yield$dbclient$send4,
+        _yield$dbclient$send3,
         Item,
         unmappedItems,
         result,
@@ -269,8 +265,8 @@ var getStatus = /*#__PURE__*/function () {
             return _configs.dbclient.send(new _clientDynamodb.GetItemCommand(params));
 
           case 5:
-            _yield$dbclient$send4 = _context4.sent;
-            Item = _yield$dbclient$send4.Item;
+            _yield$dbclient$send3 = _context4.sent;
+            Item = _yield$dbclient$send3.Item;
 
             if (!(Item == undefined)) {
               _context4.next = 9;

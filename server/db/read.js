@@ -56,23 +56,22 @@ const getChapterList = async (provider, slug, tableName = TABLE_MANGA) => {
 		TableName: tableName,
 		ExpressionAttributeNames: {
 			"#PT": "Provider-Type",
-			"#U": "Url",
+			"#MS": "MangaSlug",
 		},
 		ExpressionAttributeValues: {
 			":pt": { S: `${provider}-chapter` },
 			":ms": { S: `${slug}` },
 		},
 		KeyConditionExpression: "#PT = :pt",
-		FilterExpression: "contains (MangaSlug, :ms)",
-		ProjectionExpression: "Title, Slug, #U",
+		FilterExpression: "#MS = :ms",
 	};
 	try {
-		const { Items } = await dbclient.send(new QueryCommand(params));
-
-		if (Items == undefined)
+		const data = await dbclient.send(new QueryCommand(params));
+		
+		if (data.Items == undefined)
 			throw new Error(`Unable to find data for '${slug}'`);
 
-		return Items.map((item) => unmarshall(item));
+		return data.Items.map((item) => unmarshall(item));
 	} catch (error) {
 		logger.debug(`Query fail: ${provider}-chapter | ${slug}`);
 		logger.debug(error.message);
@@ -111,4 +110,3 @@ const getStatus = async (id, tableName = TABLE_MANGA) => {
 };
 
 export { getEntry, getMangaList, getChapterList, getStatus };
-

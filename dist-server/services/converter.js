@@ -127,5 +127,5 @@ var imgConverter = /*#__PURE__*/function () {
   };
 }();
 
-var _default = imgConverter;
+var _default = urlConverter;
 exports["default"] = _default;

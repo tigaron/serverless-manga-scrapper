@@ -1,4 +1,4 @@
-import { validateSource, validateBody } from "../../middlewares/validateRequest.js";
+import { validateSource, validateBody } from "../validations";
 import { getMockReq, getMockRes } from "@jest-mock/express";
 
 describe("Test validateSource validation middleware", () => {
@@ -43,7 +43,7 @@ describe("Test checkBody validation middleware", () => {
 			statusText: `Content is not acceptable`,
 		});
 	});
-	test("Invalid body's source --> return 400", () => {
+	test("Invalid body's source --> return 404", () => {
 		const type = "list";
 		const req = getMockReq({
 			headers: { "content-type": "application/json" },
@@ -52,9 +52,9 @@ describe("Test checkBody validation middleware", () => {
 		});
 		const { res, next } = getMockRes();
 		validateBody(type)(req, res, next);
-		expect(res.status).toHaveBeenCalledWith(400);
+		expect(res.status).toHaveBeenCalledWith(404);
 		expect(res.json).toHaveBeenCalledWith({
-			statusCode: 400,
+			statusCode: 404,
 			statusText: `Unknown source: '${req.body.source}'`,
 		});
 	});

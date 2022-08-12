@@ -1,4 +1,4 @@
-const sourceList = new Map([
+const providerList = new Map([
 	["alpha", { base: "https://alpha-scans.org", slug: "manga" }],
 	["asura", { base: "https://www.asurascans.com", slug: "manga" }],
 	["flame", { base: "https://flamescans.org", slug: "series" }],
@@ -6,4 +6,4 @@ const sourceList = new Map([
 	["realm", { base: "https://realmscans.com", slug: "series" }],
 ]);
 
-export default sourceList;
+export default providerList;

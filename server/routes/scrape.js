@@ -1,6 +1,6 @@
 import express from "express";
 import { scrapeData } from "../controllers/scrape";
-import { validateBody } from "../middlewares/validateRequest";
+import { validateBody } from "../validations";
 var router = express.Router();
 
 router.route("/list").post(validateBody("list"), scrapeData("list"));

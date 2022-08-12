@@ -48,7 +48,7 @@ function parseMangaList($, mangaProvider) {
 		const MangaProvider = mangaProvider;
 		const timestamp = new Date();
 		const manga = new Map([
-			["Id", `MangaList_${MangaProvider}_${MangaSlug}`],
+			["Id", `manga-list_${MangaProvider}_${MangaSlug}`],
 			["MangaTitle", MangaTitle],
 			["MangaSlug", MangaSlug],
 			["MangaType", MangaType],
@@ -70,7 +70,7 @@ function parseManga($, mangaProvider) {
 	const MangaProvider = mangaProvider;
 	const timestamp = new Date();
 	const result = new Map([
-		["Id", `Manga_${MangaProvider}_${MangaSlug}`],
+		["Id", `manga_${MangaProvider}_${MangaSlug}`],
 		["MangaTitle", MangaTitle],
 		["MangaSlug", MangaSlug],
 		["MangaType", MangaType],
@@ -100,7 +100,7 @@ function parseChapterList($, mangaProvider) {
 		const ChapterProvider = mangaProvider;
 		const timestamp = new Date();
 		const chapter = new Map([
-			["Id", `ChapterList_${ChapterProvider}_${ChapterSlug}`],
+			["Id", `chapter-list_${ChapterProvider}_${ChapterSlug}`],
 			["ChapterTitle", ChapterTitle],
 			["ChapterSlug", ChapterSlug],
 			["ChapterProvider", ChapterProvider],
@@ -133,7 +133,7 @@ function parseChapter($, mangaProvider) {
 		});
 	}
 	const result = new Map([
-		["Id", `Chapter_${ChapterProvider}_${ChapterSlug}`],
+		["Id", `chapter_${ChapterProvider}_${ChapterSlug}`],
 		["ChapterTitle", ChapterTitle],
 		["ChapterSlug", ChapterSlug],
 		["ChapterProvider", ChapterProvider],

@@ -1,30 +1,24 @@
 import { GetItemCommand, QueryCommand } from "@aws-sdk/client-dynamodb";
-import { unmarshall } from "@aws-sdk/util-dynamodb";
+import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { dbclient } from "../configs";
 import logger from "../services/logger";
 
 const { TABLE_MANGA } = process.env;
 
-const getEntry = async (provider, type, slug, tableName = TABLE_MANGA) => {
+async function getEntry(id, tableName = TABLE_MANGA) {
 	const params = {
 		TableName: tableName,
-		Key: {
-			"Provider-Type": { S: `${provider}-${type}` },
-			Slug: { S: `${slug}` },
-		},
+		Key: { Id: marshall(id) },
 	};
 	try {
 		const { Item } = await dbclient.send(new GetItemCommand(params));
-
-		if (Item == undefined) throw new Error(`Unable to find data for '${slug}'`);
-
-		return unmarshall(Item);
+		if (Item) return unmarshall(Item);
+		else return Item;
 	} catch (error) {
-		logger.debug(`Get fail: ${provider}-${type} | ${slug}`);
+		logger.debug(`getEntry fail: ${id}`);
 		logger.debug(error.message);
-		return error;
 	}
-};
+}
 
 const getMangaList = async (provider, tableName = TABLE_MANGA) => {
 	const params = {
@@ -67,7 +61,7 @@ const getChapterList = async (provider, slug, tableName = TABLE_MANGA) => {
 	};
 	try {
 		const data = await dbclient.send(new QueryCommand(params));
-		
+
 		if (data.Items == undefined)
 			throw new Error(`Unable to find data for '${slug}'`);
 

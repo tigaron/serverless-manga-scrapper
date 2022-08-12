@@ -98,29 +98,24 @@ const updateContent = async (
 	}
 };
 
-const updateStatus = async (
-	id,
-	status,
-	type,
-	req,
-	failed,
-	tableName = TABLE_MANGA
-) => {
-	const item = {
-		"Provider-Type": "request-status",
-		Slug: id,
-		Request: req ? `${type} | ${req}` : `${type}`,
-		Status: status,
-		FailedItems: failed ? failed : [],
-	};
+async function updateStatus(item, tableName = TABLE_MANGA) {
 	const params = {
 		TableName: tableName,
-		Item: marshall(item),
+		Key: { Id: marshall(item["Id"]) },
+		ExpressionAttributeNames: {
+			"#RS": "RequestStatus",
+			"#FI": "FailedItems"
+		},
+		ExpressionAttributeValues: {
+			":rs": marshall(item["RequestStatus"]),
+			":fi": marshall(item["FailedItems"]),
+		},
+		UpdateExpression: "SET #RS = :rs, #FI = :fi"
 	};
 	try {
-		await dbclient.send(new PutItemCommand(params));
+		await dbclient.send(new UpdateItemCommand(params));
 	} catch (error) {
-		logger.debug(`Put fail: ${item["Provider-Type"]} | ${item["Slug"]}`);
+		logger.debug(`updateStatus fail: ${item["Id"]}`);
 		logger.debug(error.message);
 	}
 };

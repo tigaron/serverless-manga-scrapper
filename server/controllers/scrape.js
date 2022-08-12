@@ -1,17 +1,98 @@
 import { v4 as uuidv4 } from "uuid";
 import scraper from "../services/scraper";
 import logger from "../services/logger";
-import sourceList from "../utils";
+import providerList from "../utils";
 import db from "../db";
+import { updateStatus } from "../db/update";
+
+/*
+/scrape/manga-list
+provider: asura
+
+/scrape/manga
+provider: asura
+type: comics
+slug: duke-pendragon
+
+/scrape/chapter-list
+provider: asura
+type: comics
+slug: duke-pendragon
+
+/scrape/chapter
+provider: asura
+slug: duke-pendragon-1
+
+/fetch/manga-list/asura
+/fetch/manga/asura/comics_duke-pendragon
+/fetch/chapter-list/asura/comics_duke-pendragon
+/fetch/chapter/asura/duke-pendragon-01
+*/
 
 // TODO modify post behaviour to check existing database first before scraping to save resources
-export const scrapeData = (type) => {
-	return async (req, res) => {
-		const { source, slug } = req.body;
+export default async function scrapeMangaList(req, res) {
+	const { provider: MangaProvider } = req.body;
+	const urlString = `${Object.values(providerList.get(MangaProvider)).join("/")}/list-mode/`;
+	let jsonResponse;
+	try {
+		const response = await scraper(urlString, "MangaList", MangaProvider);
+		if (response.constructor === Error) {
+			jsonResponse = new Map([
+				["status", response.cause],
+				["statusText", response.message],
+			]);
+			return res.status(response.cause).json(Object.fromEntries(jsonResponse));
+		}
+
+		const requestId = uuidv4();
+		const requestStatus = new Map([
+			["Id", requestId],
+			["RequestType", `manga-list_${MangaProvider}`],
+			["RequestStatus", "pending"],
+		])
+		await db.createStatus(Object.fromEntries(requestStatus));
+		
+		jsonResponse = new Map([
+			["status", 202],
+			["statusText", "Processing request..."],
+			["data", { requestId: requestId, requestType: `manga-list_${MangaProvider}` }],
+		]);
+		res.status(202).json(Object.fromEntries(jsonResponse));
+		
+		const failedItems = new Set();
+		for await (const element of response) {
+			const data = await db.getEntry(element.get("Id"));
+			if (data) {
+				failedItems.add(`Already exist in the database: ${element.get("MangaSlug")}`);
+				continue;
+			} else {
+				await db.createEntry(Object.fromEntries(element));
+			}
+		}
+
+		const updatedStatus = new Map([
+			["Id", requestId],
+			["RequestStatus", "completed"],
+			["FailedItems", failedItems.size ? Array.from(failedItems) : []],
+		]);
+		await db.updateStatus(Object.fromEntries(updatedStatus));
+	} catch (error) {
+		logger.error(error.message);
+		jsonResponse = new Map([
+			["status", 500],
+			["statusText", error.message],
+		]);
+		return res.status(500).json(Object.fromEntries(jsonResponse));
+	}
+}
+
+function scrapeData(requestType) {
+	return async function (req, res) {
+		const { provider, type, slug } = req.body;
 		const url =
 			type === "list"
-				? Object.values(sourceList.get(source)).join("/") + "/list-mode/"
-				: sourceList.get(source).base + `/${slug.split("+").join("/")}/`;
+				? Object.values(providerList.get(source)).join("/") + "/list-mode/"
+				: providerList.get(source).base + `/${slug.split("+").join("/")}/`;
 
 		try {
 			const response = await scraper(url, type);
@@ -23,12 +104,7 @@ export const scrapeData = (type) => {
 				});
 
 			const requestId = uuidv4();
-			await db.updateStatus(
-				requestId,
-				"pending",
-				`${source}-${type}`,
-				slug
-			);
+			await db.updateStatus(requestId, "pending", `${source}-${type}`, slug);
 
 			res.status(202).json({
 				statusCode: 202,
@@ -41,7 +117,7 @@ export const scrapeData = (type) => {
 			const timestamp = new Date();
 			let failedItems = [];
 			let result;
-			
+
 			switch (type) {
 				case "list":
 					for await (const item of response) {
@@ -114,4 +190,4 @@ export const scrapeData = (type) => {
 			});
 		}
 	};
-};
+}

@@ -5,7 +5,13 @@ function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" =
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = void 0;
+exports.crawler = crawler;
+exports["default"] = scraper;
+exports.loadHTML = loadHTML;
+exports.parseChapter = parseChapter;
+exports.parseChapterList = parseChapterList;
+exports.parseManga = parseManga;
+exports.parseMangaList = parseMangaList;
 
 var _chromeAwsLambda = _interopRequireDefault(require("@sparticuz/chrome-aws-lambda"));
 
@@ -97,7 +103,9 @@ function _crawler() {
               break;
             }
 
-            throw new Error("Failed to fetch '".concat(urlString));
+            throw new Error("Failed to crawl '".concat(urlString, "'"), {
+              cause: response.status()
+            });
 
           case 24:
             _context.next = 26;
@@ -109,7 +117,7 @@ function _crawler() {
           case 29:
             _context.prev = 29;
             _context.t5 = _context["catch"](10);
-            return _context.abrupt("return", _context.t5);
+            throw _context.t5;
 
           case 32:
             _context.prev = 32;
@@ -130,10 +138,11 @@ function _crawler() {
 }
 
 function loadHTML(htmlString) {
+  if (htmlString.constructor === Error) throw htmlString;
   return cheerio.load(htmlString);
 }
 
-function parseList($, mangaProvider) {
+function parseMangaList($, mangaProvider) {
   var result = new Set();
   $("a.series", "div.soralist").each(function (index, element) {
     var MangaTitle = $(element).text().trim();
@@ -145,7 +154,8 @@ function parseList($, mangaProvider) {
         MangaSlug = _MangaUrl$split$slice2[1];
 
     var MangaProvider = mangaProvider;
-    var manga = new Map([["MangaProvider", MangaProvider], ["MangaTitle", MangaTitle], ["MangaSlug", MangaSlug], ["MangaType", MangaType], ["MangaUrl", MangaUrl]]);
+    var timestamp = new Date();
+    var manga = new Map([["Id", "MangaList_".concat(MangaProvider, "_").concat(MangaSlug)], ["MangaTitle", MangaTitle], ["MangaSlug", MangaSlug], ["MangaType", MangaType], ["MangaProvider", MangaProvider], ["MangaUrl", MangaUrl], ["UpdatedAt", timestamp.toUTCString()]]);
     result.add(manga);
   });
   return result;
@@ -163,18 +173,23 @@ function parseManga($, mangaProvider) {
       MangaSlug = _MangaUrl$split$slice4[1];
 
   var MangaProvider = mangaProvider;
-  var manga = new Map([["MangaProvider", MangaProvider], ["MangaTitle", MangaTitle], ["MangaSlug", MangaSlug], ["MangaType", MangaType], ["MangaUrl", MangaUrl], ["MangaCover", MangaCover], ["MangaSynopsis", MangaSynopsis]]);
-  var chapterList = new Set();
+  var timestamp = new Date();
+  var result = new Map([["Id", "Manga_".concat(MangaProvider, "_").concat(MangaSlug)], ["MangaTitle", MangaTitle], ["MangaSlug", MangaSlug], ["MangaType", MangaType], ["MangaProvider", MangaProvider], ["MangaUrl", MangaUrl], ["MangaCover", MangaCover], ["MangaSynopsis", MangaSynopsis], ["UpdatedAt", timestamp.toUTCString()]]);
+  return result;
+}
+
+function parseChapterList($, mangaProvider) {
+  var result = new Set();
   $("a", "div.eplister").each(function (index, element) {
     var ChapterTitle = $("span.chapternum", element).text().includes("\n") ? $("span.chapternum", element).text().trim().split("\n").slice(-2).join(" ") : $("span.chapternum", element).text().trim();
-    var ChapterDate = $("span.chapterdate", element).text().includes("\n") ? $("span.chapterdate", element).text().trim().split("\n").slice(-2).join(" ") : $("span.chapterdate", element).text().trim();
+    var ChapterDate = $("span.chapterdate", element).text().trim();
     var ChapterUrl = $(element).attr("href");
     var ChapterSlug = ChapterUrl.split("/").slice(-2).shift();
     var ChapterProvider = mangaProvider;
-    var chapter = new Map([["ChapterProvider", ChapterProvider], ["ChapterTitle", ChapterTitle], ["ChapterSlug", ChapterSlug], ["ChapterUrl", ChapterUrl], ["ChapterDate", ChapterDate]]);
-    chapterList.add(chapter);
+    var timestamp = new Date();
+    var chapter = new Map([["Id", "ChapterList_".concat(ChapterProvider, "_").concat(ChapterSlug)], ["ChapterTitle", ChapterTitle], ["ChapterSlug", ChapterSlug], ["ChapterProvider", ChapterProvider], ["ChapterUrl", ChapterUrl], ["ChapterDate", ChapterDate], ["UpdatedAt", timestamp.toUTCString()]]);
+    result.add(chapter);
   });
-  var result = new Set([manga, chapterList]);
   return result;
 }
 
@@ -183,6 +198,7 @@ function parseChapter($, mangaProvider) {
   var ChapterUrl = $("link[rel='canonical']").attr("href");
   var ChapterSlug = ChapterUrl.split("/").slice(-2).shift();
   var ChapterProvider = mangaProvider;
+  var timestamp = new Date();
   var ChapterContent = new Set();
 
   if (mangaProvider === "realm") {
@@ -198,7 +214,7 @@ function parseChapter($, mangaProvider) {
     });
   }
 
-  var result = new Map([["ChapterProvider", ChapterProvider], ["ChapterTitle", ChapterTitle], ["ChapterSlug", ChapterSlug], ["ChapterUrl", ChapterUrl], ["ChapterContent", ChapterContent]]);
+  var result = new Map([["Id", "Chapter_".concat(ChapterProvider, "_").concat(ChapterSlug)], ["ChapterTitle", ChapterTitle], ["ChapterSlug", ChapterSlug], ["ChapterProvider", ChapterProvider], ["ChapterUrl", ChapterUrl], ["ChapterContent", ChapterContent], ["UpdatedAt", timestamp.toUTCString()]]);
   return result;
 }
 
@@ -219,46 +235,33 @@ function _scraper() {
 
           case 3:
             htmlString = _context2.sent;
-
-            if (!(typeof htmlString !== "string")) {
-              _context2.next = 6;
-              break;
-            }
-
-            throw new Error("No valid HTML string detected");
-
-          case 6:
             $ = loadHTML(htmlString);
             parserDictionary = {
-              list: parseList($, mangaProvider),
-              manga: parseManga($, mangaProvider),
-              chapter: parseChapter($, mangaProvider)
+              MangaList: parseMangaList($, mangaProvider),
+              Manga: parseManga($, mangaProvider),
+              ChapterList: parseChapterList($, mangaProvider),
+              Chapter: parseChapter($, mangaProvider)
             };
             result = parserDictionary[requestType];
 
-            _logger["default"].debug("Scrape success: '".concat(urlString, "'"));
+            _logger["default"].debug("Scraper success: ".concat(requestType, " - ").concat(urlString));
 
             return _context2.abrupt("return", result);
 
-          case 13:
-            _context2.prev = 13;
+          case 11:
+            _context2.prev = 11;
             _context2.t0 = _context2["catch"](0);
 
-            _logger["default"].debug("Scrape fail: '".concat(urlString, "'"));
+            _logger["default"].warn("Scraper fail: ".concat(requestType, " - ").concat(urlString));
 
-            _logger["default"].debug(_context2.t0.message);
+            throw _context2.t0;
 
-            return _context2.abrupt("return", _context2.t0);
-
-          case 18:
+          case 15:
           case "end":
             return _context2.stop();
         }
       }
-    }, _callee2, null, [[0, 13]]);
+    }, _callee2, null, [[0, 11]]);
   }));
   return _scraper.apply(this, arguments);
 }
-
-var _default = scraper;
-exports["default"] = _default;

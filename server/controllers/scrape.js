@@ -3,7 +3,6 @@ import scraper from "../services/scraper";
 import logger from "../services/logger";
 import providerList from "../utils";
 import db from "../db";
-import { updateStatus } from "../db/update";
 
 /*
 /scrape/manga-list
@@ -29,8 +28,7 @@ slug: duke-pendragon-1
 /fetch/chapter/asura/duke-pendragon-01
 */
 
-// TODO modify post behaviour to check existing database first before scraping to save resources
-export default async function scrapeMangaList(req, res) {
+async function scrapeMangaList(req, res) {
 	const { provider: MangaProvider } = req.body;
 	const urlString = `${Object.values(providerList.get(MangaProvider)).join("/")}/list-mode/`;
 	let jsonResponse;
@@ -78,6 +76,7 @@ export default async function scrapeMangaList(req, res) {
 		await db.updateStatus(Object.fromEntries(updatedStatus));
 	} catch (error) {
 		logger.error(error.message);
+		logger.error(error.stack);
 		jsonResponse = new Map([
 			["status", 500],
 			["statusText", error.message],
@@ -86,7 +85,78 @@ export default async function scrapeMangaList(req, res) {
 	}
 }
 
-function scrapeData(requestType) {
+async function scrapeManga(req, res) {
+	const {
+		provider: MangaProvider,
+		type: MangaType,
+		slug: MangaSlug,
+	} = req.body;
+	const urlString = `${providerList.get(MangaProvider).base}/${MangaType}/${MangaSlug}/`;
+	let jsonResponse;
+	try {
+		const data = await db.getEntry(`manga_${MangaProvider}_${MangaSlug}`);
+		if (data) {
+			jsonResponse = new Map([
+				["status", 409],
+				["statusText", `Already exist in the database: '${MangaSlug}`],
+			]);
+			return res.status(409).json(Object.fromEntries(jsonResponse));
+		}
+
+		const response = await scraper(urlString, "Manga", MangaProvider);
+		if (response.constructor === Error) {
+			jsonResponse = new Map([
+				["status", response.cause],
+				["statusText", response.message],
+			]);
+			return res.status(response.cause).json(Object.fromEntries(jsonResponse));
+		}
+
+		await db.createEntry(Object.fromEntries(response));
+		jsonResponse = new Map([
+			["status", 201],
+			["statusText", "Created"],
+			["data", Object.fromEntries(response)],
+		]);
+		return res.status(201).json(Object.fromEntries(jsonResponse));
+	} catch (error) {
+		logger.error(error.message);
+		logger.error(error.stack);
+		jsonResponse = new Map([
+			["status", 500],
+			["statusText", error.message],
+		]);
+		return res.status(500).json(Object.fromEntries(jsonResponse));
+	}
+}
+
+async function scrapeChapterList(req, res) {
+	const {
+		provider: MangaProvider,
+		type: MangaType,
+		slug: MangaSlug,
+	} = req.body;
+	const urlString = `${providerList.get(MangaProvider).base}/${MangaType}/${MangaSlug}/`;
+	let jsonResponse;
+	try {
+		
+	} catch (error) {
+		logger.error(error.message);
+		logger.error(error.stack);
+		jsonResponse = new Map([
+			["status", 500],
+			["statusText", error.message],
+		]);
+		return res.status(500).json(Object.fromEntries(jsonResponse));
+	}
+}
+
+async function scrapeChapter(req, res) {
+}
+
+
+
+/* function scrapeData(requestType) {
 	return async function (req, res) {
 		const { provider, type, slug } = req.body;
 		const url =
@@ -190,4 +260,6 @@ function scrapeData(requestType) {
 			});
 		}
 	};
-}
+} */
+
+export { scrapeMangaList, scrapeManga, scrapeChapterList, scrapeChapter };

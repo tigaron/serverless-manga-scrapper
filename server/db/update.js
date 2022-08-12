@@ -1,6 +1,6 @@
 import { PutItemCommand, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
-import { dbclient } from "../configs";
+import dbclient from "../configs";
 import logger from "../services/logger";
 
 const { TABLE_MANGA } = process.env;
@@ -117,6 +117,7 @@ async function updateStatus(item, tableName = TABLE_MANGA) {
 	} catch (error) {
 		logger.debug(`updateStatus fail: ${item["Id"]}`);
 		logger.debug(error.message);
+		logger.debug(error.stack);
 	}
 };
 

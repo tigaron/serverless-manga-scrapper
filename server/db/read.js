@@ -1,6 +1,6 @@
 import { GetItemCommand, QueryCommand } from "@aws-sdk/client-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
-import { dbclient } from "../configs";
+import dbclient from "../configs";
 import logger from "../services/logger";
 
 const { TABLE_MANGA } = process.env;
@@ -17,6 +17,23 @@ async function getEntry(id, tableName = TABLE_MANGA) {
 	} catch (error) {
 		logger.debug(`getEntry fail: ${id}`);
 		logger.debug(error.message);
+		logger.debug(error.stack);
+	}
+}
+
+async function getStatus(id, tableName = TABLE_MANGA) {
+	const params = {
+		TableName: tableName,
+		Key: { Id: marshall(id) },
+	};
+	try {
+		const { Item } = await dbclient.send(new GetItemCommand(params));
+		if (Item) return unmarshall(Item);
+		else return Item;
+	} catch (error) {
+		logger.debug(`getEntry fail: ${id}`);
+		logger.debug(error.message);
+		logger.debug(error.stack);
 	}
 }
 
@@ -68,36 +85,6 @@ const getChapterList = async (provider, slug, tableName = TABLE_MANGA) => {
 		return data.Items.map((item) => unmarshall(item));
 	} catch (error) {
 		logger.debug(`Query fail: ${provider}-chapter | ${slug}`);
-		logger.debug(error.message);
-		return error;
-	}
-};
-
-const getStatus = async (id, tableName = TABLE_MANGA) => {
-	const params = {
-		TableName: tableName,
-		Key: {
-			"Provider-Type": { S: `request-status` },
-			Slug: { S: `${id}` },
-		},
-	};
-	try {
-		const { Item } = await dbclient.send(new GetItemCommand(params));
-
-		if (Item == undefined) throw new Error(`Unable to find data for '${id}'`);
-
-		const unmappedItems = unmarshall(Item);
-		const result = new Map([
-			["Provider-Type", unmappedItems["Provider-Type"]],
-			["Slug", unmappedItems["Slug"]],
-			["Request", unmappedItems["Request"]],
-			["Status", unmappedItems["Status"]],
-			["FailedItems", unmappedItems["FailedItems"]],
-		]);
-
-		return result;
-	} catch (error) {
-		logger.debug(`Get fail: request-status | ${id}`);
 		logger.debug(error.message);
 		return error;
 	}

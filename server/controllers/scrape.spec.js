@@ -1,6 +1,11 @@
 import { getMockReq, getMockRes } from "@jest-mock/express";
 import { jest } from "@jest/globals";
-import { scrapeMangaList, scrapeManga } from "./scrape";
+import {
+	scrapeMangaList,
+	scrapeManga,
+	scrapeChapterList,
+	scrapeChapter,
+} from "./scrape";
 import scraper from "../services/scraper";
 import db from "../db";
 

@@ -9,7 +9,7 @@ async function createEntry(item, tableName = TABLE_MANGA) {
 	const params = {
 		TableName: tableName,
 		Item: marshall(item),
-		ConditionExpression: "attribute_not_exist(Id)",
+		ConditionExpression: "attribute_not_exists(Id)",
 	};
 	try {
 		await dbclient.send(new PutItemCommand(params));
@@ -24,7 +24,7 @@ async function createStatus(item, tableName = TABLE_MANGA) {
 	const params = {
 		TableName: tableName,
 		Item: marshall(item),
-		ConditionExpression: "attribute_not_exist(Id)",
+		ConditionExpression: "attribute_not_exists(Id)",
 	};
 	try {
 		await dbclient.send(new PutItemCommand(params));

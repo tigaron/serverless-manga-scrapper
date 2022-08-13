@@ -9,7 +9,7 @@ exports.validateBody = validateBody;
 exports.validateProvider = validateProvider;
 exports.validateUUID = validateUUID;
 
-var _utils = _interopRequireDefault(require("../utils"));
+var _providerList = _interopRequireDefault(require("../utils/providerList"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -30,7 +30,7 @@ function validateUUID(req, res, next) {
 
 function validateProvider(req, res, next) {
   var provider = req.params.provider;
-  if (_utils["default"].has(provider)) next();else return res.status(404).json({
+  if (_providerList["default"].has(provider)) next();else return res.status(404).json({
     status: 404,
     statusText: "Unknown provider: '".concat(provider, "'")
   });
@@ -75,7 +75,7 @@ function validateBody(items) {
               }));
 
             case 6:
-              if (!_utils["default"].has(provider)) {
+              if (!_providerList["default"].has(provider)) {
                 _context.next = 10;
                 break;
               }

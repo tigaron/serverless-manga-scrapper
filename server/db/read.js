@@ -2,6 +2,7 @@ import { GetItemCommand } from "@aws-sdk/client-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import dbclient from "../configs";
 import logger from "../services/logger";
+import objectIsEmpty from "../utils/objectIsEmpty";
 
 const { TABLE_MANGA } = process.env;
 
@@ -33,8 +34,8 @@ async function getMangaListElement(item, tableName = TABLE_MANGA) {
 	};
 	try {
 		const { Item } = await dbclient.send(new GetItemCommand(params));
-		if (Item) return unmarshall(Item);
-		else return Item;
+		if (objectIsEmpty(Item)) return undefined;
+		else return unmarshall(Item);
 	} catch (error) {
 		logger.debug(`getMangaListElement fail: ${id}`);
 		logger.debug(error.message);
@@ -54,8 +55,8 @@ async function getChapterListElement(item, tableName = TABLE_MANGA) {
 	};
 	try {
 		const { Item } = await dbclient.send(new GetItemCommand(params));
-		if (Item) return unmarshall(Item);
-		else return Item;
+		if (objectIsEmpty(Item)) return undefined;
+		else return unmarshall(Item);
 	} catch (error) {
 		logger.debug(`getChapterListElement fail: ${id}`);
 		logger.debug(error.message);

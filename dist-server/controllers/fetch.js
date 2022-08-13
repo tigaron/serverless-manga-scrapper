@@ -11,7 +11,7 @@ exports.fetchStatus = fetchStatus;
 
 var _logger = _interopRequireDefault(require("../services/logger"));
 
-var _utils = _interopRequireDefault(require("../utils"));
+var _providerList = _interopRequireDefault(require("../utils/providerList"));
 
 var _db = _interopRequireDefault(require("../db"));
 
@@ -94,7 +94,7 @@ Function to fetch list of manga providers
 */
 
 function fetchProviderList(req, res) {
-  var jsonResponse = new Map([["status", 200], ["statusText", "OK"], ["data", Array.from(_utils["default"].keys())]]);
+  var jsonResponse = new Map([["status", 200], ["statusText", "OK"], ["data", Array.from(_providerList["default"].keys())]]);
   return res.status(200).json(Object.fromEntries(jsonResponse));
 }
 
@@ -106,7 +106,7 @@ Function to fetch an entry from database
 function fetchMangaData(DataType) {
   return /*#__PURE__*/function () {
     var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(req, res) {
-      var _req$params, provider, slug, idDictionary, data;
+      var _req$params, provider, slug, idDictionary, jsonResponse, data;
 
       return _regeneratorRuntime().wrap(function _callee$(_context) {
         while (1) {

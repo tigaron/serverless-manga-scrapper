@@ -188,7 +188,7 @@ function parseChapterList($, mangaProvider) {
     var ChapterTitle = $("span.chapternum", element).text().includes("\n") ? $("span.chapternum", element).text().trim().split("\n").slice(-2).join(" ") : $("span.chapternum", element).text().trim();
     var ChapterDate = $("span.chapterdate", element).text().trim();
     var ChapterUrl = $(element).attr("href");
-    var ChapterSlug = ChapterUrl.split("/").slice(-2).shift();
+    var ChapterSlug = ChapterUrl.split("/").slice(-2).shift().replace(/[\d]*[-]?/, "");
     var ChapterDetail = new Map([["ChapterTitle", ChapterTitle], ["ChapterSlug", ChapterSlug], ["ChapterUrl", ChapterUrl], ["ChapterDate", ChapterDate]]);
     ChapterList.set(ChapterSlug, ChapterDetail);
   });
@@ -257,7 +257,7 @@ function _scraper() {
 
             _logger["default"].warn("Scraper fail: ".concat(requestType, " - ").concat(urlString));
 
-            throw _context2.t0;
+            return _context2.abrupt("return", _context2.t0);
 
           case 15:
           case "end":

@@ -1,4 +1,4 @@
-import providerList from "../utils";
+import providerList from "../utils/providerList";
 
 function validateUUID(req, res, next) {
 	const { id } = req.params;

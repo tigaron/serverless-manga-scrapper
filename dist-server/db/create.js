@@ -43,7 +43,7 @@ function _createEntry() {
             params = {
               TableName: tableName,
               Item: (0, _utilDynamodb.marshall)(item),
-              ConditionExpression: "attribute_not_exist(Id)"
+              ConditionExpression: "attribute_not_exists(Id)"
             };
             _context.prev = 2;
             _context.next = 5;
@@ -90,7 +90,7 @@ function _createStatus() {
             params = {
               TableName: tableName,
               Item: (0, _utilDynamodb.marshall)(item),
-              ConditionExpression: "attribute_not_exist(Id)"
+              ConditionExpression: "attribute_not_exists(Id)"
             };
             _context2.prev = 2;
             _context2.next = 5;

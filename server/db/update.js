@@ -15,7 +15,9 @@ async function updateMangaListElement(item, tableName = TABLE_MANGA) {
 			"#UA": item["UpdatedAt"],
 		},
 		ExpressionAttributeValues: {
-			":md": marshall(item["MangaDetail"]),
+			":md": {
+				M: marshall(item["MangaDetail"])
+			},
 			":ua": marshall(item["UpdatedAt"]),
 		},
 		UpdateExpression: "SET #ML.#MS = :md, #UA = :ua"
@@ -39,7 +41,9 @@ async function updateChapterListElement(item, tableName = TABLE_MANGA) {
 			"#UA": item["UpdatedAt"],
 		},
 		ExpressionAttributeValues: {
-			":cd": marshall(item["ChapterDetail"]),
+			":cd": {
+				M: marshall(item["ChapterDetail"])
+			},
 			":ua": marshall(item["UpdatedAt"]),
 		},
 		UpdateExpression: "SET #CL.#CS = :cd, #UA = :ua"
@@ -63,7 +67,9 @@ async function updateStatus(item, tableName = TABLE_MANGA) {
 		},
 		ExpressionAttributeValues: {
 			":rs": marshall(item["RequestStatus"]),
-			":fi": marshall(item["FailedItems"]),
+			":fi": {
+				L: marshall(item["FailedItems"])
+			},
 		},
 		UpdateExpression: "SET #RS = :rs, #FI = :fi"
 	};

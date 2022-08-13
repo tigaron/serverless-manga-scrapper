@@ -1,5 +1,5 @@
 import logger from "../services/logger";
-import providerList from "../utils";
+import providerList from "../utils/providerList";
 import db from "../db";
 
 /*
@@ -65,6 +65,7 @@ function fetchMangaData(DataType) {
 			ChapterList: `chapter-list_${provider}_${slug}`,
 			Chapter: `chapter_${provider}_${slug}`,
 		}
+		let jsonResponse;
 		try {
 			const data = await db.getEntry(idDictionary[DataType]);
 			if (!data) {

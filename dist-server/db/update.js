@@ -52,7 +52,9 @@ function _updateMangaListElement() {
                 "#UA": item["UpdatedAt"]
               },
               ExpressionAttributeValues: {
-                ":md": (0, _utilDynamodb.marshall)(item["MangaDetail"]),
+                ":md": {
+                  M: (0, _utilDynamodb.marshall)(item["MangaDetail"])
+                },
                 ":ua": (0, _utilDynamodb.marshall)(item["UpdatedAt"])
               },
               UpdateExpression: "SET #ML.#MS = :md, #UA = :ua"
@@ -110,7 +112,9 @@ function _updateChapterListElement() {
                 "#UA": item["UpdatedAt"]
               },
               ExpressionAttributeValues: {
-                ":cd": (0, _utilDynamodb.marshall)(item["ChapterDetail"]),
+                ":cd": {
+                  M: (0, _utilDynamodb.marshall)(item["ChapterDetail"])
+                },
                 ":ua": (0, _utilDynamodb.marshall)(item["UpdatedAt"])
               },
               UpdateExpression: "SET #CL.#CS = :cd, #UA = :ua"
@@ -168,7 +172,9 @@ function _updateStatus() {
               },
               ExpressionAttributeValues: {
                 ":rs": (0, _utilDynamodb.marshall)(item["RequestStatus"]),
-                ":fi": (0, _utilDynamodb.marshall)(item["FailedItems"])
+                ":fi": {
+                  L: (0, _utilDynamodb.marshall)(item["FailedItems"])
+                }
               },
               UpdateExpression: "SET #RS = :rs, #FI = :fi"
             };

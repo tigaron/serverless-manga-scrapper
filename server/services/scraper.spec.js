@@ -44,7 +44,6 @@ describe("Unit test", () => {
 
 		const iterator = result.get("MangaList")[Symbol.iterator]();
 		for (const element of iterator) {
-			console.log(element)
 		}
 		/* expect(Object.fromEntries(iterator.next().value[1])).toEqual(
 			expect.objectContaining({

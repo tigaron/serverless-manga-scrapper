@@ -15,6 +15,8 @@ var _configs = _interopRequireDefault(require("../configs"));
 
 var _logger = _interopRequireDefault(require("../services/logger"));
 
+var _objectIsEmpty = _interopRequireDefault(require("../utils/objectIsEmpty"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
@@ -128,15 +130,15 @@ function _getMangaListElement() {
             _yield$dbclient$send2 = _context2.sent;
             Item = _yield$dbclient$send2.Item;
 
-            if (!Item) {
+            if (!(0, _objectIsEmpty["default"])(Item)) {
               _context2.next = 11;
               break;
             }
 
-            return _context2.abrupt("return", (0, _utilDynamodb.unmarshall)(Item));
+            return _context2.abrupt("return", undefined);
 
           case 11:
-            return _context2.abrupt("return", Item);
+            return _context2.abrupt("return", (0, _utilDynamodb.unmarshall)(Item));
 
           case 12:
             _context2.next = 19;
@@ -198,15 +200,15 @@ function _getChapterListElement() {
             _yield$dbclient$send3 = _context3.sent;
             Item = _yield$dbclient$send3.Item;
 
-            if (!Item) {
+            if (!(0, _objectIsEmpty["default"])(Item)) {
               _context3.next = 11;
               break;
             }
 
-            return _context3.abrupt("return", (0, _utilDynamodb.unmarshall)(Item));
+            return _context3.abrupt("return", undefined);
 
           case 11:
-            return _context3.abrupt("return", Item);
+            return _context3.abrupt("return", (0, _utilDynamodb.unmarshall)(Item));
 
           case 12:
             _context3.next = 19;

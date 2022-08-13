@@ -59,7 +59,6 @@ describe("Unit test", function () {
     try {
       for (_iterator.s(); !(_step = _iterator.n()).done;) {
         var element = _step.value;
-        console.log(element);
       }
       /* expect(Object.fromEntries(iterator.next().value[1])).toEqual(
       	expect.objectContaining({

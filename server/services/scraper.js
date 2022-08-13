@@ -107,7 +107,7 @@ function parseChapterList($, mangaProvider) {
 			: $("span.chapternum", element).text().trim();
 		const ChapterDate = $("span.chapterdate", element).text().trim();
 		const ChapterUrl = $(element).attr("href");
-		const ChapterSlug = ChapterUrl.split("/").slice(-2).shift();
+		const ChapterSlug = ChapterUrl.split("/").slice(-2).shift().replace(/[\d]*[-]?/, "");
 		const ChapterDetail = new Map([
 			["ChapterTitle", ChapterTitle],
 			["ChapterSlug", ChapterSlug],
@@ -166,7 +166,7 @@ export default async function scraper(urlString, requestType, mangaProvider) {
 		return result;
 	} catch (error) {
 		logger.warn(`Scraper fail: ${requestType} - ${urlString}`);
-		throw error;
+		return error;
 	}
 }
 

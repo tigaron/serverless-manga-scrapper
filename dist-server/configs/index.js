@@ -3,21 +3,30 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-Object.defineProperty(exports, "dbclient", {
-  enumerable: true,
-  get: function get() {
-    return _dbclient["default"];
-  }
+exports["default"] = void 0;
+
+var _clientDynamodb = require("@aws-sdk/client-dynamodb");
+
+var _libDynamodb = require("@aws-sdk/lib-dynamodb");
+
+var REGION = process.env.REGION;
+var dynamodb = new _clientDynamodb.DynamoDBClient({
+  region: REGION
 });
-Object.defineProperty(exports, "s3client", {
-  enumerable: true,
-  get: function get() {
-    return _s3client["default"];
-  }
-});
+var marshallOptions = {
+  convertEmptyValues: true,
+  removeUndefinedValues: true,
+  convertClassInstanceToMap: false
+};
+var unmarshallOptions = {
+  wrapNumbers: false
+};
+var translateConfig = {
+  marshallOptions: marshallOptions,
+  unmarshallOptions: unmarshallOptions
+};
 
-var _s3client = _interopRequireDefault(require("./s3client"));
+var dbclient = _libDynamodb.DynamoDBDocumentClient.from(dynamodb, translateConfig);
 
-var _dbclient = _interopRequireDefault(require("./dbclient"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+var _default = dbclient;
+exports["default"] = _default;

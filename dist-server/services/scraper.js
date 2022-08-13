@@ -143,7 +143,9 @@ function loadHTML(htmlString) {
 }
 
 function parseMangaList($, mangaProvider) {
-  var result = new Set();
+  var timestamp = new Date();
+  var result = new Map([["Id", "manga-list_".concat(mangaProvider)], ["UpdatedAt", timestamp.toUTCString()]]);
+  var MangaList = new Map();
   $("a.series", "div.soralist").each(function (index, element) {
     var MangaTitle = $(element).text().trim();
     var MangaUrl = $(element).attr("href");
@@ -153,11 +155,10 @@ function parseMangaList($, mangaProvider) {
         MangaType = _MangaUrl$split$slice2[0],
         MangaSlug = _MangaUrl$split$slice2[1];
 
-    var MangaProvider = mangaProvider;
-    var timestamp = new Date();
-    var manga = new Map([["Id", "MangaList_".concat(MangaProvider, "_").concat(MangaSlug)], ["MangaTitle", MangaTitle], ["MangaSlug", MangaSlug], ["MangaType", MangaType], ["MangaProvider", MangaProvider], ["MangaUrl", MangaUrl], ["UpdatedAt", timestamp.toUTCString()]]);
-    result.add(manga);
+    var MangaDetail = new Map([["MangaTitle", MangaTitle], ["MangaSlug", MangaSlug], ["MangaType", MangaType], ["MangaUrl", MangaUrl]]);
+    MangaList.set(MangaSlug, MangaDetail);
   });
+  result.set("MangaList", MangaList);
   return result;
 }
 
@@ -174,22 +175,24 @@ function parseManga($, mangaProvider) {
 
   var MangaProvider = mangaProvider;
   var timestamp = new Date();
-  var result = new Map([["Id", "Manga_".concat(MangaProvider, "_").concat(MangaSlug)], ["MangaTitle", MangaTitle], ["MangaSlug", MangaSlug], ["MangaType", MangaType], ["MangaProvider", MangaProvider], ["MangaUrl", MangaUrl], ["MangaCover", MangaCover], ["MangaSynopsis", MangaSynopsis], ["UpdatedAt", timestamp.toUTCString()]]);
+  var result = new Map([["Id", "manga_".concat(MangaProvider, "_").concat(MangaSlug)], ["MangaTitle", MangaTitle], ["MangaSlug", MangaSlug], ["MangaType", MangaType], ["MangaProvider", MangaProvider], ["MangaUrl", MangaUrl], ["MangaCover", MangaCover], ["MangaSynopsis", MangaSynopsis], ["UpdatedAt", timestamp.toUTCString()]]);
   return result;
 }
 
 function parseChapterList($, mangaProvider) {
-  var result = new Set();
+  var timestamp = new Date();
+  var MangaSlug = $("link[rel='canonical']").attr("href").split("/").slice(-3, -1).pop();
+  var result = new Map([["Id", "chapter-list_".concat(mangaProvider, "_").concat(MangaSlug)], ["UpdatedAt", timestamp.toUTCString()]]);
+  var ChapterList = new Map();
   $("a", "div.eplister").each(function (index, element) {
     var ChapterTitle = $("span.chapternum", element).text().includes("\n") ? $("span.chapternum", element).text().trim().split("\n").slice(-2).join(" ") : $("span.chapternum", element).text().trim();
     var ChapterDate = $("span.chapterdate", element).text().trim();
     var ChapterUrl = $(element).attr("href");
     var ChapterSlug = ChapterUrl.split("/").slice(-2).shift();
-    var ChapterProvider = mangaProvider;
-    var timestamp = new Date();
-    var chapter = new Map([["Id", "ChapterList_".concat(ChapterProvider, "_").concat(ChapterSlug)], ["ChapterTitle", ChapterTitle], ["ChapterSlug", ChapterSlug], ["ChapterProvider", ChapterProvider], ["ChapterUrl", ChapterUrl], ["ChapterDate", ChapterDate], ["UpdatedAt", timestamp.toUTCString()]]);
-    result.add(chapter);
+    var ChapterDetail = new Map([["ChapterTitle", ChapterTitle], ["ChapterSlug", ChapterSlug], ["ChapterUrl", ChapterUrl], ["ChapterDate", ChapterDate]]);
+    ChapterList.set(ChapterSlug, ChapterDetail);
   });
+  result.set("ChapterList", ChapterList);
   return result;
 }
 
@@ -214,7 +217,7 @@ function parseChapter($, mangaProvider) {
     });
   }
 
-  var result = new Map([["Id", "Chapter_".concat(ChapterProvider, "_").concat(ChapterSlug)], ["ChapterTitle", ChapterTitle], ["ChapterSlug", ChapterSlug], ["ChapterProvider", ChapterProvider], ["ChapterUrl", ChapterUrl], ["ChapterContent", ChapterContent], ["UpdatedAt", timestamp.toUTCString()]]);
+  var result = new Map([["Id", "chapter_".concat(ChapterProvider, "_").concat(ChapterSlug)], ["ChapterTitle", ChapterTitle], ["ChapterSlug", ChapterSlug], ["ChapterProvider", ChapterProvider], ["ChapterUrl", ChapterUrl], ["ChapterContent", ChapterContent], ["UpdatedAt", timestamp.toUTCString()]]);
   return result;
 }
 

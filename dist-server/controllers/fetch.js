@@ -5,7 +5,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" =
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.fetchStatus = exports.fetchSourceList = exports.fetchData = void 0;
+exports.fetchMangaData = fetchMangaData;
+exports.fetchProviderList = fetchProviderList;
+exports.fetchStatus = fetchStatus;
 
 var _logger = _interopRequireDefault(require("../services/logger"));
 
@@ -21,154 +23,152 @@ function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
-var fetchStatus = /*#__PURE__*/function () {
-  var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(req, res) {
-    var id, response;
-    return _regeneratorRuntime().wrap(function _callee$(_context) {
+/*
+Function to fetch status of a specific request Id
+*/
+function fetchStatus(_x, _x2) {
+  return _fetchStatus.apply(this, arguments);
+}
+
+function _fetchStatus() {
+  _fetchStatus = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(req, res) {
+    var Id, jsonResponse, data;
+    return _regeneratorRuntime().wrap(function _callee2$(_context2) {
       while (1) {
-        switch (_context.prev = _context.next) {
+        switch (_context2.prev = _context2.next) {
           case 0:
-            _context.prev = 0;
-            id = req.params.id;
-            _context.next = 4;
-            return _db["default"].getStatus(id);
+            Id = req.params.id;
+            _context2.prev = 1;
+            _context2.next = 4;
+            return _db["default"].getEntry(Id);
 
           case 4:
-            response = _context.sent;
+            data = _context2.sent;
 
-            if (!(response.message || Array.isArray(response) && response.length === 0 || response.constructor === Object && Object.keys(response).length === 0)) {
-              _context.next = 7;
+            if (data) {
+              _context2.next = 10;
               break;
             }
 
-            return _context.abrupt("return", res.status(404).json({
-              statusCode: 404,
-              statusText: response.message ? response.message : "Unable to find data for '".concat(slug, "'")
-            }));
-
-          case 7:
-            return _context.abrupt("return", res.status(200).json({
-              statusCode: 200,
-              statusText: "OK",
-              data: Object.fromEntries(response)
-            }));
+            /*
+            Return with 404 if not in the database
+            */
+            jsonResponse = new Map([["status", 404], ["statusText", "Cannot find '".concat(Id, "' in the database")]]);
+            return _context2.abrupt("return", res.status(404).json(Object.fromEntries(jsonResponse)));
 
           case 10:
-            _context.prev = 10;
-            _context.t0 = _context["catch"](0);
+            /*
+            Return with 200 if exist in the database
+            */
+            jsonResponse = new Map([["status", 200], ["statusText", "OK"], ["data", data]]);
+            return _context2.abrupt("return", res.status(200).json(Object.fromEntries(jsonResponse)));
 
-            _logger["default"].error(_context.t0.message);
-
-            return _context.abrupt("return", res.status(500).json({
-              statusCode: 500,
-              statusText: _context.t0.message
-            }));
+          case 12:
+            _context2.next = 20;
+            break;
 
           case 14:
+            _context2.prev = 14;
+            _context2.t0 = _context2["catch"](1);
+
+            _logger["default"].error(_context2.t0.message);
+
+            _logger["default"].error(_context2.t0.stack);
+
+            jsonResponse = new Map([["status", 500], ["statusText", _context2.t0.message]]);
+            return _context2.abrupt("return", res.status(500).json(Object.fromEntries(jsonResponse)));
+
+          case 20:
           case "end":
-            return _context.stop();
+            return _context2.stop();
         }
       }
-    }, _callee, null, [[0, 10]]);
+    }, _callee2, null, [[1, 14]]);
   }));
+  return _fetchStatus.apply(this, arguments);
+}
 
-  return function fetchStatus(_x, _x2) {
-    return _ref.apply(this, arguments);
-  };
-}();
+;
+/*
+Function to fetch list of manga providers
+*/
 
-exports.fetchStatus = fetchStatus;
+function fetchProviderList(req, res) {
+  var jsonResponse = new Map([["status", 200], ["statusText", "OK"], ["data", Array.from(_utils["default"].keys())]]);
+  return res.status(200).json(Object.fromEntries(jsonResponse));
+}
 
-var fetchSourceList = function fetchSourceList(req, res) {
-  return res.status(200).json({
-    statusCode: 200,
-    statusText: "OK",
-    data: Array.from(_utils["default"].keys())
-  });
-};
+;
+/*
+Function to fetch an entry from database
+*/
 
-exports.fetchSourceList = fetchSourceList;
-
-var fetchData = function fetchData(type) {
+function fetchMangaData(DataType) {
   return /*#__PURE__*/function () {
-    var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(req, res) {
-      var _req$params, source, slug, response;
+    var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(req, res) {
+      var _req$params, provider, slug, idDictionary, data;
 
-      return _regeneratorRuntime().wrap(function _callee2$(_context2) {
+      return _regeneratorRuntime().wrap(function _callee$(_context) {
         while (1) {
-          switch (_context2.prev = _context2.next) {
+          switch (_context.prev = _context.next) {
             case 0:
-              _req$params = req.params, source = _req$params.source, slug = _req$params.slug;
-              _context2.prev = 1;
-              _context2.t0 = type;
-              _context2.next = _context2.t0 === "list" ? 5 : _context2.t0 === "manga" ? 9 : _context2.t0 === "chapter" ? 9 : _context2.t0 === "chapters" ? 13 : 17;
-              break;
+              _req$params = req.params, provider = _req$params.provider, slug = _req$params.slug;
+              idDictionary = {
+                MangaList: "manga-list_".concat(provider),
+                Manga: "manga_".concat(provider, "_").concat(slug),
+                ChapterList: "chapter-list_".concat(provider, "_").concat(slug),
+                Chapter: "chapter_".concat(provider, "_").concat(slug)
+              };
+              _context.prev = 2;
+              _context.next = 5;
+              return _db["default"].getEntry(idDictionary[DataType]);
 
             case 5:
-              _context2.next = 7;
-              return _db["default"].getMangaList(source);
+              data = _context.sent;
 
-            case 7:
-              response = _context2.sent;
-              return _context2.abrupt("break", 17);
-
-            case 9:
-              _context2.next = 11;
-              return _db["default"].getEntry(source, type, slug);
-
-            case 11:
-              response = _context2.sent;
-              return _context2.abrupt("break", 17);
-
-            case 13:
-              _context2.next = 15;
-              return _db["default"].getChapterList(source, slug);
-
-            case 15:
-              response = _context2.sent;
-              return _context2.abrupt("break", 17);
-
-            case 17:
-              if (!(response.message || Array.isArray(response) && response.length === 0 || response.constructor === Object && Object.keys(response).length === 0)) {
-                _context2.next = 19;
+              if (data) {
+                _context.next = 11;
                 break;
               }
 
-              return _context2.abrupt("return", res.status(404).json({
-                statusCode: 404,
-                statusText: response.message ? response.message : "Unable to find data for '".concat(slug, "'")
-              }));
+              /*
+              Return with 404 if not in the database
+              */
+              jsonResponse = new Map([["status", 404], ["statusText", "Cannot find '".concat(idDictionary[DataType], "' in the database")]]);
+              return _context.abrupt("return", res.status(404).json(Object.fromEntries(jsonResponse)));
 
-            case 19:
-              return _context2.abrupt("return", res.status(200).json({
-                statusCode: 200,
-                statusText: "OK",
-                data: response
-              }));
+            case 11:
+              /*
+              Return with 200 if exist in the database
+              */
+              jsonResponse = new Map([["status", 200], ["statusText", "OK"], ["data", data]]);
+              return _context.abrupt("return", res.status(200).json(Object.fromEntries(jsonResponse)));
 
-            case 22:
-              _context2.prev = 22;
-              _context2.t1 = _context2["catch"](1);
+            case 13:
+              _context.next = 21;
+              break;
 
-              _logger["default"].error(_context2.t1.message);
+            case 15:
+              _context.prev = 15;
+              _context.t0 = _context["catch"](2);
 
-              return _context2.abrupt("return", res.status(500).json({
-                statusCode: 500,
-                statusText: _context2.t1.message
-              }));
+              _logger["default"].error(_context.t0.message);
 
-            case 26:
+              _logger["default"].error(_context.t0.stack);
+
+              jsonResponse = new Map([["status", 500], ["statusText", _context.t0.message]]);
+              return _context.abrupt("return", res.status(500).json(Object.fromEntries(jsonResponse)));
+
+            case 21:
             case "end":
-              return _context2.stop();
+              return _context.stop();
           }
         }
-      }, _callee2, null, [[1, 22]]);
+      }, _callee, null, [[2, 15]]);
     }));
 
     return function (_x3, _x4) {
-      return _ref2.apply(this, arguments);
+      return _ref.apply(this, arguments);
     };
   }();
-};
-
-exports.fetchData = fetchData;
+}

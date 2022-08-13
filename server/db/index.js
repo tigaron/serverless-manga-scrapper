@@ -1,17 +1,15 @@
 import { createStatus, createEntry } from "./create";
-import { getEntry, getMangaList, getChapterList, getStatus } from "./read";
-import { updateEntry, updateChapter, updateContent, updateStatus } from "./update";
+import { getEntry, getMangaListElement, getChapterListElement } from "./read";
+import { updateMangaListElement, updateChapterListElement, updateStatus } from "./update";
 
 const db = {
 	createStatus,
 	createEntry,
-	updateEntry,
-	updateChapter,
-	updateContent,
 	getEntry,
-	getMangaList,
-	getChapterList,
-	getStatus,
+	getMangaListElement,
+	getChapterListElement,
+	updateMangaListElement,
+	updateChapterListElement,
 	updateStatus,
 };
 

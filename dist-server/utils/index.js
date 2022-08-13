@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports["default"] = void 0;
-var sourceList = new Map([["alpha", {
+var providerList = new Map([["alpha", {
   base: "https://alpha-scans.org",
   slug: "manga"
 }], ["asura", {
@@ -20,5 +20,5 @@ var sourceList = new Map([["alpha", {
   base: "https://realmscans.com",
   slug: "series"
 }]]);
-var _default = sourceList;
+var _default = providerList;
 exports["default"] = _default;

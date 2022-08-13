@@ -1,4 +1,4 @@
-import { GetItemCommand, QueryCommand } from "@aws-sdk/client-dynamodb";
+import { GetItemCommand } from "@aws-sdk/client-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import dbclient from "../configs";
 import logger from "../services/logger";
@@ -21,73 +21,46 @@ async function getEntry(id, tableName = TABLE_MANGA) {
 	}
 }
 
-async function getStatus(id, tableName = TABLE_MANGA) {
+async function getMangaListElement(item, tableName = TABLE_MANGA) {
 	const params = {
 		TableName: tableName,
-		Key: { Id: marshall(id) },
+		Key: { Id: marshall(item["Id"]) },
+		ExpressionAttributeNames: {
+			"#ML": "MangaList",
+			"#MS": item["MangaSlug"],
+		},
+		ProjectionExpression: "#ML.#MS"
 	};
 	try {
 		const { Item } = await dbclient.send(new GetItemCommand(params));
 		if (Item) return unmarshall(Item);
 		else return Item;
 	} catch (error) {
-		logger.debug(`getEntry fail: ${id}`);
+		logger.debug(`getMangaListElement fail: ${id}`);
 		logger.debug(error.message);
 		logger.debug(error.stack);
 	}
 }
 
-const getMangaList = async (provider, tableName = TABLE_MANGA) => {
+async function getChapterListElement(item, tableName = TABLE_MANGA) {
 	const params = {
 		TableName: tableName,
+		Key: { Id: marshall(item["Id"]) },
 		ExpressionAttributeNames: {
-			"#PT": "Provider-Type",
+			"#CL": "ChapterList",
+			"#CS": item["ChapterSlug"],
 		},
-		ExpressionAttributeValues: {
-			":pt": { S: `${provider}-list` },
-		},
-		KeyConditionExpression: "#PT = :pt",
+		ProjectionExpression: "#CL.#CS"
 	};
 	try {
-		const { Items } = await dbclient.send(new QueryCommand(params));
-
-		if (Items == undefined)
-			throw new Error(`Unable to find data for '${provider}'`);
-
-		return Items.map((item) => unmarshall(item));
+		const { Item } = await dbclient.send(new GetItemCommand(params));
+		if (Item) return unmarshall(Item);
+		else return Item;
 	} catch (error) {
-		logger.debug(`Query fail: ${provider}-list`);
+		logger.debug(`getChapterListElement fail: ${id}`);
 		logger.debug(error.message);
-		return error;
+		logger.debug(error.stack);
 	}
-};
+}
 
-const getChapterList = async (provider, slug, tableName = TABLE_MANGA) => {
-	const params = {
-		TableName: tableName,
-		ExpressionAttributeNames: {
-			"#PT": "Provider-Type",
-			"#MS": "MangaSlug",
-		},
-		ExpressionAttributeValues: {
-			":pt": { S: `${provider}-chapter` },
-			":ms": { S: `${slug}` },
-		},
-		KeyConditionExpression: "#PT = :pt",
-		FilterExpression: "#MS = :ms",
-	};
-	try {
-		const data = await dbclient.send(new QueryCommand(params));
-
-		if (data.Items == undefined)
-			throw new Error(`Unable to find data for '${slug}'`);
-
-		return data.Items.map((item) => unmarshall(item));
-	} catch (error) {
-		logger.debug(`Query fail: ${provider}-chapter | ${slug}`);
-		logger.debug(error.message);
-		return error;
-	}
-};
-
-export { getEntry, getMangaList, getChapterList, getStatus };
+export { getEntry, getMangaListElement, getChapterListElement };

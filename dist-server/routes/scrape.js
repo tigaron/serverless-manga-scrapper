@@ -9,14 +9,15 @@ var _express = _interopRequireDefault(require("express"));
 
 var _scrape = require("../controllers/scrape");
 
-var _validateRequest = require("../middlewares/validateRequest");
+var _validations = require("../validations");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 var router = _express["default"].Router();
 
-router.route("/list").post((0, _validateRequest.validateBody)("list"), (0, _scrape.scrapeData)("list"));
-router.route("/manga").post((0, _validateRequest.validateBody)("manga"), (0, _scrape.scrapeData)("manga"));
-router.route("/chapter").post((0, _validateRequest.validateBody)("chapter"), (0, _scrape.scrapeData)("chapter"));
+router.route("/manga-list").post((0, _validations.validateBody)("Provider"), _scrape.scrapeMangaList);
+router.route("/manga").post((0, _validations.validateBody)("ProviderSlug"), _scrape.scrapeManga);
+router.route("/chapter-list").post((0, _validations.validateBody)("ProviderSlug"), _scrape.scrapeChapterList);
+router.route("/chapter").post((0, _validations.validateBody)("ProviderSlug"), _scrape.scrapeChapter);
 var _default = router;
 exports["default"] = _default;

@@ -5,7 +5,6 @@ import morganMiddleware from "./middlewares/morganMiddleware";
 import indexRouter from "./routes/index";
 import fetchRouter from "./routes/fetch";
 import scrapeRouter from "./routes/scrape";
-import updateRouter from "./routes/update";
 
 var app = express();
 
@@ -18,6 +17,5 @@ app.use(express.static(path.join(__dirname, "../public")));
 app.use("/", indexRouter);
 app.use("/fetch", fetchRouter);
 app.use("/scrape", scrapeRouter);
-app.use("/update", updateRouter);
 
 export default app;

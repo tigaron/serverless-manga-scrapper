@@ -29,6 +29,22 @@ async function scrapeMangaList(req, res) {
 		}
 
 		/*
+		If scraped data not exist in the database
+		Add it to the database, then return 201
+		*/
+		const data = await db.getEntry(response.get("Id"));
+		if (!data) {
+			await db.createEntry(Object.fromEntries(response));
+			jsonResponse = new Map([
+				["status", 201],
+				["statusText", "Created"],
+				["data", Object.fromEntries(jsonResponse)],
+			]);
+			return res.status(201).json(Object.fromEntries(jsonResponse));
+		}
+
+		/*
+		If already exist in the database
 		Give 202 response before processing scraped data
 		Inform the requestId, so it can be checked later on
 		*/
@@ -51,13 +67,21 @@ async function scrapeMangaList(req, res) {
 		Skip if already exist in the database
 		*/
 		const failedItems = new Set();
-		for await (const element of response) {
-			const data = await db.getEntry(element.get("Id"));
-			if (data) {
-				failedItems.add(`Already exist in the database: '${element.get("MangaSlug")}'`);
+		const mapIterator = response.get("MangaList")[Symbol.iterator]();
+		for await (const element of mapIterator) {
+			const item = new Map([
+				["Id", response.get("Id")],
+				["MangaSlug", element[0]]
+			]);
+			const result = await db.getMangaListElement(Object.fromEntries(item));
+			console.log(result)
+			if (result) {
+				failedItems.add(`Already exist in the database: '${item.get("MangaSlug")}'`);
 				continue;
 			} else {
-				await db.createEntry(Object.fromEntries(element));
+				item.set("UpdatedAt", response.get("UpdatedAt"))
+				item.set("MangaDetail", Object.fromEntries(element[1]));
+				await db.updateMangaListElement(Object.fromEntries(item));
 			}
 		}
 
@@ -196,13 +220,21 @@ async function scrapeChapterList(req, res) {
 		Skip if already exist in the database
 		*/
 		const failedItems = new Set();
-		for await (const element of response) {
-			const data = await db.getEntry(element.get("Id"));
-			if (data) {
-				failedItems.add(`Already exist in the database: '${element.get("ChapterSlug")}'`);
+		const mapIterator = response.get("ChapterList")[Symbol.iterator]();
+		for await (const element of mapIterator) {
+			const item = new Map([
+				["Id", response.get("Id")],
+				["ChapterSlug", element[0]]
+			]);
+			const result = await db.getChapterListElement(Object.fromEntries(item));
+			console.log(result)
+			if (result) {
+				failedItems.add(`Already exist in the database: '${item.get("ChapterSlug")}'`);
 				continue;
 			} else {
-				await db.createEntry(Object.fromEntries(element));
+				item.set("UpdatedAt", response.get("UpdatedAt"))
+				item.set("ChapterDetail", Object.fromEntries(element[1]));
+				await db.updateChapterListElement(Object.fromEntries(item));
 			}
 		}
 

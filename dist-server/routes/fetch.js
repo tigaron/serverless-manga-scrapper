@@ -9,7 +9,7 @@ var _express = _interopRequireDefault(require("express"));
 
 var _fetch = require("../controllers/fetch");
 
-var _validateRequest = require("../middlewares/validateRequest");
+var _validations = require("../validations");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -18,11 +18,11 @@ var router = _express["default"].Router();
 router.get("/", function (req, res) {
   return res.redirect(301, "/fetch/list");
 });
-router.route("/status/:id").get(_fetch.fetchStatus);
-router.route("/list").get(_fetch.fetchSourceList);
-router.route("/list/:source").get(_validateRequest.validateSource, (0, _fetch.fetchData)("list"));
-router.route("/manga/:source/:slug").get(_validateRequest.validateSource, (0, _fetch.fetchData)("manga"));
-router.route("/chapters/:source/:slug").get(_validateRequest.validateSource, (0, _fetch.fetchData)("chapters"));
-router.route("/chapter/:source/:slug").get(_validateRequest.validateSource, (0, _fetch.fetchData)("chapter"));
+router.route("/status/:id").get(_validations.validateUUID, _fetch.fetchStatus);
+router.route("/manga-provider").get(_fetch.fetchProviderList);
+router.route("/manga-list/:provider").get(_validations.validateProvider, (0, _fetch.fetchMangaData)("MangaList"));
+router.route("/manga/:provider/:slug").get(_validations.validateProvider, (0, _fetch.fetchMangaData)("Manga"));
+router.route("/chapter-list/:provider/:slug").get(_validations.validateProvider, (0, _fetch.fetchMangaData)("ChapterList"));
+router.route("/chapter/:provider/:slug").get(_validations.validateProvider, (0, _fetch.fetchMangaData)("Chapter"));
 var _default = router;
 exports["default"] = _default;

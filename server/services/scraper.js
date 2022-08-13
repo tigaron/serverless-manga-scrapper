@@ -40,24 +40,25 @@ function loadHTML(htmlString) {
 }
 
 function parseMangaList($, mangaProvider) {
-	const result = new Set();
+	const timestamp = new Date();
+	const result = new Map([
+		["Id", `manga-list_${mangaProvider}`],
+		["UpdatedAt", timestamp.toUTCString()],
+	]);
+	const MangaList = new Map();
 	$("a.series", "div.soralist").each((index, element) => {
 		const MangaTitle = $(element).text().trim();
 		const MangaUrl = $(element).attr("href");
 		const [MangaType, MangaSlug] = MangaUrl.split("/").slice(-3, -1);
-		const MangaProvider = mangaProvider;
-		const timestamp = new Date();
-		const manga = new Map([
-			["Id", `manga-list_${MangaProvider}_${MangaSlug}`],
+		const MangaDetail = new Map([
 			["MangaTitle", MangaTitle],
 			["MangaSlug", MangaSlug],
 			["MangaType", MangaType],
-			["MangaProvider", MangaProvider],
 			["MangaUrl", MangaUrl],
-			["UpdatedAt", timestamp.toUTCString()],
 		]);
-		result.add(manga);
+		MangaList.set(MangaSlug, MangaDetail);
 	});
+	result.set("MangaList", MangaList)
 	return result;
 }
 
@@ -84,7 +85,17 @@ function parseManga($, mangaProvider) {
 }
 
 function parseChapterList($, mangaProvider) {
-	const result = new Set();
+	const timestamp = new Date();
+	const MangaSlug = $("link[rel='canonical']")
+		.attr("href")
+		.split("/")
+		.slice(-3, -1)
+		.pop();
+	const result = new Map([
+		["Id", `chapter-list_${mangaProvider}_${MangaSlug}`],
+		["UpdatedAt", timestamp.toUTCString()],
+	]);
+	const ChapterList = new Map();
 	$("a", "div.eplister").each((index, element) => {
 		const ChapterTitle = $("span.chapternum", element).text().includes("\n")
 			? $("span.chapternum", element)
@@ -97,19 +108,15 @@ function parseChapterList($, mangaProvider) {
 		const ChapterDate = $("span.chapterdate", element).text().trim();
 		const ChapterUrl = $(element).attr("href");
 		const ChapterSlug = ChapterUrl.split("/").slice(-2).shift();
-		const ChapterProvider = mangaProvider;
-		const timestamp = new Date();
-		const chapter = new Map([
-			["Id", `chapter-list_${ChapterProvider}_${ChapterSlug}`],
+		const ChapterDetail = new Map([
 			["ChapterTitle", ChapterTitle],
 			["ChapterSlug", ChapterSlug],
-			["ChapterProvider", ChapterProvider],
 			["ChapterUrl", ChapterUrl],
 			["ChapterDate", ChapterDate],
-			["UpdatedAt", timestamp.toUTCString()],
 		]);
-		result.add(chapter);
+		ChapterList.set(ChapterSlug, ChapterDetail);
 	});
+	result.set("ChapterList", ChapterList);
 	return result;
 }
 

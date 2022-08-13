@@ -1,102 +1,57 @@
-import { PutItemCommand, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
+import { UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import dbclient from "../configs";
 import logger from "../services/logger";
 
 const { TABLE_MANGA } = process.env;
 
-const updateEntry = async (item, tableName = TABLE_MANGA) => {
+async function updateMangaListElement(item, tableName = TABLE_MANGA) {
 	const params = {
 		TableName: tableName,
-		Item: marshall(item),
+		Key: { Id: marshall(item["Id"]) },
 		ExpressionAttributeNames: {
-			"#PT": "Provider-Type",
-			"#S": "Slug",
+			"#ML": "MangaList",
+			"#MS": item["MangaSlug"],
+			"#UA": item["UpdatedAt"],
 		},
 		ExpressionAttributeValues: {
-			":pt": marshall(item["Provider-Type"]),
-			":s": marshall(item["Slug"]),
+			":md": marshall(item["MangaDetail"]),
+			":ua": marshall(item["UpdatedAt"]),
 		},
-		ConditionExpression: "#PT = :pt AND #S = :s",
-	};
-	try {
-		await dbclient.send(new PutItemCommand(params));
-	} catch (error) {
-		logger.debug(`Put fail: ${item["Provider-Type"]} | ${item["Slug"]}`);
-		logger.debug(error.message);
-		return `Failed to update database entry: ${item["Provider-Type"]} | ${item["Slug"]}`;
-	}
-};
-
-const updateChapter = async (
-	provider,
-	type,
-	slug,
-	items,
-	title,
-	timestamp,
-	tableName = TABLE_MANGA
-) => {
-	const params = {
-		TableName: tableName,
-		Key: {
-			"Provider-Type": { S: `${provider}-${type}` },
-			Slug: { S: `${slug}` },
-		},
-		ExpressionAttributeNames: {
-			"#C": "Content",
-			"#T": "Title",
-			"#UT": "UpdatedAt",
-		},
-		ExpressionAttributeValues: {
-			":c": {
-				L: items.map((item) => ({ S: item })),
-			},
-			":t": { S: title },
-			":ut": { S: timestamp },
-		},
-		UpdateExpression: "SET #C = :c, #T = :t, #UT = :ut",
+		UpdateExpression: "SET #ML.#MS = :md, #UA = :ua"
 	};
 	try {
 		await dbclient.send(new UpdateItemCommand(params));
 	} catch (error) {
-		logger.debug(`Update fail: ${provider}-${type} | ${slug}`);
+		logger.debug(`updateMangaListElement fail: ${item["Id"]}`);
 		logger.debug(error.message);
+		logger.debug(error.stack);
 	}
-};
+}
 
-const updateContent = async (
-	provider,
-	slug,
-	items,
-	timestamp,
-	tableName = TABLE_MANGA
-) => {
+async function updateChapterListElement(item, tableName = TABLE_MANGA) {
 	const params = {
 		TableName: tableName,
-		Key: {
-			"Provider-Type": { S: `${provider}-chapter` },
-			Slug: { S: `${slug}` },
-		},
+		Key: { Id: marshall(item["Id"]) },
 		ExpressionAttributeNames: {
-			"#C": "ConvertedContent",
-			"#UT": "UpdatedAt",
+			"#CL": "ChapterList",
+			"#CS": item["ChapterSlug"],
+			"#UA": item["UpdatedAt"],
 		},
 		ExpressionAttributeValues: {
-			":c": {
-				L: items.map((item) => ({ S: item })),
-			},
-			":ut": { S: timestamp },
+			":cd": marshall(item["ChapterDetail"]),
+			":ua": marshall(item["UpdatedAt"]),
 		},
-		UpdateExpression: "SET #C = :c, #UT = :ut",
+		UpdateExpression: "SET #CL.#CS = :cd, #UA = :ua"
 	};
 	try {
 		await dbclient.send(new UpdateItemCommand(params));
 	} catch (error) {
-		logger.debug(`Update fail: ${provider}-${type} | ${slug}`);
+		logger.debug(`updateChapterListElement fail: ${item["Id"]}`);
 		logger.debug(error.message);
+		logger.debug(error.stack);
 	}
-};
+}
 
 async function updateStatus(item, tableName = TABLE_MANGA) {
 	const params = {
@@ -121,4 +76,4 @@ async function updateStatus(item, tableName = TABLE_MANGA) {
 	}
 };
 
-export { updateEntry, updateChapter, updateContent, updateStatus };
+export { updateMangaListElement, updateChapterListElement, updateStatus };

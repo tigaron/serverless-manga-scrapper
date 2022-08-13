@@ -1,40 +1,45 @@
 import providerList from "../utils";
 
-export const validateSource = (req, res, next) => {
-	const { source } = req.params;
+function validateUUID(req, res, next) {
+	const { id } = req.params;
+	const regex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i
+	if (regex.test(id)) next();
+	else return res.status(400).json({
+		status: 400,
+		statusText: `Not a valid id: '${id}'`,
+	});
+}
 
-	if (!providerList.has(source)) {
-		return res.status(404).json({
-			statusCode: 404,
-			statusText: `Unknown source: '${source}'`,
-		});
-	}
-
-	next();
+function validateProvider(req, res, next) {
+	const { provider } = req.params;
+	if (providerList.has(provider)) next();
+	else return res.status(404).json({
+		status: 404,
+		statusText: `Unknown provider: '${provider}'`,
+	});
 };
 
-export const validateBody = (type) => {
-	return (req, res, next) => {
-		if (!req.is("json"))
-			return res.status(406).json({
-				statusCode: 406,
-				statusText: `Content is not acceptable`,
-			});
-
-		const { source, slug } = req.body;
-
-		if (!providerList.has(source))
-			return res.status(404).json({
-				statusCode: 404,
-				statusText: `Unknown source: '${source}'`,
-			});
-
-		if (type !== "list" && !slug)
-			return res.status(400).json({
-				statusCode: 400,
-				statusText: `'slug' is empty`,
-			});
-
-		next();
+function validateBody(items) {
+	return async function(req, res, next) {
+		if (!req.is("json")) return res.status(406).json({
+			status: 406,
+			statusText: `Content is not acceptable`,
+		});
+		const { provider, slug } = req.body;
+		const itemsDictionary = {
+			Provider: provider,
+			ProviderSlug: provider && slug,
+		}
+		if (!itemsDictionary[items]) return res.status(400).json({
+			status: 400,
+			statusText: `Bad request`,
+		});
+		if (providerList.has(provider)) next();
+		else return res.status(404).json({
+			status: 404,
+			statusText: `Unknown provider: '${provider}'`,
+		});
 	};
 };
+
+export { validateUUID, validateProvider, validateBody };

@@ -1,6 +1,6 @@
 "use strict";
 
-var _validateRequest = require("../../middlewares/validateRequest.js");
+var _validations = require("../validations");
 
 var _express = require("@jest-mock/express");
 
@@ -16,7 +16,7 @@ describe("Test validateSource validation middleware", function () {
         res = _getMockRes.res,
         next = _getMockRes.next;
 
-    (0, _validateRequest.validateSource)(req, res, next);
+    (0, _validations.validateSource)(req, res, next);
     expect(next).toHaveBeenCalled();
   });
   test("Validation fail --> return 404", function () {
@@ -30,7 +30,7 @@ describe("Test validateSource validation middleware", function () {
         res = _getMockRes2.res,
         next = _getMockRes2.next;
 
-    (0, _validateRequest.validateSource)(req, res, next);
+    (0, _validations.validateSource)(req, res, next);
     expect(res.status).toHaveBeenCalledWith(404);
     expect(res.json).toHaveBeenCalledWith({
       statusCode: 404,
@@ -58,7 +58,7 @@ describe("Test checkBody validation middleware", function () {
         res = _getMockRes3.res,
         next = _getMockRes3.next;
 
-    (0, _validateRequest.validateBody)(type)(req, res, next);
+    (0, _validations.validateBody)(type)(req, res, next);
     expect(next).toHaveBeenCalled();
   });
   test("Invalid header's content-type --> return 406", function () {
@@ -69,14 +69,14 @@ describe("Test checkBody validation middleware", function () {
         res = _getMockRes4.res,
         next = _getMockRes4.next;
 
-    (0, _validateRequest.validateBody)(type)(req, res, next);
+    (0, _validations.validateBody)(type)(req, res, next);
     expect(res.status).toHaveBeenCalledWith(406);
     expect(res.json).toHaveBeenCalledWith({
       statusCode: 406,
       statusText: "Content is not acceptable"
     });
   });
-  test("Invalid body's source --> return 400", function () {
+  test("Invalid body's source --> return 404", function () {
     var type = "list";
     var req = (0, _express.getMockReq)({
       headers: {
@@ -94,10 +94,10 @@ describe("Test checkBody validation middleware", function () {
         res = _getMockRes5.res,
         next = _getMockRes5.next;
 
-    (0, _validateRequest.validateBody)(type)(req, res, next);
-    expect(res.status).toHaveBeenCalledWith(400);
+    (0, _validations.validateBody)(type)(req, res, next);
+    expect(res.status).toHaveBeenCalledWith(404);
     expect(res.json).toHaveBeenCalledWith({
-      statusCode: 400,
+      statusCode: 404,
       statusText: "Unknown source: '".concat(req.body.source, "'")
     });
   });
@@ -119,7 +119,7 @@ describe("Test checkBody validation middleware", function () {
         res = _getMockRes6.res,
         next = _getMockRes6.next;
 
-    (0, _validateRequest.validateBody)(type)(req, res, next);
+    (0, _validations.validateBody)(type)(req, res, next);
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
       statusCode: 400,

@@ -8,12 +8,12 @@ import {
 import { validateBody } from "../validations";
 var router = express.Router();
 
-router.route("/manga-list").post(validateBody("list"), scrapeMangaList);
+router.route("/manga-list").post(validateBody("Provider"), scrapeMangaList);
 
-router.route("/manga").post(validateBody("manga"), scrapeManga);
+router.route("/manga").post(validateBody("ProviderSlug"), scrapeManga);
 
-router.route("/chapter-list").post(validateBody("manga"), scrapeChapterList);
+router.route("/chapter-list").post(validateBody("ProviderSlug"), scrapeChapterList);
 
-router.route("/chapter").post(validateBody("chapter"), scrapeChapter);
+router.route("/chapter").post(validateBody("ProviderSlug"), scrapeChapter);
 
 export default router;

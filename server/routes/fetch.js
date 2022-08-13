@@ -1,20 +1,20 @@
 import express from "express";
-import { fetchStatus, fetchSourceList, fetchData } from "../controllers/fetch";
-import { validateSource } from "../middlewares/validateRequest";
+import { fetchStatus, fetchProviderList, fetchMangaData } from "../controllers/fetch";
+import { validateUUID, validateProvider } from "../validations";
 var router = express.Router();
 
 router.get("/", (req, res) => res.redirect(301, "/fetch/list"));
 
-router.route("/status/:id").get(fetchStatus);
+router.route("/status/:id").get(validateUUID, fetchStatus);
 
-router.route("/list").get(fetchSourceList);
+router.route("/manga-provider").get(fetchProviderList);
 
-router.route("/list/:source").get(validateSource, fetchData("list"));
+router.route("/manga-list/:provider").get(validateProvider, fetchMangaData("MangaList"));
 
-router.route("/manga/:source/:slug").get(validateSource, fetchData("manga"));
+router.route("/manga/:provider/:slug").get(validateProvider, fetchMangaData("Manga"));
 
-router.route("/chapters/:source/:slug").get(validateSource, fetchData("chapters"));
+router.route("/chapter-list/:provider/:slug").get(validateProvider, fetchMangaData("ChapterList"));
 
-router.route("/chapter/:source/:slug").get(validateSource, fetchData("chapter"));
+router.route("/chapter/:provider/:slug").get(validateProvider, fetchMangaData("Chapter"));
 
 export default router;

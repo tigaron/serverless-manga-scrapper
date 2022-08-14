@@ -23,7 +23,7 @@ function mapToObject(map) {
         key = _ref2[0],
         value = _ref2[1];
 
-    return value instanceof Map ? [key, mapToObject(value)] : [key, value];
+    return value instanceof Map ? [key, mapToObject(value)] : value instanceof Set ? [key, Array.from(value)] : [key, value];
   }));
 }
 

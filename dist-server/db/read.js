@@ -3,19 +3,15 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getChapterListElement = getChapterListElement;
 exports.getEntry = getEntry;
-exports.getMangaListElement = getMangaListElement;
 
 var _clientDynamodb = require("@aws-sdk/client-dynamodb");
 
 var _utilDynamodb = require("@aws-sdk/util-dynamodb");
 
-var _configs = _interopRequireDefault(require("../configs"));
+var _index = _interopRequireDefault(require("../configs/index.js"));
 
-var _logger = _interopRequireDefault(require("../services/logger"));
-
-var _objectIsEmpty = _interopRequireDefault(require("../utils/objectIsEmpty"));
+var _logger = _interopRequireDefault(require("../services/logger.js"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -29,12 +25,12 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
 var TABLE_MANGA = process.env.TABLE_MANGA;
 
-function getEntry(_x) {
+function getEntry(_x, _x2) {
   return _getEntry.apply(this, arguments);
 }
 
 function _getEntry() {
-  _getEntry = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(id) {
+  _getEntry = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(entryId, entrySlug) {
     var tableName,
         params,
         _yield$dbclient$send,
@@ -45,16 +41,17 @@ function _getEntry() {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            tableName = _args.length > 1 && _args[1] !== undefined ? _args[1] : TABLE_MANGA;
+            tableName = _args.length > 2 && _args[2] !== undefined ? _args[2] : TABLE_MANGA;
             params = {
               TableName: tableName,
               Key: {
-                Id: (0, _utilDynamodb.marshall)(id)
+                EntryId: (0, _utilDynamodb.marshall)(entryId),
+                EntrySlug: (0, _utilDynamodb.marshall)(entrySlug)
               }
             };
             _context.prev = 2;
             _context.next = 5;
-            return _configs["default"].send(new _clientDynamodb.GetItemCommand(params));
+            return _index["default"].send(new _clientDynamodb.GetItemCommand(params));
 
           case 5:
             _yield$dbclient$send = _context.sent;
@@ -68,7 +65,7 @@ function _getEntry() {
             return _context.abrupt("return", (0, _utilDynamodb.unmarshall)(Item));
 
           case 11:
-            return _context.abrupt("return", Item);
+            return _context.abrupt("return", false);
 
           case 12:
             _context.next = 19;
@@ -92,144 +89,4 @@ function _getEntry() {
     }, _callee, null, [[2, 14]]);
   }));
   return _getEntry.apply(this, arguments);
-}
-
-function getMangaListElement(_x2) {
-  return _getMangaListElement.apply(this, arguments);
-}
-
-function _getMangaListElement() {
-  _getMangaListElement = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(item) {
-    var tableName,
-        params,
-        _yield$dbclient$send2,
-        Item,
-        _args2 = arguments;
-
-    return _regeneratorRuntime().wrap(function _callee2$(_context2) {
-      while (1) {
-        switch (_context2.prev = _context2.next) {
-          case 0:
-            tableName = _args2.length > 1 && _args2[1] !== undefined ? _args2[1] : TABLE_MANGA;
-            params = {
-              TableName: tableName,
-              Key: {
-                Id: (0, _utilDynamodb.marshall)(item["Id"])
-              },
-              ExpressionAttributeNames: {
-                "#ML": "MangaList",
-                "#MS": item["MangaSlug"]
-              },
-              ProjectionExpression: "#ML.#MS"
-            };
-            _context2.prev = 2;
-            _context2.next = 5;
-            return _configs["default"].send(new _clientDynamodb.GetItemCommand(params));
-
-          case 5:
-            _yield$dbclient$send2 = _context2.sent;
-            Item = _yield$dbclient$send2.Item;
-
-            if (!(0, _objectIsEmpty["default"])(Item)) {
-              _context2.next = 11;
-              break;
-            }
-
-            return _context2.abrupt("return", undefined);
-
-          case 11:
-            return _context2.abrupt("return", (0, _utilDynamodb.unmarshall)(Item));
-
-          case 12:
-            _context2.next = 19;
-            break;
-
-          case 14:
-            _context2.prev = 14;
-            _context2.t0 = _context2["catch"](2);
-
-            _logger["default"].debug("getMangaListElement fail: ".concat(id));
-
-            _logger["default"].debug(_context2.t0.message);
-
-            _logger["default"].debug(_context2.t0.stack);
-
-          case 19:
-          case "end":
-            return _context2.stop();
-        }
-      }
-    }, _callee2, null, [[2, 14]]);
-  }));
-  return _getMangaListElement.apply(this, arguments);
-}
-
-function getChapterListElement(_x3) {
-  return _getChapterListElement.apply(this, arguments);
-}
-
-function _getChapterListElement() {
-  _getChapterListElement = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3(item) {
-    var tableName,
-        params,
-        _yield$dbclient$send3,
-        Item,
-        _args3 = arguments;
-
-    return _regeneratorRuntime().wrap(function _callee3$(_context3) {
-      while (1) {
-        switch (_context3.prev = _context3.next) {
-          case 0:
-            tableName = _args3.length > 1 && _args3[1] !== undefined ? _args3[1] : TABLE_MANGA;
-            params = {
-              TableName: tableName,
-              Key: {
-                Id: (0, _utilDynamodb.marshall)(item["Id"])
-              },
-              ExpressionAttributeNames: {
-                "#CL": "ChapterList",
-                "#CS": item["ChapterSlug"]
-              },
-              ProjectionExpression: "#CL.#CS"
-            };
-            _context3.prev = 2;
-            _context3.next = 5;
-            return _configs["default"].send(new _clientDynamodb.GetItemCommand(params));
-
-          case 5:
-            _yield$dbclient$send3 = _context3.sent;
-            Item = _yield$dbclient$send3.Item;
-
-            if (!(0, _objectIsEmpty["default"])(Item)) {
-              _context3.next = 11;
-              break;
-            }
-
-            return _context3.abrupt("return", undefined);
-
-          case 11:
-            return _context3.abrupt("return", (0, _utilDynamodb.unmarshall)(Item));
-
-          case 12:
-            _context3.next = 19;
-            break;
-
-          case 14:
-            _context3.prev = 14;
-            _context3.t0 = _context3["catch"](2);
-
-            _logger["default"].debug("getChapterListElement fail: ".concat(id));
-
-            _logger["default"].debug(_context3.t0.message);
-
-            _logger["default"].debug(_context3.t0.stack);
-
-          case 19:
-          case "end":
-            return _context3.stop();
-        }
-      }
-    }, _callee3, null, [[2, 14]]);
-  }));
-  return _getChapterListElement.apply(this, arguments);
 }

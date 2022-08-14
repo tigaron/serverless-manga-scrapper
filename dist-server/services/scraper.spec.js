@@ -12,12 +12,6 @@ function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "functio
 
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
 afterEach(function () {
   _globals.jest.clearAllMocks();
 });
@@ -45,35 +39,7 @@ describe("Unit test", function () {
   test("parseMangaList returns expected values", function () {
     var $ = cheerio.load("\n\t\t\t<div class=\"soralist\">\n\t\t\t\t<a class=\"series\" rel=\"107248\" href=\"https://www.asurascans.com/manga/damn-reincarnation/\">Damn Reincarnation</a>\n\t\t\t\t<a class=\"series\" rel=\"70812\" href=\"https://www.asurascans.com/comics/101-duke-pendragon/\">Duke Pendragon</a>\n\t\t\t</div>\n\t\t\t");
     var result = scraperService.parseMangaList($, "asura");
-    expect(result).toBeInstanceOf(Map);
-    expect(Object.fromEntries(result)).toEqual(expect.objectContaining({
-      Id: expect.any(String),
-      UpdatedAt: expect.any(String),
-      MangaList: expect.any(Map)
-    }));
-    var iterator = result.get("MangaList")[Symbol.iterator]();
-
-    var _iterator = _createForOfIteratorHelper(iterator),
-        _step;
-
-    try {
-      for (_iterator.s(); !(_step = _iterator.n()).done;) {
-        var element = _step.value;
-      }
-      /* expect(Object.fromEntries(iterator.next().value[1])).toEqual(
-      	expect.objectContaining({
-      		MangaTitle: expect.any(String),
-      		MangaSlug: expect.any(String),
-      		MangaType: expect.any(String),
-      		MangaUrl: expect.any(String),
-      	})
-      ); */
-
-    } catch (err) {
-      _iterator.e(err);
-    } finally {
-      _iterator.f();
-    }
+    expect(result).toBeInstanceOf(Set);
   });
   test("parseManga returns expected values", function () {
     var $ = cheerio.load("\n\t\t\t<link rel=\"canonical\" href=\"https://www.asurascans.com/comics/chronicles-of-the-martial-gods-return/\" />\n\t\t\t<h1 class=\"entry-title\" itemprop=\"name\">Chronicles Of The Martial God&#8217;s Return</h1>\n\t\t\t<div class=\"thumb\" itemprop=\"image\" itemscope itemtype=\"https://schema.org/ImageObject\">\n\t\t\t\t<img width=\"720\" height=\"972\" src=\"https://www.asurascans.com/wp-content/uploads/2022/05/martialreturnCover01.png\" class=\"attachment- size- wp-post-image\" alt=\"Chronicles Of The Martial God&#8217;s Return\" loading=\"lazy\" title=\"Chronicles Of The Martial God&#8217;s Return\" itemprop=\"image\" />\n\t\t\t</div>\n\t\t\t<div class=\"entry-content entry-content-single\" itemprop=\"description\"><div class='code-block code-block-21' style='margin: 8px auto; text-align: center; display: block; clear: both;'>\n\t\t\t\t<p>The sixth masterpiece of the Wuxia Genre that&#8217;ll meet your expectations, just like the [Third-rate Chronicles of Return], [The Conquer of the Heavenly Faction], and the [Chronicles of Seven Dragons and Seven Demons]. [Chronicles of the Martial God&#8217;s Return] The Ultimate Martial Divine Demon, Dan Woohyun, was sealed up because he was too strong for the world to handle. After a millennium passed by, he was released from his seal and felt like everything was meaningless as he wandered the back alleys&#8230; Just as he fell down because he was sick of the world, a small hand appeared in front of him. &#8220;What&#8217;s this?&#8221; asked Dan Woohyun. &#8220;A dumpling!&#8221; came a reply. This was the first time in his life that someone had been nice to him without any impure intentions, and that changed his fate. This is the chronicles of a martial god who traversed through a thousand years of time and space!</p>\n\t\t\t</div>\n\t\t\t");

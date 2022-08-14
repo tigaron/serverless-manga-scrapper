@@ -1,6 +1,6 @@
-import logger from "../services/logger";
-import providerList from "../utils/providerList";
-import db from "../db";
+import logger from "../services/logger.js";
+import providerList from "../utils/providerList.js";
+import db from "../db/index.js";
 
 /*
 Function to fetch status of a specific request Id

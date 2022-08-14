@@ -3,6 +3,7 @@
   "version": "2.7.0",
   "description": "An API to scrape manga data from scanlation's website.",
   "author": "tigaron",
+  "type": "module",
   "private": true,
   "scripts": {
     "start": "NODE_ENV=production npm-run-all build deploy:prod",

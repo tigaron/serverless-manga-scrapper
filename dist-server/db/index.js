@@ -5,20 +5,18 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports["default"] = void 0;
 
-var _create = require("./create");
+var _create = require("./create.js");
 
-var _read = require("./read");
+var _read = require("./read.js");
 
-var _update = require("./update");
+var _update = require("./update.js");
 
 var db = {
   createStatus: _create.createStatus,
   createEntry: _create.createEntry,
   getEntry: _read.getEntry,
-  getMangaListElement: _read.getMangaListElement,
-  getChapterListElement: _read.getChapterListElement,
-  updateMangaListElement: _update.updateMangaListElement,
-  updateChapterListElement: _update.updateChapterListElement,
+  updateMangaEntry: _update.updateMangaEntry,
+  updateChapterEntry: _update.updateChapterEntry,
   updateStatus: _update.updateStatus
 };
 var _default = db;

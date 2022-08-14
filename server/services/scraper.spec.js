@@ -33,26 +33,7 @@ describe("Unit test", () => {
 			`);
 			
 		const result = scraperService.parseMangaList($, "asura");
-		expect(result).toBeInstanceOf(Map);
-		expect(Object.fromEntries(result)).toEqual(
-			expect.objectContaining({
-				Id: expect.any(String),
-				UpdatedAt: expect.any(String),
-				MangaList: expect.any(Map),
-			})
-		);
-
-		const iterator = result.get("MangaList")[Symbol.iterator]();
-		for (const element of iterator) {
-		}
-		/* expect(Object.fromEntries(iterator.next().value[1])).toEqual(
-			expect.objectContaining({
-				MangaTitle: expect.any(String),
-				MangaSlug: expect.any(String),
-				MangaType: expect.any(String),
-				MangaUrl: expect.any(String),
-			})
-		); */
+		expect(result).toBeInstanceOf(Set);
 	});
 	
 	test("parseManga returns expected values", () => {

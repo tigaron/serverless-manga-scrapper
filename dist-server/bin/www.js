@@ -5,7 +5,7 @@
  */
 "use strict";
 
-var _app = _interopRequireDefault(require("../app"));
+var _app = _interopRequireDefault(require("../app.js"));
 
 var _debug = _interopRequireDefault(require("debug"));
 

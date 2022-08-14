@@ -1,4 +1,4 @@
-import providerList from "../utils/providerList";
+import providerList from "../utils/providerList.js";
 
 function validateUUID(req, res, next) {
 	const { id } = req.params;
@@ -25,10 +25,11 @@ function validateBody(items) {
 			status: 406,
 			statusText: `Content is not acceptable`,
 		});
-		const { provider, slug } = req.body;
+		const { provider, manga, slug } = req.body;
 		const itemsDictionary = {
 			Provider: provider,
 			ProviderSlug: provider && slug,
+			ProviderMangaSlug: provider && manga && slug,
 		}
 		if (!itemsDictionary[items]) return res.status(400).json({
 			status: 400,

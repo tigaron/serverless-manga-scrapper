@@ -9,11 +9,11 @@ exports.fetchMangaData = fetchMangaData;
 exports.fetchProviderList = fetchProviderList;
 exports.fetchStatus = fetchStatus;
 
-var _logger = _interopRequireDefault(require("../services/logger"));
+var _logger = _interopRequireDefault(require("../services/logger.js"));
 
-var _providerList = _interopRequireDefault(require("../utils/providerList"));
+var _providerList = _interopRequireDefault(require("../utils/providerList.js"));
 
-var _db = _interopRequireDefault(require("../db"));
+var _index = _interopRequireDefault(require("../db/index.js"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -40,7 +40,7 @@ function _fetchStatus() {
             Id = req.params.id;
             _context2.prev = 1;
             _context2.next = 4;
-            return _db["default"].getEntry(Id);
+            return _index["default"].getEntry(Id);
 
           case 4:
             data = _context2.sent;
@@ -121,7 +121,7 @@ function fetchMangaData(DataType) {
               };
               _context.prev = 2;
               _context.next = 5;
-              return _db["default"].getEntry(idDictionary[DataType]);
+              return _index["default"].getEntry(idDictionary[DataType]);
 
             case 5:
               data = _context.sent;

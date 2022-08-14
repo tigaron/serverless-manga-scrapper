@@ -1,6 +1,6 @@
 import chromium from "@sparticuz/chrome-aws-lambda";
 import * as cheerio from "cheerio";
-import logger from "./logger";
+import logger from "./logger.js";
 
 async function crawler(urlString) {
 	const browser = await chromium.puppeteer.launch({
@@ -40,92 +40,76 @@ function loadHTML(htmlString) {
 }
 
 function parseMangaList($, mangaProvider) {
-	const timestamp = new Date();
-	const result = new Map([
-		["Id", `manga-list_${mangaProvider}`],
-		["UpdatedAt", timestamp.toUTCString()],
-	]);
-	const MangaList = new Map();
+	const MangaList = new Set();
 	$("a.series", "div.soralist").each((index, element) => {
 		const MangaTitle = $(element).text().trim();
 		const MangaUrl = $(element).attr("href");
-		const [MangaType, MangaSlug] = MangaUrl.split("/").slice(-3, -1);
-		const MangaDetail = new Map([
+		const MangaSlug = MangaUrl.split("/").slice(-2).shift().replace(/[\d]*[-]?/, "");
+		const timestamp = new Date().toUTCString();
+		const Manga = new Map([
+			["EntryId", `manga_${mangaProvider}`],
+			["EntrySlug", MangaSlug],
 			["MangaTitle", MangaTitle],
-			["MangaSlug", MangaSlug],
-			["MangaType", MangaType],
 			["MangaUrl", MangaUrl],
+			["ScrapeDate", timestamp],
 		]);
-		MangaList.set(MangaSlug, MangaDetail);
+		MangaList.add(Manga);
 	});
-	result.set("MangaList", MangaList)
-	return result;
+	return MangaList;
 }
 
 function parseManga($, mangaProvider) {
 	const MangaTitle = $("h1.entry-title").text().trim();
 	const MangaSynopsis = $("p", "div.entry-content").text();
 	const MangaCover = $("img", "div.thumb").attr("src");
-	const MangaUrl = $("link[rel='canonical']").attr("href");
-	const [MangaType, MangaSlug] = MangaUrl.split("/").slice(-3, -1);
-	const MangaProvider = mangaProvider;
-	const timestamp = new Date();
-	const result = new Map([
-		["Id", `manga_${MangaProvider}_${MangaSlug}`],
+	const MangaShortUrl = $("link[rel='shortlink']").attr("href");
+	const MangaCanonicalUrl = $("link[rel='canonical']").attr("href");
+	const MangaSlug = MangaCanonicalUrl.split("/").slice(-2).shift().replace(/[\d]*[-]?/, "");
+	const timestamp = new Date().toUTCString();
+	const Manga = new Map([
+		["EntryId", `manga_${mangaProvider}`],
+		["EntrySlug", MangaSlug],
 		["MangaTitle", MangaTitle],
-		["MangaSlug", MangaSlug],
-		["MangaType", MangaType],
-		["MangaProvider", MangaProvider],
-		["MangaUrl", MangaUrl],
-		["MangaCover", MangaCover],
 		["MangaSynopsis", MangaSynopsis],
-		["UpdatedAt", timestamp.toUTCString()],
+		["MangaCover", MangaCover],
+		["MangaShortUrl", MangaShortUrl],
+		["MangaCanonicalUrl", MangaCanonicalUrl],
+		["ScrapeDate", timestamp],
 	]);
-	return result;
+	return Manga;
 }
 
 function parseChapterList($, mangaProvider) {
-	const timestamp = new Date();
-	const MangaSlug = $("link[rel='canonical']")
-		.attr("href")
-		.split("/")
-		.slice(-3, -1)
-		.pop();
-	const result = new Map([
-		["Id", `chapter-list_${mangaProvider}_${MangaSlug}`],
-		["UpdatedAt", timestamp.toUTCString()],
-	]);
-	const ChapterList = new Map();
+	const MangaSlug = $("link[rel='canonical']").attr("href").split("/").slice(-2).shift().replace(/[\d]*[-]?/, "");
+	const ChapterList = new Set();
 	$("a", "div.eplister").each((index, element) => {
-		const ChapterTitle = $("span.chapternum", element).text().includes("\n")
-			? $("span.chapternum", element)
-					.text()
-					.trim()
-					.split("\n")
-					.slice(-2)
-					.join(" ")
+		const ChapterNumber = $("span.chapternum", element).text().includes("\n")
+			? $("span.chapternum", element).text().trim().split("\n").slice(-2).join(" ")
 			: $("span.chapternum", element).text().trim();
 		const ChapterDate = $("span.chapterdate", element).text().trim();
 		const ChapterUrl = $(element).attr("href");
 		const ChapterSlug = ChapterUrl.split("/").slice(-2).shift().replace(/[\d]*[-]?/, "");
-		const ChapterDetail = new Map([
-			["ChapterTitle", ChapterTitle],
-			["ChapterSlug", ChapterSlug],
+		const timestamp = new Date().toUTCString();
+		const Chapter = new Map([
+			["EntryId", `chapter_${mangaProvider}_${MangaSlug}`],
+			["EntrySlug", ChapterSlug],
+			["ChapterNumber", ChapterNumber],
 			["ChapterUrl", ChapterUrl],
 			["ChapterDate", ChapterDate],
+			["ScrapeDate", timestamp],
 		]);
-		ChapterList.set(ChapterSlug, ChapterDetail);
+		ChapterList.add(Chapter);
 	});
-	result.set("ChapterList", ChapterList);
-	return result;
+	return ChapterList;
 }
 
 function parseChapter($, mangaProvider) {
+	const MangaSlug = $("a", "div.allc").attr("href").split("/").slice(-2).shift().replace(/[\d]*[-]?/, "");
 	const ChapterTitle = $("h1.entry-title").text().trim();
-	const ChapterUrl = $("link[rel='canonical']").attr("href");
-	const ChapterSlug = ChapterUrl.split("/").slice(-2).shift();
-	const ChapterProvider = mangaProvider;
-	const timestamp = new Date();
+	const ChapterShortUrl = $("link[rel='shortlink']").attr("href");
+	const ChapterCanonicalUrl = $("link[rel='canonical']").attr("href");
+	const ChapterSlug = ChapterCanonicalUrl.split("/").slice(-2).shift().replace(/[\d]*[-]?/, "");
+	const timestamp = new Date().toUTCString();
 	const ChapterContent = new Set();
 	if (mangaProvider === "realm") {
 		const realmContent = $("div#readerarea").contents().text();
@@ -139,29 +123,37 @@ function parseChapter($, mangaProvider) {
 			ChapterContent.add(img);
 		});
 	}
-	const result = new Map([
-		["Id", `chapter_${ChapterProvider}_${ChapterSlug}`],
+	const Chapter = new Map([
+		["EntryId", `chapter_${mangaProvider}_${MangaSlug}`],
+		["EntrySlug", ChapterSlug],
 		["ChapterTitle", ChapterTitle],
-		["ChapterSlug", ChapterSlug],
-		["ChapterProvider", ChapterProvider],
-		["ChapterUrl", ChapterUrl],
+		["ChapterShortUrl", ChapterShortUrl],
+		["ChapterCanonicalUrl", ChapterCanonicalUrl],
 		["ChapterContent", ChapterContent],
-		["UpdatedAt", timestamp.toUTCString()],
+		["ScrapeDate", timestamp],
 	]);
-	return result;
+	return Chapter;
 }
 
 export default async function scraper(urlString, requestType, mangaProvider) {
 	try {
 		const htmlString = await crawler(urlString);
 		const $ = loadHTML(htmlString);
-		const parserDictionary = {
-			MangaList: parseMangaList($, mangaProvider),
-			Manga: parseManga($, mangaProvider),
-			ChapterList: parseChapterList($, mangaProvider),
-			Chapter: parseChapter($, mangaProvider),
-		};
-		const result = parserDictionary[requestType];
+		let result;
+		switch (requestType) {
+			case "MangaList":
+				result = parseMangaList($, mangaProvider);
+				break;
+			case "Manga":
+				result = parseManga($, mangaProvider);
+				break;
+			case "ChapterList":
+				result = parseChapterList($, mangaProvider);
+				break;
+			case "Chapter":
+				result = parseChapter($, mangaProvider);
+				break;
+		}
 		logger.debug(`Scraper success: ${requestType} - ${urlString}`);
 		return result;
 	} catch (error) {

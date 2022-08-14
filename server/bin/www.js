@@ -4,7 +4,7 @@
  * Module dependencies.
  */
 
-import app from "../app";
+import app from "../app.js";
 import debugLib from "debug";
 import http from "http";
 const debug = debugLib("manga-scraper:server");

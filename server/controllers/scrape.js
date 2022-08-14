@@ -1,9 +1,9 @@
 import { v4 as uuidv4 } from "uuid";
-import scraper from "../services/scraper";
-import logger from "../services/logger";
-import providerList from "../utils/providerList";
-import mapToObject from "../utils/mapToObject";
-import db from "../db";
+import scraper from "../services/scraper.js";
+import logger from "../services/logger.js";
+import providerList from "../utils/providerList.js";
+import mapToObject from "../utils/mapToObject.js";
+import db from "../db/index.js";
 
 /*
 Function to scrape manga list from a specific manga provider
@@ -13,7 +13,7 @@ body: { provider: "asura" }
 */
 async function scrapeMangaList(req, res) {
 	const { provider: MangaProvider } = req.body;
-	const urlString = `${Object.values(providerList.get(MangaProvider)).join("/")}/list-mode/`;
+	const urlString = providerList.get(MangaProvider);
 	let jsonResponse;
 	try {
 		/*
@@ -26,62 +26,40 @@ async function scrapeMangaList(req, res) {
 				["status", response.cause],
 				["statusText", response.message],
 			]);
-			return res.status(response.cause).json(Object.fromEntries(jsonResponse));
+			return res.status(response.cause).json(mapToObject(jsonResponse));
 		}
 
 		/*
-		If scraped data not exist in the database
-		Add it to the database, then return 201
-		*/
-		const data = await db.getEntry(response.get("Id"));
-		if (!data) {
-			await db.createEntry(mapToObject(response));
-			jsonResponse = new Map([
-				["status", 201],
-				["statusText", "Created"],
-				["data", mapToObject(response)],
-			]);
-			return res.status(201).json(Object.fromEntries(jsonResponse));
-		}
-
-		/*
-		If already exist in the database
 		Give 202 response before processing scraped data
 		Inform the requestId, so it can be checked later on
 		*/
 		const requestId = uuidv4();
 		const requestStatus = new Map([
-			["Id", requestId],
+			["EntryId", "request-status"],
+			["EntrySlug", requestId],
 			["RequestType", `manga-list_${MangaProvider}`],
 			["RequestStatus", "pending"],
-		])
-		await db.createStatus(Object.fromEntries(requestStatus));
+		]);
+		await db.createStatus(mapToObject(requestStatus));
 		jsonResponse = new Map([
 			["status", 202],
 			["statusText", "Processing request..."],
 			["data", { requestId: requestId, requestType: `manga-list_${MangaProvider}` }],
 		]);
-		res.status(202).json(Object.fromEntries(jsonResponse));
+		res.status(202).json(mapToObject(jsonResponse));
 		
 		/*
 		Add each element of scraped manga list to database
 		Skip if already exist in the database
 		*/
 		const failedItems = new Set();
-		const mapIterator = response.get("MangaList")[Symbol.iterator]();
-		for await (const [key, value] of mapIterator) {
-			const item = new Map([
-				["Id", response.get("Id")],
-				["MangaSlug", key]
-			]);
-			const result = await db.getMangaListElement(Object.fromEntries(item));
-			if (result) {
-				failedItems.add(`Already exist in the database: '${item.get("MangaSlug")}'`);
+		for await (const element of response) {
+			const data = await db.getEntry(element.get("EntryId"), element.get("EntrySlug"));
+			if (data) {
+				failedItems.add(`Already exist in the database: '${element.get("EntrySlug")}'`);
 				continue;
 			} else {
-				item.set("UpdatedAt", response.get("UpdatedAt"))
-				item.set("MangaDetail", Object.fromEntries(value));
-				await db.updateMangaListElement(Object.fromEntries(item));
+				await db.createEntry(mapToObject(element));
 			}
 		}
 
@@ -90,11 +68,12 @@ async function scrapeMangaList(req, res) {
 		Add information of skipped item if any
 		*/
 		const updatedStatus = new Map([
-			["Id", requestId],
+			["EntryId", "request-status"],
+			["EntrySlug", requestId],
 			["RequestStatus", "completed"],
 			["FailedItems", Array.from(failedItems)],
 		]);
-		await db.updateStatus(Object.fromEntries(updatedStatus));
+		await db.updateStatus(mapToObject(updatedStatus));
 	} catch (error) {
 		logger.error(error.message);
 		logger.error(error.stack);
@@ -102,7 +81,7 @@ async function scrapeMangaList(req, res) {
 			["status", 500],
 			["statusText", error.message],
 		]);
-		return res.status(500).json(Object.fromEntries(jsonResponse));
+		return res.status(500).json(mapToObject(jsonResponse));
 	}
 }
 
@@ -113,25 +92,30 @@ path: /scrape/manga
 body: { provider: "asura", type: "comics", slug: "damn-reincarnation" }
 */
 async function scrapeManga(req, res) {
-	const {
-		provider: MangaProvider,
-		type: MangaType,
-		slug: MangaSlug,
-	} = req.body;
-	const urlString = `${providerList.get(MangaProvider).base}/${MangaType}/${MangaSlug}/`;
+	const { provider: MangaProvider, slug: MangaSlug } = req.body;
 	let jsonResponse;
 	try {
 		/*
-		Return immediately if already exist in the database
+		Try to check database
+		Return immediately if other than initial data exist in the database
+		Return immediately if nothing exist in the database
 		*/
-		const data = await db.getEntry(`manga_${MangaProvider}_${MangaSlug}`);
-		if (data) {
+		const { MangaUrl: urlString, MangaCover } = await db.getEntry(`manga_${MangaProvider}`, MangaSlug);
+		if (MangaCover) {
 			jsonResponse = new Map([
 				["status", 409],
 				["statusText", `Already exist in the database: '${MangaSlug}'`],
 			]);
-			return res.status(409).json(Object.fromEntries(jsonResponse));
+			return res.status(409).json(mapToObject(jsonResponse));
 		}
+		if (!urlString) {
+			jsonResponse = new Map([
+				["status", 404],
+				["statusText", `Cannot find initial data for '${MangaSlug}', try to scrape manga-list first`],
+			]);
+			return res.status(404).json(mapToObject(jsonResponse));
+		}
+
 
 		/*
 		Try to scrape manga provider's website
@@ -143,20 +127,20 @@ async function scrapeManga(req, res) {
 				["status", response.cause],
 				["statusText", response.message],
 			]);
-			return res.status(response.cause).json(Object.fromEntries(jsonResponse));
+			return res.status(response.cause).json(mapToObject(jsonResponse));
 		}
 
 		/*
 		Add scraped data to the database
 		Return with 201 response
 		*/
-		await db.createEntry(mapToObject(response));
+		await db.updateMangaEntry(mapToObject(response));
 		jsonResponse = new Map([
 			["status", 201],
 			["statusText", "Created"],
 			["data", mapToObject(response)],
 		]);
-		return res.status(201).json(Object.fromEntries(jsonResponse));
+		return res.status(201).json(mapToObject(jsonResponse));
 	} catch (error) {
 		logger.error(error.message);
 		logger.error(error.stack);
@@ -164,10 +148,9 @@ async function scrapeManga(req, res) {
 			["status", 500],
 			["statusText", error.message],
 		]);
-		return res.status(500).json(Object.fromEntries(jsonResponse));
+		return res.status(500).json(mapToObject(jsonResponse));
 	}
 }
-
 
 /*
 Function to scrape chapter list for a specific manga from a specific provider
@@ -176,14 +159,21 @@ path: /scrape/chapter-list
 body: { provider: "asura", type: "comics", slug: "damn-reincarnation" }
 */
 async function scrapeChapterList(req, res) {
-	const {
-		provider: MangaProvider,
-		type: MangaType,
-		slug: MangaSlug,
-	} = req.body;
-	const urlString = `${providerList.get(MangaProvider).base}/${MangaType}/${MangaSlug}/`;
+	const { provider: MangaProvider, slug: MangaSlug } = req.body;
 	let jsonResponse;
 	try {
+		/*
+		Return immediately if not exist in the database
+		*/
+		const { MangaUrl: urlString } = await db.getEntry(`manga_${MangaProvider}`, MangaSlug);
+		if (!urlString) {
+			jsonResponse = new Map([
+				["status", 404],
+				["statusText", `Cannot find initial data for '${MangaSlug}', try to scrape manga-list first`],
+			]);
+			return res.status(404).json(mapToObject(jsonResponse));
+		}
+
 		/*
 		Try to scrape manga provider's website
 		Return immediately if error
@@ -194,22 +184,7 @@ async function scrapeChapterList(req, res) {
 				["status", response.cause],
 				["statusText", response.message],
 			]);
-			return res.status(response.cause).json(Object.fromEntries(jsonResponse));
-		}
-
-		/*
-		If scraped data not exist in the database
-		Add it to the database, then return 201
-		*/
-		const data = await db.getEntry(response.get("Id"));
-		if (!data) {
-			await db.createEntry(mapToObject(response));
-			jsonResponse = new Map([
-				["status", 201],
-				["statusText", "Created"],
-				["data", mapToObject(response)],
-			]);
-			return res.status(201).json(Object.fromEntries(jsonResponse));
+			return res.status(response.cause).json(mapToObject(jsonResponse));
 		}
 
 		/*
@@ -218,37 +193,31 @@ async function scrapeChapterList(req, res) {
 		*/
 		const requestId = uuidv4();
 		const requestStatus = new Map([
-			["Id", requestId],
+			["EntryId", "request-status"],
+			["EntrySlug", requestId],
 			["RequestType", `chapter-list_${MangaProvider}_${MangaSlug}`],
 			["RequestStatus", "pending"],
-		])
-		await db.createStatus(Object.fromEntries(requestStatus));
+		]);
+		await db.createStatus(mapToObject(requestStatus));
 		jsonResponse = new Map([
 			["status", 202],
 			["statusText", "Processing request..."],
 			["data", { requestId: requestId, requestType: `chapter-list_${MangaProvider}_${MangaSlug}` }],
 		]);
-		res.status(202).json(Object.fromEntries(jsonResponse));
+		res.status(202).json(mapToObject(jsonResponse));
 
 		/*
 		Add each element of scraped chapter list to database
 		Skip if already exist in the database
 		*/
 		const failedItems = new Set();
-		const mapIterator = response.get("ChapterList")[Symbol.iterator]();
-		for await (const element of mapIterator) {
-			const item = new Map([
-				["Id", response.get("Id")],
-				["ChapterSlug", element[0]]
-			]);
-			const result = await db.getChapterListElement(Object.fromEntries(item));
-			if (result) {
-				failedItems.add(`Already exist in the database: '${item.get("ChapterSlug")}'`);
+		for await (const element of response) {
+			const data = await db.getEntry(element.get("EntryId"), element.get("EntrySlug"));
+			if (data) {
+				failedItems.add(`Already exist in the database: '${element.get("EntrySlug")}'`);
 				continue;
 			} else {
-				item.set("UpdatedAt", response.get("UpdatedAt"))
-				item.set("ChapterDetail", Object.fromEntries(element[1]));
-				await db.updateChapterListElement(Object.fromEntries(item));
+				await db.createEntry(mapToObject(element));
 			}
 		}
 
@@ -257,11 +226,12 @@ async function scrapeChapterList(req, res) {
 		Add information of skipped item if any
 		*/
 		const updatedStatus = new Map([
-			["Id", requestId],
+			["EntryId", "request-status"],
+			["EntrySlug", requestId],
 			["RequestStatus", "completed"],
 			["FailedItems", Array.from(failedItems)],
 		]);
-		await db.updateStatus(Object.fromEntries(updatedStatus));
+		await db.updateStatus(mapToObject(updatedStatus));
 	} catch (error) {
 		// TODO update status in the database if exist
 		logger.error(error.message);
@@ -270,7 +240,7 @@ async function scrapeChapterList(req, res) {
 			["status", 500],
 			["statusText", error.message],
 		]);
-		return res.status(500).json(Object.fromEntries(jsonResponse));
+		return res.status(500).json(mapToObject(jsonResponse));
 	}
 }
 
@@ -281,49 +251,54 @@ path: /scrape/chapter
 body: { provider: "asura", slug: "damn-reincarnation-01" }
 */
 async function scrapeChapter(req, res) {
-	const {
-		provider: ChapterProvider,
-		slug: ChapterSlug,
-	} = req.body;
-	const urlString = `${providerList.get(ChapterProvider).base}/${ChapterSlug}/`;
+	const { provider: MangaProvider, manga: MangaSlug, slug:ChapterSlug } = req.body;
 	let jsonResponse;
 	try {
 		/*
-		Return immediately if already exist in the database
+		Try to check database
+		Return immediately if other than initial data exist in the database
+		Return immediately if nothing exist in the database
 		*/
-		const data = await db.getEntry(`chapter_${ChapterProvider}_${ChapterSlug}`);
-		if (data) {
+		const { ChapterUrl: urlString, ChapterContent } = await db.getEntry(`chapter_${MangaProvider}_${MangaSlug}`, ChapterSlug);
+		if (ChapterContent) {
 			jsonResponse = new Map([
 				["status", 409],
 				["statusText", `Already exist in the database: '${ChapterSlug}'`],
 			]);
-			return res.status(409).json(Object.fromEntries(jsonResponse));
+			return res.status(409).json(mapToObject(jsonResponse));
+		}
+		if (!urlString) {
+			jsonResponse = new Map([
+				["status", 404],
+				["statusText", `Cannot find initial data for '${ChapterSlug}', try to scrape chapter-list of '${MangaSlug}' first`],
+			]);
+			return res.status(404).json(mapToObject(jsonResponse));
 		}
 		
 		/*
 		Try to scrape manga provider's website
 		Return immediately if error
 		*/
-		const response = await scraper(urlString, "Chapter", ChapterProvider);
+		const response = await scraper(urlString, "Chapter", MangaProvider);
 		if (response.constructor === Error) {
 			jsonResponse = new Map([
 				["status", response.cause],
 				["statusText", response.message],
 			]);
-			return res.status(response.cause).json(Object.fromEntries(jsonResponse));
+			return res.status(response.cause).json(mapToObject(jsonResponse));
 		}
-
+		
 		/*
 		Add scraped data to the database
 		Return with 201 response
 		*/
-		await db.createEntry(Object.fromEntries(response));
+		await db.updateChapterEntry(mapToObject(response));
 		jsonResponse = new Map([
 			["status", 201],
 			["statusText", "Created"],
-			["data", Object.fromEntries(response)],
+			["data", mapToObject(response)],
 		]);
-		return res.status(201).json(Object.fromEntries(jsonResponse));
+		return res.status(201).json(mapToObject(jsonResponse));
 	} catch (error) {
 		logger.error(error.message);
 		logger.error(error.stack);
@@ -331,7 +306,7 @@ async function scrapeChapter(req, res) {
 			["status", 500],
 			["statusText", error.message],
 		]);
-		return res.status(500).json(Object.fromEntries(jsonResponse));
+		return res.status(500).json(mapToObject(jsonResponse));
 	}
 }
 

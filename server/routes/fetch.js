@@ -1,7 +1,7 @@
 import express from "express";
-import { fetchStatus, fetchProviderList, fetchMangaData } from "../controllers/fetch";
-import { validateUUID, validateProvider } from "../validations";
-var router = express.Router();
+import { fetchStatus, fetchProviderList, fetchMangaData } from "../controllers/fetch.js";
+import { validateUUID, validateProvider } from "../validations/index.js";
+const router = express.Router();
 
 router.get("/", (req, res) => res.redirect(301, "/fetch/list"));
 

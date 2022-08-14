@@ -10,9 +10,9 @@ var _clientDynamodb = require("@aws-sdk/client-dynamodb");
 
 var _utilDynamodb = require("@aws-sdk/util-dynamodb");
 
-var _configs = _interopRequireDefault(require("../configs"));
+var _index = _interopRequireDefault(require("../configs/index.js"));
 
-var _logger = _interopRequireDefault(require("../services/logger"));
+var _logger = _interopRequireDefault(require("../services/logger.js"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -43,11 +43,11 @@ function _createEntry() {
             params = {
               TableName: tableName,
               Item: (0, _utilDynamodb.marshall)(item),
-              ConditionExpression: "attribute_not_exists(Id)"
+              ConditionExpression: "attribute_not_exists(EntrySlug)"
             };
             _context.prev = 2;
             _context.next = 5;
-            return _configs["default"].send(new _clientDynamodb.PutItemCommand(params));
+            return _index["default"].send(new _clientDynamodb.PutItemCommand(params));
 
           case 5:
             _context.next = 12;
@@ -57,7 +57,7 @@ function _createEntry() {
             _context.prev = 7;
             _context.t0 = _context["catch"](2);
 
-            _logger["default"].debug("createEntry fail: ".concat(item["Id"]));
+            _logger["default"].debug("createEntry fail: ".concat(item["EntrySlug"]));
 
             _logger["default"].debug(_context.t0.message);
 
@@ -90,11 +90,11 @@ function _createStatus() {
             params = {
               TableName: tableName,
               Item: (0, _utilDynamodb.marshall)(item),
-              ConditionExpression: "attribute_not_exists(Id)"
+              ConditionExpression: "attribute_not_exists(EntrySlug)"
             };
             _context2.prev = 2;
             _context2.next = 5;
-            return _configs["default"].send(new _clientDynamodb.PutItemCommand(params));
+            return _index["default"].send(new _clientDynamodb.PutItemCommand(params));
 
           case 5:
             _context2.next = 12;
@@ -104,7 +104,7 @@ function _createStatus() {
             _context2.prev = 7;
             _context2.t0 = _context2["catch"](2);
 
-            _logger["default"].debug("createStatus fail: ".concat(item["Id"]));
+            _logger["default"].debug("createStatus fail: ".concat(item["EntrySlug"]));
 
             _logger["default"].debug(_context2.t0.message);
 

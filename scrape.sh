@@ -2,77 +2,64 @@
 
 url="https://o7m7nsil5gkwfauk5g34cm2ewe0hzhhm.lambda-url.ap-southeast-1.on.aws"
 
+# OK
 fetchList() {
 	curl --request GET \
-		--url "${url}/fetch/list"
+		--url "${url}/fetch/manga-provider"
+}
+
+# OK
+fetchMangaList() {
+	curl --request GET \
+		--url "${url}/fetch/manga-list/${1}"
 }
 
 fetchMangaList() {
 	curl --request GET \
-		--url "${url}/fetch/list/${1}"
+		--url "${url}/fetch/chapter-list/${1}/${2}"
 }
 
-fetchChapterList() {
-	curl --request GET \
-		--url "${url}/fetch/chapters/${1}/${2}"
-}
-
+# OK
 postList() {
 	curl --request POST \
-		--url "${url}/scrape/list" \
+		--url "${url}/scrape/manga-list" \
 		--header 'content-type: application/json' \
-		--data '{ "source": "'$1'" }'
+		--data '{ "provider": "'$1'" }'
 }
 
+# OK
 postManga() {
 	curl --request POST \
 		--url "${url}/scrape/manga" \
 		--header 'content-type: application/json' \
-		--data '{ "source": "'$1'", "slug": "'$2'" }'
+		--data '{ "provider": "'$1'", "type": "'$2'", "slug": "'$3'" }'
+}
+
+# OK
+postChapterList() {
+	curl --request POST \
+		--url "${url}/scrape/chapter-list" \
+		--header 'content-type: application/json' \
+		--data '{ "provider": "'$1'", "type": "'$2'", "slug": "'$3'" }'
 }
 
 postChapter() {
 	curl --request POST \
 		--url "${url}/scrape/chapter" \
 		--header 'content-type: application/json' \
-		--data '{ "source": "'$1'", "slug": "'$2'" }'
+		--data '{ "provider": "'$1'", "slug": "'$2'" }'
 }
 
-putContent() {
-	curl --request PUT \
-		--url "${url}/convert/chapter" \
-		--header 'content-type: application/json' \
-		--data '{ "source": "'$1'", "slug": "'$2'" }'
-}
+# putContent() {
+# 	curl --request PUT \
+# 		--url "${url}/convert/chapter" \
+# 		--header 'content-type: application/json' \
+# 		--data '{ "provider": "'$1'", "slug": "'$2'" }'
+# }
 
-scrapeMangaData() {
-	mapfile -t sourceList < <(fetchList | jq -r ".data[]")
-	for x in "${!sourceList[@]}"; do
-		postList "${sourceList[${x}]}"
-		echo
-		mapfile -t mangaList < <(fetchMangaList "${sourceList[x]}" | jq -r ".data[].Slug")
-		for y in "${!mangaList[@]}"; do
-			postManga "${sourceList[x]}" "${mangaList[${y}]}"
-			echo
-			mapfile -t chapterList < <(fetchChapterList "${sourceList[x]}" "${mangaList[${y}]}" | jq -r ".data[].Slug")
-			for z in "${!chapterList[@]}"; do
-				postChapter "${sourceList[x]}" "${chapterList[${z}]}"
-				echo
-			done
-		done
-	done
-}
-
-convertContent() {
-	mapfile -t mangaList < <(fetchMangaList "asura" | jq -r ".data[].Slug")
-	echo
-	for y in "${!mangaList[@]}"; do
-		mapfile -t chapterList < <(fetchChapterList "asura" "${mangaList[${y}]}" | jq -r ".data[].Slug")
-		for z in "${!chapterList[@]}"; do
-			putContent "asura" "${chapterList[${z}]}"
-			echo
-		done
-	done
-}
-
-convertContent
+# mapfile -t mangaList < <(fetchMangaList "asura" | jq -r ".data.MangaList | keys[]")
+# for x in "${!mangaList[@]}"; do
+# 	mapfile -t chapterList < <(fetchMangaList "asura" | jq -r ".data.MangaList | keys[]")
+# 	postChapterList "asura" "manga" "${mangaList[${x}]}"
+# 	echo
+# done

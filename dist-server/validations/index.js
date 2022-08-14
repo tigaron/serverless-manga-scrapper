@@ -9,7 +9,7 @@ exports.validateBody = validateBody;
 exports.validateProvider = validateProvider;
 exports.validateUUID = validateUUID;
 
-var _providerList = _interopRequireDefault(require("../utils/providerList"));
+var _providerList = _interopRequireDefault(require("../utils/providerList.js"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -41,7 +41,7 @@ function validateProvider(req, res, next) {
 function validateBody(items) {
   return /*#__PURE__*/function () {
     var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(req, res, next) {
-      var _req$body, provider, slug, itemsDictionary;
+      var _req$body, provider, manga, slug, itemsDictionary;
 
       return _regeneratorRuntime().wrap(function _callee$(_context) {
         while (1) {
@@ -58,10 +58,11 @@ function validateBody(items) {
               }));
 
             case 2:
-              _req$body = req.body, provider = _req$body.provider, slug = _req$body.slug;
+              _req$body = req.body, provider = _req$body.provider, manga = _req$body.manga, slug = _req$body.slug;
               itemsDictionary = {
                 Provider: provider,
-                ProviderSlug: provider && slug
+                ProviderSlug: provider && slug,
+                ProviderMangaSlug: provider && manga && slug
               };
 
               if (itemsDictionary[items]) {

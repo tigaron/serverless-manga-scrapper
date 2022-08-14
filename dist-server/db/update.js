@@ -3,17 +3,17 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.updateChapterListElement = updateChapterListElement;
-exports.updateMangaListElement = updateMangaListElement;
+exports.updateChapterEntry = updateChapterEntry;
+exports.updateMangaEntry = updateMangaEntry;
 exports.updateStatus = updateStatus;
 
 var _clientDynamodb = require("@aws-sdk/client-dynamodb");
 
 var _utilDynamodb = require("@aws-sdk/util-dynamodb");
 
-var _configs = _interopRequireDefault(require("../configs"));
+var _index = _interopRequireDefault(require("../configs/index.js"));
 
-var _logger = _interopRequireDefault(require("../services/logger"));
+var _logger = _interopRequireDefault(require("../services/logger.js"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -27,12 +27,12 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
 var TABLE_MANGA = process.env.TABLE_MANGA;
 
-function updateMangaListElement(_x) {
-  return _updateMangaListElement.apply(this, arguments);
+function updateMangaEntry(_x) {
+  return _updateMangaEntry.apply(this, arguments);
 }
 
-function _updateMangaListElement() {
-  _updateMangaListElement = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(item) {
+function _updateMangaEntry() {
+  _updateMangaEntry = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(item) {
     var tableName,
         params,
         _args = arguments;
@@ -44,24 +44,30 @@ function _updateMangaListElement() {
             params = {
               TableName: tableName,
               Key: {
-                Id: (0, _utilDynamodb.marshall)(item["Id"])
+                EntryId: (0, _utilDynamodb.marshall)(item["EntryId"]),
+                EntrySlug: (0, _utilDynamodb.marshall)(item["EntrySlug"])
               },
               ExpressionAttributeNames: {
-                "#ML": "MangaList",
-                "#MS": item["MangaSlug"],
-                "#UA": item["UpdatedAt"]
+                "#MT": "MangaTitle",
+                "#MS": "MangaSynopsis",
+                "#MC": "MangaCover",
+                "#SU": "MangaShortUrl",
+                "#CU": "MangaCanonicalUrl",
+                "#SD": "ScrapeDate"
               },
               ExpressionAttributeValues: {
-                ":md": {
-                  M: (0, _utilDynamodb.marshall)(item["MangaDetail"])
-                },
-                ":ua": (0, _utilDynamodb.marshall)(item["UpdatedAt"])
+                ":mt": (0, _utilDynamodb.marshall)(item["MangaTitle"]),
+                ":ms": (0, _utilDynamodb.marshall)(item["MangaSynopsis"]),
+                ":mc": (0, _utilDynamodb.marshall)(item["MangaCover"]),
+                ":su": (0, _utilDynamodb.marshall)(item["MangaShortUrl"]),
+                ":cu": (0, _utilDynamodb.marshall)(item["MangaCanonicalUrl"]),
+                ":sd": (0, _utilDynamodb.marshall)(item["ScrapeDate"])
               },
-              UpdateExpression: "SET #ML.#MS = :md, #UA = :ua"
+              UpdateExpression: "SET #MT = :mt, #MS = :ms, #MC = :mc, #SU = :su, #CU = :cu, #SD = :sd"
             };
             _context.prev = 2;
             _context.next = 5;
-            return _configs["default"].send(new _clientDynamodb.UpdateItemCommand(params));
+            return _index["default"].send(new _clientDynamodb.UpdateItemCommand(params));
 
           case 5:
             _context.next = 12;
@@ -71,7 +77,7 @@ function _updateMangaListElement() {
             _context.prev = 7;
             _context.t0 = _context["catch"](2);
 
-            _logger["default"].debug("updateMangaListElement fail: ".concat(item["Id"]));
+            _logger["default"].debug("updateMangaEntry fail: ".concat(item["EntrySlug"]));
 
             _logger["default"].debug(_context.t0.message);
 
@@ -84,15 +90,15 @@ function _updateMangaListElement() {
       }
     }, _callee, null, [[2, 7]]);
   }));
-  return _updateMangaListElement.apply(this, arguments);
+  return _updateMangaEntry.apply(this, arguments);
 }
 
-function updateChapterListElement(_x2) {
-  return _updateChapterListElement.apply(this, arguments);
+function updateChapterEntry(_x2) {
+  return _updateChapterEntry.apply(this, arguments);
 }
 
-function _updateChapterListElement() {
-  _updateChapterListElement = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(item) {
+function _updateChapterEntry() {
+  _updateChapterEntry = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(item) {
     var tableName,
         params,
         _args2 = arguments;
@@ -104,24 +110,30 @@ function _updateChapterListElement() {
             params = {
               TableName: tableName,
               Key: {
-                Id: (0, _utilDynamodb.marshall)(item["Id"])
+                EntryId: (0, _utilDynamodb.marshall)(item["EntryId"]),
+                EntrySlug: (0, _utilDynamodb.marshall)(item["EntrySlug"])
               },
               ExpressionAttributeNames: {
-                "#CL": "ChapterList",
-                "#CS": item["ChapterSlug"],
-                "#UA": item["UpdatedAt"]
+                "#CT": "ChapterTitle",
+                "#CS": "ChapterShortUrl",
+                "#CU": "ChapterCanonicalUrl",
+                "#CC": "ChapterContent",
+                "#SD": "ScrapeDate"
               },
               ExpressionAttributeValues: {
-                ":cd": {
-                  M: (0, _utilDynamodb.marshall)(item["ChapterDetail"])
+                ":ct": (0, _utilDynamodb.marshall)(item["ChapterTitle"]),
+                ":cs": (0, _utilDynamodb.marshall)(item["ChapterShortUrl"]),
+                ":cu": (0, _utilDynamodb.marshall)(item["ChapterCanonicalUrl"]),
+                ":cc": {
+                  L: (0, _utilDynamodb.marshall)(Array.from(item["ChapterContent"]))
                 },
-                ":ua": (0, _utilDynamodb.marshall)(item["UpdatedAt"])
+                ":sd": (0, _utilDynamodb.marshall)(item["ScrapeDate"])
               },
-              UpdateExpression: "SET #CL.#CS = :cd, #UA = :ua"
+              UpdateExpression: "SET #CT = :ct, #CS = :cs, #CU = :cu, #CC = :cc, #SD = :sd"
             };
             _context2.prev = 2;
             _context2.next = 5;
-            return _configs["default"].send(new _clientDynamodb.UpdateItemCommand(params));
+            return _index["default"].send(new _clientDynamodb.UpdateItemCommand(params));
 
           case 5:
             _context2.next = 12;
@@ -131,7 +143,7 @@ function _updateChapterListElement() {
             _context2.prev = 7;
             _context2.t0 = _context2["catch"](2);
 
-            _logger["default"].debug("updateChapterListElement fail: ".concat(item["Id"]));
+            _logger["default"].debug("updateChapterEntry fail: ".concat(item["EntrySlug"]));
 
             _logger["default"].debug(_context2.t0.message);
 
@@ -144,7 +156,7 @@ function _updateChapterListElement() {
       }
     }, _callee2, null, [[2, 7]]);
   }));
-  return _updateChapterListElement.apply(this, arguments);
+  return _updateChapterEntry.apply(this, arguments);
 }
 
 function updateStatus(_x3) {
@@ -164,7 +176,8 @@ function _updateStatus() {
             params = {
               TableName: tableName,
               Key: {
-                Id: (0, _utilDynamodb.marshall)(item["Id"])
+                EntryId: (0, _utilDynamodb.marshall)(item["EntryId"]),
+                EntrySlug: (0, _utilDynamodb.marshall)(item["EntrySlug"])
               },
               ExpressionAttributeNames: {
                 "#RS": "RequestStatus",
@@ -180,7 +193,7 @@ function _updateStatus() {
             };
             _context3.prev = 2;
             _context3.next = 5;
-            return _configs["default"].send(new _clientDynamodb.UpdateItemCommand(params));
+            return _index["default"].send(new _clientDynamodb.UpdateItemCommand(params));
 
           case 5:
             _context3.next = 12;
@@ -190,7 +203,7 @@ function _updateStatus() {
             _context3.prev = 7;
             _context3.t0 = _context3["catch"](2);
 
-            _logger["default"].debug("updateStatus fail: ".concat(item["Id"]));
+            _logger["default"].debug("updateStatus fail: ".concat(item["EntrySlug"]));
 
             _logger["default"].debug(_context3.t0.message);
 

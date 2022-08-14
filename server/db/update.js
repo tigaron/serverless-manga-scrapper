@@ -1,57 +1,73 @@
 import { UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
-import dbclient from "../configs";
-import logger from "../services/logger";
+import dbclient from "../configs/index.js";
+import logger from "../services/logger.js";
 
 const { TABLE_MANGA } = process.env;
 
-async function updateMangaListElement(item, tableName = TABLE_MANGA) {
+async function updateMangaEntry(item, tableName = TABLE_MANGA) {
 	const params = {
 		TableName: tableName,
-		Key: { Id: marshall(item["Id"]) },
+		Key: {
+			EntryId: marshall(item["EntryId"]),
+			EntrySlug: marshall(item["EntrySlug"]),
+		},
 		ExpressionAttributeNames: {
-			"#ML": "MangaList",
-			"#MS": item["MangaSlug"],
-			"#UA": item["UpdatedAt"],
+			"#MT": "MangaTitle",
+			"#MS": "MangaSynopsis",
+			"#MC": "MangaCover",
+			"#SU": "MangaShortUrl",
+			"#CU": "MangaCanonicalUrl",
+			"#SD": "ScrapeDate",
 		},
 		ExpressionAttributeValues: {
-			":md": {
-				M: marshall(item["MangaDetail"])
-			},
-			":ua": marshall(item["UpdatedAt"]),
+			":mt": marshall(item["MangaTitle"]),
+			":ms": marshall(item["MangaSynopsis"]),
+			":mc": marshall(item["MangaCover"]),
+			":su": marshall(item["MangaShortUrl"]),
+			":cu": marshall(item["MangaCanonicalUrl"]),
+			":sd": marshall(item["ScrapeDate"]),
 		},
-		UpdateExpression: "SET #ML.#MS = :md, #UA = :ua"
+		UpdateExpression: "SET #MT = :mt, #MS = :ms, #MC = :mc, #SU = :su, #CU = :cu, #SD = :sd",
 	};
 	try {
 		await dbclient.send(new UpdateItemCommand(params));
 	} catch (error) {
-		logger.debug(`updateMangaListElement fail: ${item["Id"]}`);
+		logger.debug(`updateMangaEntry fail: ${item["EntrySlug"]}`);
 		logger.debug(error.message);
 		logger.debug(error.stack);
 	}
 }
 
-async function updateChapterListElement(item, tableName = TABLE_MANGA) {
+async function updateChapterEntry(item, tableName = TABLE_MANGA) {
 	const params = {
 		TableName: tableName,
-		Key: { Id: marshall(item["Id"]) },
+		Key: {
+			EntryId: marshall(item["EntryId"]),
+			EntrySlug: marshall(item["EntrySlug"]),
+		},
 		ExpressionAttributeNames: {
-			"#CL": "ChapterList",
-			"#CS": item["ChapterSlug"],
-			"#UA": item["UpdatedAt"],
+			"#CT": "ChapterTitle",
+			"#CS": "ChapterShortUrl",
+			"#CU": "ChapterCanonicalUrl",
+			"#CC": "ChapterContent",
+			"#SD": "ScrapeDate",
 		},
 		ExpressionAttributeValues: {
-			":cd": {
-				M: marshall(item["ChapterDetail"])
+			":ct": marshall(item["ChapterTitle"]),
+			":cs": marshall(item["ChapterShortUrl"]),
+			":cu": marshall(item["ChapterCanonicalUrl"]),
+			":cc": {
+				L: marshall(Array.from(item["ChapterContent"]))
 			},
-			":ua": marshall(item["UpdatedAt"]),
+			":sd": marshall(item["ScrapeDate"]),
 		},
-		UpdateExpression: "SET #CL.#CS = :cd, #UA = :ua"
+		UpdateExpression: "SET #CT = :ct, #CS = :cs, #CU = :cu, #CC = :cc, #SD = :sd",
 	};
 	try {
 		await dbclient.send(new UpdateItemCommand(params));
 	} catch (error) {
-		logger.debug(`updateChapterListElement fail: ${item["Id"]}`);
+		logger.debug(`updateChapterEntry fail: ${item["EntrySlug"]}`);
 		logger.debug(error.message);
 		logger.debug(error.stack);
 	}
@@ -60,26 +76,29 @@ async function updateChapterListElement(item, tableName = TABLE_MANGA) {
 async function updateStatus(item, tableName = TABLE_MANGA) {
 	const params = {
 		TableName: tableName,
-		Key: { Id: marshall(item["Id"]) },
+		Key: {
+			EntryId: marshall(item["EntryId"]),
+			EntrySlug: marshall(item["EntrySlug"]),
+		},
 		ExpressionAttributeNames: {
 			"#RS": "RequestStatus",
-			"#FI": "FailedItems"
+			"#FI": "FailedItems",
 		},
 		ExpressionAttributeValues: {
 			":rs": marshall(item["RequestStatus"]),
 			":fi": {
-				L: marshall(item["FailedItems"])
+				L: marshall(item["FailedItems"]),
 			},
 		},
-		UpdateExpression: "SET #RS = :rs, #FI = :fi"
+		UpdateExpression: "SET #RS = :rs, #FI = :fi",
 	};
 	try {
 		await dbclient.send(new UpdateItemCommand(params));
 	} catch (error) {
-		logger.debug(`updateStatus fail: ${item["Id"]}`);
+		logger.debug(`updateStatus fail: ${item["EntrySlug"]}`);
 		logger.debug(error.message);
 		logger.debug(error.stack);
 	}
 };
 
-export { updateMangaListElement, updateChapterListElement, updateStatus };
+export { updateMangaEntry, updateChapterEntry, updateStatus };

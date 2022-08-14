@@ -218,7 +218,7 @@ describe("Unit test", () => {
 	});
 })
 
-describe("Integration test", () => {
+/* describe("Integration test", () => {
 	test("Scraper success", async () => {
 		const urlString = "https://www.asurascans.com/manga/list-mode/";
 		try {
@@ -240,3 +240,4 @@ describe("Integration test", () => {
 		}
 	}, 15000);
 });
+ */

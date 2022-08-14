@@ -11,7 +11,7 @@ Example:
 path: /scrape/manga-list
 body: { provider: "asura" }
 */
-async function scrapeMangaList(req, res) {
+async function mangaList(req, res) {
 	const { provider: MangaProvider } = req.body;
 	const urlString = providerList.get(MangaProvider);
 	let jsonResponse;
@@ -90,7 +90,7 @@ Example:
 path: /scrape/manga
 body: { provider: "asura", slug: "damn-reincarnation" }
 */
-async function scrapeManga(req, res) {
+async function manga(req, res) {
 	const { provider: MangaProvider, slug: MangaSlug } = req.body;
 	let jsonResponse;
 	try {
@@ -155,7 +155,7 @@ Example:
 path: /scrape/chapter-list
 body: { provider: "asura", slug: "damn-reincarnation" }
 */
-async function scrapeChapterList(req, res) {
+async function chapterList(req, res) {
 	const { provider: MangaProvider, slug: MangaSlug } = req.body;
 	let jsonResponse;
 	try {
@@ -246,7 +246,7 @@ Example:
 path: /scrape/chapter
 body: { provider: "asura", manga: "damn-reincarnation", slug: "damn-reincarnation-chapter-1" }
 */
-async function scrapeChapter(req, res) {
+async function chapter(req, res) {
 	const { provider: MangaProvider, manga: MangaSlug, slug:ChapterSlug } = req.body;
 	let jsonResponse;
 	try {
@@ -305,4 +305,11 @@ async function scrapeChapter(req, res) {
 	}
 }
 
-export { scrapeMangaList, scrapeManga, scrapeChapterList, scrapeChapter };
+const scrape = {
+	mangaList,
+	manga,
+	chapterList,
+	chapter,
+};
+
+export default scrape;

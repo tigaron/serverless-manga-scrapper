@@ -1,8 +1,10 @@
 "use strict";
 
-var _validations = require("../validations");
+var _validations = _interopRequireDefault(require("../validations"));
 
 var _express = require("@jest-mock/express");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 var _getMockRes = (0, _express.getMockRes)(),
     res = _getMockRes.res,
@@ -13,14 +15,16 @@ beforeEach(function () {
   clearMockRes();
   jest.clearAllMocks();
 });
-describe("validateUUID behaviour", function () {
+describe("validate.uuid behaviour", function () {
   test("Validation success --> call next()", function () {
     var req = (0, _express.getMockReq)({
       params: {
         id: "ac682d3d-83d7-4bb4-a81c-b2d61cf626b5"
       }
     });
-    (0, _validations.validateUUID)(req, res, next);
+
+    _validations["default"].uuid(req, res, next);
+
     expect(next).toHaveBeenCalled();
   });
   test("Validation fail --> return 400", function () {
@@ -29,7 +33,9 @@ describe("validateUUID behaviour", function () {
         id: "hello"
       }
     });
-    (0, _validations.validateUUID)(req, res, next);
+
+    _validations["default"].uuid(req, res, next);
+
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
       status: 400,
@@ -37,14 +43,16 @@ describe("validateUUID behaviour", function () {
     });
   });
 });
-describe("validateProvider behaviour", function () {
+describe("validate.provider behaviour", function () {
   test("Validation success --> call next()", function () {
     var req = (0, _express.getMockReq)({
       params: {
         provider: "asura"
       }
     });
-    (0, _validations.validateProvider)(req, res, next);
+
+    _validations["default"].provider(req, res, next);
+
     expect(next).toHaveBeenCalled();
   });
   test("Validation fail --> return 404", function () {
@@ -53,7 +61,9 @@ describe("validateProvider behaviour", function () {
         provider: "hello"
       }
     });
-    (0, _validations.validateProvider)(req, res, next);
+
+    _validations["default"].provider(req, res, next);
+
     expect(res.status).toHaveBeenCalledWith(404);
     expect(res.json).toHaveBeenCalledWith({
       status: 404,
@@ -61,7 +71,7 @@ describe("validateProvider behaviour", function () {
     });
   });
 });
-describe("validateBody behaviour", function () {
+describe("validate.body behaviour", function () {
   test("Provider validation success --> call next()", function () {
     var items = "Provider";
     var req = (0, _express.getMockReq)({
@@ -75,7 +85,9 @@ describe("validateBody behaviour", function () {
         return req.headers["content-type"] === "application/json";
       }
     });
-    (0, _validations.validateBody)(items)(req, res, next);
+
+    _validations["default"].body(items)(req, res, next);
+
     expect(next).toHaveBeenCalled();
   });
   test("Provider validation fail: not provided --> return 400", function () {
@@ -88,7 +100,9 @@ describe("validateBody behaviour", function () {
         return req.headers["content-type"] === "application/json";
       }
     });
-    (0, _validations.validateBody)(items)(req, res, next);
+
+    _validations["default"].body(items)(req, res, next);
+
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
       status: 400,
@@ -108,7 +122,9 @@ describe("validateBody behaviour", function () {
         return req.headers["content-type"] === "application/json";
       }
     });
-    (0, _validations.validateBody)(items)(req, res, next);
+
+    _validations["default"].body(items)(req, res, next);
+
     expect(res.status).toHaveBeenCalledWith(404);
     expect(res.json).toHaveBeenCalledWith({
       status: 404,
@@ -129,7 +145,9 @@ describe("validateBody behaviour", function () {
         return req.headers["content-type"] === "application/json";
       }
     });
-    (0, _validations.validateBody)(items)(req, res, next);
+
+    _validations["default"].body(items)(req, res, next);
+
     expect(next).toHaveBeenCalled();
   });
   test("ProviderSlug validation fail --> return 400", function () {
@@ -145,7 +163,9 @@ describe("validateBody behaviour", function () {
         return req.headers["content-type"] === "application/json";
       }
     });
-    (0, _validations.validateBody)(items)(req, res, next);
+
+    _validations["default"].body(items)(req, res, next);
+
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
       status: 400,
@@ -167,7 +187,9 @@ describe("validateBody behaviour", function () {
         return req.headers["content-type"] === "application/json";
       }
     });
-    (0, _validations.validateBody)(items)(req, res, next);
+
+    _validations["default"].body(items)(req, res, next);
+
     expect(next).toHaveBeenCalled();
   });
   test("ProviderMangaSlug validation fail --> return 400", function () {
@@ -184,7 +206,9 @@ describe("validateBody behaviour", function () {
         return req.headers["content-type"] === "application/json";
       }
     });
-    (0, _validations.validateBody)(items)(req, res, next);
+
+    _validations["default"].body(items)(req, res, next);
+
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
       status: 400,
@@ -194,7 +218,9 @@ describe("validateBody behaviour", function () {
   test("Invalid header's content-type --> return 406", function () {
     var items = "Provider";
     var req = (0, _express.getMockReq)();
-    (0, _validations.validateBody)(items)(req, res, next);
+
+    _validations["default"].body(items)(req, res, next);
+
     expect(res.status).toHaveBeenCalledWith(406);
     expect(res.json).toHaveBeenCalledWith({
       status: 406,

@@ -1,12 +1,6 @@
 import { getMockReq, getMockRes } from "@jest-mock/express";
 import { jest } from "@jest/globals";
-import {
-	fetchStatus,
-	fetchProviderList,
-	fetchListData,
-	fetchMangaData,
-	fetchChapterData,
-} from "./fetch";
+import fetch from "./fetch";
 import db from "../db";
 
 jest.mock("../db");
@@ -19,7 +13,7 @@ describe("Unit test", () => {
 		jest.clearAllMocks();
 	});
 
-	describe("fetchStatus behaviour", () => {
+	describe("fetch.status behaviour", () => {
 		test("UUID exists in the database --> 200", async () => {
 			const req = getMockReq({
 				params: { id: "ac682d3d-83d7-4bb4-a81c-b2d61cf626b5" },
@@ -34,7 +28,7 @@ describe("Unit test", () => {
 				RequestStatus: "completed",
 			};
 			const getEntrySpy = db.getEntry.mockImplementation(() => expectedResult);
-			await fetchStatus(req, res);
+			await fetch.status(req, res);
 			expect(getEntrySpy).toHaveBeenCalled();
 			expect(res.status).toHaveBeenCalledWith(200);
 			expect(res.json).toHaveBeenCalledWith(
@@ -51,7 +45,7 @@ describe("Unit test", () => {
 				params: { id: "ac682d3d-83d7-4bb4-a81c-b2d61cf626b5" },
 			});
 			const getEntrySpy = db.getEntry.mockImplementation(() => false);
-			await fetchStatus(req, res);
+			await fetch.status(req, res);
 			expect(getEntrySpy).toHaveBeenCalled();
 			expect(res.status).toHaveBeenCalledWith(404);
 			expect(res.json).toHaveBeenCalledWith(
@@ -69,7 +63,7 @@ describe("Unit test", () => {
 			const getEntrySpy = db.getEntry.mockImplementation(() => {
 				throw new Error("This is just a test");
 			});
-			await fetchStatus(req, res);
+			await fetch.status(req, res);
 			expect(getEntrySpy).toHaveBeenCalled();
 			expect(res.status).toHaveBeenCalledWith(500);
 			expect(res.json).toHaveBeenCalledWith(
@@ -81,10 +75,10 @@ describe("Unit test", () => {
 		});
 	});
 
-	describe("fetchProviderList behaviour", () => {
+	describe("fetch.providerData behaviour", () => {
 		test("UUID exists in the database --> 200", async () => {
 			const req = getMockReq();
-			await fetchProviderList(req, res);
+			await fetch.providerData(req, res);
 			expect(res.status).toHaveBeenCalledWith(200);
 			expect(res.json).toHaveBeenCalledWith(
 				expect.objectContaining({
@@ -96,7 +90,7 @@ describe("Unit test", () => {
 		});
 	});
 
-	describe("fetchListData behaviour", () => {
+	describe("fetch.listData behaviour", () => {
 		test("EntryId exists in the database --> 200", async () => {
 			const req = getMockReq({
 				params: { provider: "asura" },
@@ -118,7 +112,7 @@ describe("Unit test", () => {
 				},
 			];
 			const getCollectionSpy = db.getCollection.mockImplementation(() => expectedResult);
-			await fetchListData(req, res);
+			await fetch.listData(req, res);
 			expect(getCollectionSpy).toHaveBeenCalled();
 			expect(res.status).toHaveBeenCalledWith(200);
 			expect(res.json).toHaveBeenCalledWith(
@@ -135,7 +129,7 @@ describe("Unit test", () => {
 				params: { provider: "hello" },
 			});
 			const getCollectionSpy = db.getCollection.mockImplementation(() => false);
-			await fetchListData(req, res);
+			await fetch.listData(req, res);
 			expect(getCollectionSpy).toHaveBeenCalled();
 			expect(res.status).toHaveBeenCalledWith(404);
 			expect(res.json).toHaveBeenCalledWith(
@@ -153,7 +147,7 @@ describe("Unit test", () => {
 			const getCollectionSpy = db.getCollection.mockImplementation(() => {
 				throw new Error("This is just a test");
 			});
-			await fetchListData(req, res);
+			await fetch.listData(req, res);
 			expect(getCollectionSpy).toHaveBeenCalled();
 			expect(res.status).toHaveBeenCalledWith(500);
 			expect(res.json).toHaveBeenCalledWith(
@@ -165,7 +159,7 @@ describe("Unit test", () => {
 		});
 	});
 
-	describe("fetchMangaData behaviour", () => {
+	describe("fetch.mangaData behaviour", () => {
 		test("EntryId and EntrySlug exist in the database --> 200", async () => {
 			const req = getMockReq({
 				params: { provider: "asura", slug: "a-returners-magic-should-be-special" },
@@ -182,7 +176,7 @@ describe("Unit test", () => {
 				ScrapeDate: "Sun, 14 Aug 2022 03:05:09 GMT",
 			};
 			const getEntrySpy = db.getEntry.mockImplementation(() => expectedResult);
-			await fetchMangaData(req, res);
+			await fetch.mangaData(req, res);
 			expect(getEntrySpy).toHaveBeenCalled();
 			expect(res.status).toHaveBeenCalledWith(200);
 			expect(res.json).toHaveBeenCalledWith(
@@ -199,7 +193,7 @@ describe("Unit test", () => {
 				params: { provider: "asura", slug: "a-returners-magic-should-be-special" },
 			});
 			const getEntrySpy = db.getEntry.mockImplementation(() => false);
-			await fetchMangaData(req, res);
+			await fetch.mangaData(req, res);
 			expect(getEntrySpy).toHaveBeenCalled();
 			expect(res.status).toHaveBeenCalledWith(404);
 			expect(res.json).toHaveBeenCalledWith(
@@ -217,7 +211,7 @@ describe("Unit test", () => {
 			const getEntrySpy = db.getEntry.mockImplementation(() => {
 				throw new Error("This is just a test");
 			});
-			await fetchMangaData(req, res);
+			await fetch.mangaData(req, res);
 			expect(getEntrySpy).toHaveBeenCalled();
 			expect(res.status).toHaveBeenCalledWith(500);
 			expect(res.json).toHaveBeenCalledWith(
@@ -229,7 +223,7 @@ describe("Unit test", () => {
 		});
 	});
 
-	describe("fetchChapterData behaviour", () => {
+	describe("fetch.chapterData behaviour", () => {
 		test("EntryId and EntrySlug exist in the database --> 200", async () => {
 			const req = getMockReq({
 				params: { provider: "asura", manga: "a-returners-magic-should-be-special", slug: "a-returners-magic-should-be-special-chapter-1" },
@@ -251,7 +245,7 @@ describe("Unit test", () => {
 				ScrapeDate: "Sun, 14 Aug 2022 03:12:37 GMT",
 			};
 			const getEntrySpy = db.getEntry.mockImplementation(() => expectedResult);
-			await fetchChapterData(req, res);
+			await fetch.chapterData(req, res);
 			expect(getEntrySpy).toHaveBeenCalled();
 			expect(res.status).toHaveBeenCalledWith(200);
 			expect(res.json).toHaveBeenCalledWith(
@@ -268,7 +262,7 @@ describe("Unit test", () => {
 				params: { provider: "asura", manga: "a-returners-magic-should-be-special", slug: "a-returners-magic-should-be-special-chapter-1" },
 			});
 			const getEntrySpy = db.getEntry.mockImplementation(() => false);
-			await fetchChapterData(req, res);
+			await fetch.chapterData(req, res);
 			expect(getEntrySpy).toHaveBeenCalled();
 			expect(res.status).toHaveBeenCalledWith(404);
 			expect(res.json).toHaveBeenCalledWith(
@@ -286,7 +280,7 @@ describe("Unit test", () => {
 			const getEntrySpy = db.getEntry.mockImplementation(() => {
 				throw new Error("This is just a test");
 			});
-			await fetchChapterData(req, res);
+			await fetch.chapterData(req, res);
 			expect(getEntrySpy).toHaveBeenCalled();
 			expect(res.status).toHaveBeenCalledWith(500);
 			expect(res.json).toHaveBeenCalledWith(

@@ -1,0 +1,77 @@
+org: tigaron
+service: manga-scraper
+frameworkVersion: "3"
+
+package:
+  patterns:
+    - "!.dynamodb/**"
+    - "!coverage/**"
+    - "!server/**"
+    - "!dist-server/__test__/**"
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  region: ${self:custom.defaultRegion}
+  stage: ${opt:stage, self:custom.defaultNodeEnv}
+  environment:
+    NODE_ENV: ${opt:stage, self:custom.defaultNodeEnv}
+    REGION: ${self:provider.region}
+    TABLE_MANGA: ${self:service}-table-${self:provider.stage}
+  iam:
+    role:
+      statements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:Scan
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+          - dynamodb:UpdateItem
+          - dynamodb:DeleteItem
+        Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/*"
+
+functions:
+  scraper:
+    handler: dist-server/bin/lambda.handler
+    name: ${opt:stage, self:provider.stage}-scraper
+    description: An API to scrape manga data from scanlation's website.
+    memorySize: 1024
+    timeout: 60
+    layers:
+      - arn:aws:lambda:ap-southeast-1:764866452798:layer:chrome-aws-lambda:31
+    url: true
+
+resources:
+  Resources:
+    MangaTable:
+      Type: "AWS::DynamoDB::Table"
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:provider.environment.TABLE_MANGA}
+        AttributeDefinitions:
+          - AttributeName: "EntryId"
+            AttributeType: "S"
+          - AttributeName: "EntrySlug"
+            AttributeType: "S"
+        KeySchema:
+          - AttributeName: "EntryId"
+            KeyType: "HASH"
+          - AttributeName: "EntrySlug"
+            KeyType: "RANGE"
+        ProvisionedThroughput:
+          ReadCapacityUnits: 10
+          WriteCapacityUnits: 10
+
+plugins:
+  - serverless-dynamodb-local
+  - serverless-offline
+
+custom:
+  defaultRegion: ap-southeast-1
+  defaultNodeEnv: development
+  dynamodb:
+    stages:
+      - development
+    start:
+      port: 8888

@@ -6,7 +6,7 @@ import db from "../db";
 /*
 Function to fetch status of a specific request Id
 */
-async function fetchStatus(req, res) {
+async function status(req, res) {
 	const { id: EntrySlug } = req.params;
 	let jsonResponse;
 	try {
@@ -44,7 +44,7 @@ async function fetchStatus(req, res) {
 /*
 Function to fetch list of manga providers
 */
-function fetchProviderList(req, res) {
+function providerData(req, res) {
 	const jsonResponse = new Map([
 		["status", 200],
 		["statusText", "OK"],
@@ -56,7 +56,7 @@ function fetchProviderList(req, res) {
 /*
 Function to fetch a collection from database
 */
-async function fetchListData(req, res) {
+async function listData(req, res) {
 	const { provider, slug } = req.params;
 	let jsonResponse;
 	try {
@@ -95,7 +95,7 @@ async function fetchListData(req, res) {
 /*
 Function to fetch a manga entry from database
 */
-async function fetchMangaData(req, res) {
+async function mangaData(req, res) {
 	const { provider, slug } = req.params;
 	let jsonResponse;
 	try {
@@ -133,7 +133,7 @@ async function fetchMangaData(req, res) {
 /*
 Function to fetch a manga entry from database
 */
-async function fetchChapterData(req, res) {
+async function chapterData(req, res) {
 	const { provider, manga, slug } = req.params;
 	let jsonResponse;
 	try {
@@ -168,4 +168,12 @@ async function fetchChapterData(req, res) {
 	}
 }
 
-export { fetchStatus, fetchProviderList, fetchListData, fetchMangaData, fetchChapterData };
+const fetch = {
+	status,
+	providerData,
+	listData,
+	mangaData,
+	chapterData,
+};
+
+export default fetch;

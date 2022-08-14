@@ -3,10 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.scrapeChapter = scrapeChapter;
-exports.scrapeChapterList = scrapeChapterList;
-exports.scrapeManga = scrapeManga;
-exports.scrapeMangaList = scrapeMangaList;
+exports["default"] = void 0;
 
 var _uuid = require("uuid");
 
@@ -40,8 +37,8 @@ Example:
 path: /scrape/manga-list
 body: { provider: "asura" }
 */
-function scrapeMangaList(_x, _x2) {
-  return _scrapeMangaList.apply(this, arguments);
+function mangaList(_x, _x2) {
+  return _mangaList.apply(this, arguments);
 }
 /*
 Function to scrape a specific manga from a specific provider
@@ -51,8 +48,8 @@ body: { provider: "asura", slug: "damn-reincarnation" }
 */
 
 
-function _scrapeMangaList() {
-  _scrapeMangaList = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(req, res) {
+function _mangaList() {
+  _mangaList = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(req, res) {
     var MangaProvider, urlString, jsonResponse, response, requestId, requestStatus, failedItems, _iteratorAbruptCompletion, _didIteratorError, _iteratorError, _iterator, _step, element, data, updatedStatus;
 
     return _regeneratorRuntime().wrap(function _callee$(_context) {
@@ -204,11 +201,11 @@ function _scrapeMangaList() {
       }
     }, _callee, null, [[2, 58], [18, 39, 43, 53], [44,, 48, 52]]);
   }));
-  return _scrapeMangaList.apply(this, arguments);
+  return _mangaList.apply(this, arguments);
 }
 
-function scrapeManga(_x3, _x4) {
-  return _scrapeManga.apply(this, arguments);
+function manga(_x3, _x4) {
+  return _manga.apply(this, arguments);
 }
 /*
 Function to scrape chapter list for a specific manga from a specific provider
@@ -218,8 +215,8 @@ body: { provider: "asura", slug: "damn-reincarnation" }
 */
 
 
-function _scrapeManga() {
-  _scrapeManga = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(req, res) {
+function _manga() {
+  _manga = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(req, res) {
     var _req$body, MangaProvider, MangaSlug, jsonResponse, _yield$db$getEntry, urlString, MangaCover, response;
 
     return _regeneratorRuntime().wrap(function _callee2$(_context2) {
@@ -292,11 +289,11 @@ function _scrapeManga() {
       }
     }, _callee2, null, [[1, 25]]);
   }));
-  return _scrapeManga.apply(this, arguments);
+  return _manga.apply(this, arguments);
 }
 
-function scrapeChapterList(_x5, _x6) {
-  return _scrapeChapterList.apply(this, arguments);
+function chapterList(_x5, _x6) {
+  return _chapterList.apply(this, arguments);
 }
 /*
 Function to scrape a specific chapter from a specific provider
@@ -306,8 +303,8 @@ body: { provider: "asura", manga: "damn-reincarnation", slug: "damn-reincarnatio
 */
 
 
-function _scrapeChapterList() {
-  _scrapeChapterList = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3(req, res) {
+function _chapterList() {
+  _chapterList = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3(req, res) {
     var _req$body2, MangaProvider, MangaSlug, jsonResponse, _yield$db$getEntry2, urlString, response, requestId, requestStatus, failedItems, _iteratorAbruptCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, element, data, updatedStatus;
 
     return _regeneratorRuntime().wrap(function _callee3$(_context3) {
@@ -475,15 +472,15 @@ function _scrapeChapterList() {
       }
     }, _callee3, null, [[1, 64], [24, 45, 49, 59], [50,, 54, 58]]);
   }));
-  return _scrapeChapterList.apply(this, arguments);
+  return _chapterList.apply(this, arguments);
 }
 
-function scrapeChapter(_x7, _x8) {
-  return _scrapeChapter.apply(this, arguments);
+function chapter(_x7, _x8) {
+  return _chapter.apply(this, arguments);
 }
 
-function _scrapeChapter() {
-  _scrapeChapter = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(req, res) {
+function _chapter() {
+  _chapter = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(req, res) {
     var _req$body3, MangaProvider, MangaSlug, ChapterSlug, jsonResponse, _yield$db$getEntry3, urlString, ChapterContent, response;
 
     return _regeneratorRuntime().wrap(function _callee4$(_context4) {
@@ -556,5 +553,14 @@ function _scrapeChapter() {
       }
     }, _callee4, null, [[1, 25]]);
   }));
-  return _scrapeChapter.apply(this, arguments);
+  return _chapter.apply(this, arguments);
 }
+
+var scrape = {
+  mangaList: mangaList,
+  manga: manga,
+  chapterList: chapterList,
+  chapter: chapter
+};
+var _default = scrape;
+exports["default"] = _default;

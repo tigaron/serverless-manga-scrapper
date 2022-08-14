@@ -1,11 +1,6 @@
 import { getMockReq, getMockRes } from "@jest-mock/express";
 import { jest } from "@jest/globals";
-import {
-	scrapeMangaList,
-	scrapeManga,
-	scrapeChapterList,
-	scrapeChapter,
-} from "./scrape";
+import scrape from "./scrape";
 import scraper from "../services/scraper";
 import db from "../db";
 
@@ -20,7 +15,7 @@ describe("Unit test", () => {
 		jest.clearAllMocks();
 	});
 
-	describe("scrapeMangaList behaviour", () => {
+	describe("scrape.mangaList behaviour", () => {
 		test("Scraper return new data --> respond 202 --> process scraped data", async () => {
 			const expectedUrlString = "https://www.asurascans.com/manga/list-mode/";
 			const scraperSpy = scraper.mockImplementation(() => {
@@ -36,7 +31,7 @@ describe("Unit test", () => {
 			const updateStatusSpy = db.updateStatus.mockImplementation();
 
 			const req = getMockReq({ body: { provider: "asura" } });
-			await scrapeMangaList(req, res);
+			await scrape.mangaList(req, res);
 
 			expect(scraperSpy).toHaveBeenCalledWith(
 				expectedUrlString,
@@ -76,7 +71,7 @@ describe("Unit test", () => {
 			const updateStatusSpy = db.updateStatus.mockImplementation();
 
 			const req = getMockReq({ body: { provider: "asura" } });
-			await scrapeMangaList(req, res);
+			await scrape.mangaList(req, res);
 
 			expect(scraperSpy).toHaveBeenCalledWith(
 				expectedUrlString,
@@ -111,7 +106,7 @@ describe("Unit test", () => {
 			});
 	
 			const req = getMockReq({ body: { provider: "asura" } });
-			await scrapeMangaList(req, res);
+			await scrape.mangaList(req, res);
 	
 			expect(scraperSpy).toHaveBeenCalledWith(
 				expectedUrlString,
@@ -141,7 +136,7 @@ describe("Unit test", () => {
 			});
 
 			const req = getMockReq({ body: { provider: "asura" } });
-			await scrapeMangaList(req, res);
+			await scrape.mangaList(req, res);
 
 			expect(createStatusSpy).toHaveBeenCalled();
 			expect(res.status).toHaveBeenCalledWith(500);
@@ -154,7 +149,7 @@ describe("Unit test", () => {
 		});
 	});
 
-	describe("scrapeManga behaviour", () => {
+	describe("scrape.manga behaviour", () => {
 		test("Scraper return new data --> process scraped data --> respond 201", async () => {
 			const expectedUrlString = "https://luminousscans.com/series/a-returners-magic-should-be-special/";
 			const scraperSpy = scraper.mockImplementation(() => {
@@ -177,7 +172,7 @@ describe("Unit test", () => {
 					slug: "a-returners-magic-should-be-special",
 				},
 			});
-			await scrapeManga(req, res);
+			await scrape.manga(req, res);
 
 			expect(getEntrySpy).toHaveBeenCalledWith("manga_luminous", "a-returners-magic-should-be-special");
 			expect(scraperSpy).toHaveBeenCalledWith(
@@ -211,7 +206,7 @@ describe("Unit test", () => {
 					slug: "a-returners-magic-should-be-special",
 				},
 			});
-			await scrapeManga(req, res);
+			await scrape.manga(req, res);
 
 			expect(getEntrySpy).toHaveBeenCalledWith("manga_luminous", "a-returners-magic-should-be-special");
 			expect(res.status).toHaveBeenCalledWith(409);
@@ -231,7 +226,7 @@ describe("Unit test", () => {
 					slug: "a-returners-magic-should-be-special",
 				},
 			});
-			await scrapeManga(req, res);
+			await scrape.manga(req, res);
 
 			expect(getEntrySpy).toHaveBeenCalledWith("manga_luminous", "a-returners-magic-should-be-special");
 			expect(res.status).toHaveBeenCalledWith(404);
@@ -260,7 +255,7 @@ describe("Unit test", () => {
 					slug: "a-returners-magic-should-be-special",
 				},
 			});
-			await scrapeManga(req, res);
+			await scrape.manga(req, res);
 	
 			expect(getEntrySpy).toHaveBeenCalledWith("manga_luminous", "a-returners-magic-should-be-special");
 			expect(scraperSpy).toHaveBeenCalledWith(
@@ -288,7 +283,7 @@ describe("Unit test", () => {
 					slug: "a-returners-magic-should-be-special",
 				},
 			});
-			await scrapeManga(req, res);
+			await scrape.manga(req, res);
 
 			expect(getEntrySpy).toHaveBeenCalledWith("manga_luminous", "a-returners-magic-should-be-special");
 			expect(res.status).toHaveBeenCalledWith(500);
@@ -301,7 +296,7 @@ describe("Unit test", () => {
 		});
 	});
 
-	describe("scrapeChapterList behaviour", () => {
+	describe("scrape.chapterList behaviour", () => {
 		test("Scraper return new data --> respond 202 --> process scraped data", async () => {
 			const expectedUrlString = "https://luminousscans.com/series/a-returners-magic-should-be-special/";
 			const scraperSpy = scraper.mockImplementation(() => {
@@ -325,7 +320,7 @@ describe("Unit test", () => {
 					slug: "a-returners-magic-should-be-special",
 				},
 			});
-			await scrapeChapterList(req, res);
+			await scrape.chapterList(req, res);
 
 			expect(getEntrySpy).toHaveBeenCalledWith("manga_luminous", "a-returners-magic-should-be-special");
 			expect(scraperSpy).toHaveBeenCalledWith(
@@ -376,7 +371,7 @@ describe("Unit test", () => {
 					slug: "a-returners-magic-should-be-special",
 				},
 			});
-			await scrapeChapterList(req, res);
+			await scrape.chapterList(req, res);
 
 			expect(getEntrySpy).toHaveBeenCalledWith("manga_luminous", "a-returners-magic-should-be-special");
 			expect(scraperSpy).toHaveBeenCalledWith(
@@ -413,7 +408,7 @@ describe("Unit test", () => {
 					slug: "a-returners-magic-should-be-special",
 				},
 			});
-			await scrapeChapterList(req, res);
+			await scrape.chapterList(req, res);
 
 			expect(getEntrySpy).toHaveBeenCalledWith("manga_luminous", "a-returners-magic-should-be-special");
 			expect(res.status).toHaveBeenCalledWith(404);
@@ -442,7 +437,7 @@ describe("Unit test", () => {
 					slug: "a-returners-magic-should-be-special",
 				},
 			});
-			await scrapeChapterList(req, res);
+			await scrape.chapterList(req, res);
 	
 			expect(getEntrySpy).toHaveBeenCalledWith("manga_luminous", "a-returners-magic-should-be-special");
 			expect(scraperSpy).toHaveBeenCalledWith(
@@ -470,7 +465,7 @@ describe("Unit test", () => {
 					slug: "a-returners-magic-should-be-special",
 				},
 			});
-			await scrapeChapterList(req, res);
+			await scrape.chapterList(req, res);
 
 			expect(getEntrySpy).toHaveBeenCalledWith("manga_luminous", "a-returners-magic-should-be-special");
 			expect(res.status).toHaveBeenCalledWith(500);
@@ -483,7 +478,7 @@ describe("Unit test", () => {
 		});
 	});
 
-	describe("scrapeChapter behaviour", () => {
+	describe("scrape.chapter behaviour", () => {
 		test("Scraper return new data --> process scraped data --> respond 201", async () => {
 			const expectedUrlString = "https://luminousscans.com/a-returners-magic-should-be-special-chapter-1/";
 			const scraperSpy = scraper.mockImplementation(() => {
@@ -507,7 +502,7 @@ describe("Unit test", () => {
 					slug: "a-returners-magic-should-be-special-chapter-1",
 				},
 			});
-			await scrapeChapter(req, res);
+			await scrape.chapter(req, res);
 
 			expect(getEntrySpy).toHaveBeenCalledWith("chapter_luminous_a-returners-magic-should-be-special", "a-returners-magic-should-be-special-chapter-1");
 			expect(scraperSpy).toHaveBeenCalledWith(
@@ -542,7 +537,7 @@ describe("Unit test", () => {
 					slug: "a-returners-magic-should-be-special-chapter-1",
 				},
 			});
-			await scrapeChapter(req, res);
+			await scrape.chapter(req, res);
 
 			expect(getEntrySpy).toHaveBeenCalledWith("chapter_luminous_a-returners-magic-should-be-special", "a-returners-magic-should-be-special-chapter-1");
 			expect(res.status).toHaveBeenCalledWith(409);
@@ -563,7 +558,7 @@ describe("Unit test", () => {
 					slug: "a-returners-magic-should-be-special-chapter-1",
 				},
 			});
-			await scrapeChapter(req, res);
+			await scrape.chapter(req, res);
 
 			expect(getEntrySpy).toHaveBeenCalledWith("chapter_luminous_a-returners-magic-should-be-special", "a-returners-magic-should-be-special-chapter-1");
 			expect(res.status).toHaveBeenCalledWith(404);
@@ -593,7 +588,7 @@ describe("Unit test", () => {
 					slug: "a-returners-magic-should-be-special-chapter-1",
 				},
 			});
-			await scrapeChapter(req, res);
+			await scrape.chapter(req, res);
 
 			expect(getEntrySpy).toHaveBeenCalledWith("chapter_luminous_a-returners-magic-should-be-special", "a-returners-magic-should-be-special-chapter-1");
 			expect(scraperSpy).toHaveBeenCalledWith(
@@ -622,7 +617,7 @@ describe("Unit test", () => {
 					slug: "a-returners-magic-should-be-special-chapter-1",
 				},
 			});
-			await scrapeChapter(req, res);
+			await scrape.chapter(req, res);
 
 			expect(getEntrySpy).toHaveBeenCalledWith("chapter_luminous_a-returners-magic-should-be-special", "a-returners-magic-should-be-special-chapter-1");
 			expect(res.status).toHaveBeenCalledWith(500);

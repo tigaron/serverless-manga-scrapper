@@ -1,19 +1,14 @@
 import express from "express";
-import {
-	scrapeMangaList,
-	scrapeManga,
-	scrapeChapterList,
-	scrapeChapter,
-} from "../controllers/scrape";
-import { validateBody } from "../validations";
+import scrape from "../controllers/scrape";
+import validate from "../validations";
 const router = express.Router();
 
-router.route("/manga-list").post(validateBody("Provider"), scrapeMangaList);
+router.route("/manga-list").post(validate.body("Provider"), scrape.mangaList);
 
-router.route("/manga").post(validateBody("ProviderSlug"), scrapeManga);
+router.route("/manga").post(validate.body("ProviderSlug"), scrape.manga);
 
-router.route("/chapter-list").post(validateBody("ProviderSlug"), scrapeChapterList);
+router.route("/chapter-list").post(validate.body("ProviderSlug"), scrape.chapterList);
 
-router.route("/chapter").post(validateBody("ProviderMangaSlug"), scrapeChapter);
+router.route("/chapter").post(validate.body("ProviderMangaSlug"), scrape.chapter);
 
 export default router;

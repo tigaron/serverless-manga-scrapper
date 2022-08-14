@@ -6,7 +6,7 @@ var _express = require("@jest-mock/express");
 
 var _globals = require("@jest/globals");
 
-var _fetch = require("./fetch");
+var _fetch = _interopRequireDefault(require("./fetch"));
 
 var _db = _interopRequireDefault(require("../db"));
 
@@ -32,7 +32,7 @@ describe("Unit test", function () {
 
     _globals.jest.clearAllMocks();
   });
-  describe("fetchStatus behaviour", function () {
+  describe("fetch.status behaviour", function () {
     test("UUID exists in the database --> 200", /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
       var req, expectedResult, getEntrySpy;
       return _regeneratorRuntime().wrap(function _callee$(_context) {
@@ -54,7 +54,7 @@ describe("Unit test", function () {
                 return expectedResult;
               });
               _context.next = 5;
-              return (0, _fetch.fetchStatus)(req, res);
+              return _fetch["default"].status(req, res);
 
             case 5:
               expect(getEntrySpy).toHaveBeenCalled();
@@ -87,7 +87,7 @@ describe("Unit test", function () {
                 return false;
               });
               _context2.next = 4;
-              return (0, _fetch.fetchStatus)(req, res);
+              return _fetch["default"].status(req, res);
 
             case 4:
               expect(getEntrySpy).toHaveBeenCalled();
@@ -119,7 +119,7 @@ describe("Unit test", function () {
                 throw new Error("This is just a test");
               });
               _context3.next = 4;
-              return (0, _fetch.fetchStatus)(req, res);
+              return _fetch["default"].status(req, res);
 
             case 4:
               expect(getEntrySpy).toHaveBeenCalled();
@@ -137,7 +137,7 @@ describe("Unit test", function () {
       }, _callee3);
     })));
   });
-  describe("fetchProviderList behaviour", function () {
+  describe("fetch.providerData behaviour", function () {
     test("UUID exists in the database --> 200", /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4() {
       var req;
       return _regeneratorRuntime().wrap(function _callee4$(_context4) {
@@ -146,7 +146,7 @@ describe("Unit test", function () {
             case 0:
               req = (0, _express.getMockReq)();
               _context4.next = 3;
-              return (0, _fetch.fetchProviderList)(req, res);
+              return _fetch["default"].providerData(req, res);
 
             case 3:
               expect(res.status).toHaveBeenCalledWith(200);
@@ -164,7 +164,7 @@ describe("Unit test", function () {
       }, _callee4);
     })));
   });
-  describe("fetchListData behaviour", function () {
+  describe("fetch.listData behaviour", function () {
     test("EntryId exists in the database --> 200", /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee5() {
       var req, expectedResult, getCollectionSpy;
       return _regeneratorRuntime().wrap(function _callee5$(_context5) {
@@ -193,7 +193,7 @@ describe("Unit test", function () {
                 return expectedResult;
               });
               _context5.next = 5;
-              return (0, _fetch.fetchListData)(req, res);
+              return _fetch["default"].listData(req, res);
 
             case 5:
               expect(getCollectionSpy).toHaveBeenCalled();
@@ -226,7 +226,7 @@ describe("Unit test", function () {
                 return false;
               });
               _context6.next = 4;
-              return (0, _fetch.fetchListData)(req, res);
+              return _fetch["default"].listData(req, res);
 
             case 4:
               expect(getCollectionSpy).toHaveBeenCalled();
@@ -258,7 +258,7 @@ describe("Unit test", function () {
                 throw new Error("This is just a test");
               });
               _context7.next = 4;
-              return (0, _fetch.fetchListData)(req, res);
+              return _fetch["default"].listData(req, res);
 
             case 4:
               expect(getCollectionSpy).toHaveBeenCalled();
@@ -276,7 +276,7 @@ describe("Unit test", function () {
       }, _callee7);
     })));
   });
-  describe("fetchMangaData behaviour", function () {
+  describe("fetch.mangaData behaviour", function () {
     test("EntryId and EntrySlug exist in the database --> 200", /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee8() {
       var req, expectedResult, getEntrySpy;
       return _regeneratorRuntime().wrap(function _callee8$(_context8) {
@@ -304,7 +304,7 @@ describe("Unit test", function () {
                 return expectedResult;
               });
               _context8.next = 5;
-              return (0, _fetch.fetchMangaData)(req, res);
+              return _fetch["default"].mangaData(req, res);
 
             case 5:
               expect(getEntrySpy).toHaveBeenCalled();
@@ -338,7 +338,7 @@ describe("Unit test", function () {
                 return false;
               });
               _context9.next = 4;
-              return (0, _fetch.fetchMangaData)(req, res);
+              return _fetch["default"].mangaData(req, res);
 
             case 4:
               expect(getEntrySpy).toHaveBeenCalled();
@@ -371,7 +371,7 @@ describe("Unit test", function () {
                 throw new Error("This is just a test");
               });
               _context10.next = 4;
-              return (0, _fetch.fetchMangaData)(req, res);
+              return _fetch["default"].mangaData(req, res);
 
             case 4:
               expect(getEntrySpy).toHaveBeenCalled();
@@ -389,7 +389,7 @@ describe("Unit test", function () {
       }, _callee10);
     })));
   });
-  describe("fetchChapterData behaviour", function () {
+  describe("fetch.chapterData behaviour", function () {
     test("EntryId and EntrySlug exist in the database --> 200", /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee11() {
       var req, expectedResult, getEntrySpy;
       return _regeneratorRuntime().wrap(function _callee11$(_context11) {
@@ -419,7 +419,7 @@ describe("Unit test", function () {
                 return expectedResult;
               });
               _context11.next = 5;
-              return (0, _fetch.fetchChapterData)(req, res);
+              return _fetch["default"].chapterData(req, res);
 
             case 5:
               expect(getEntrySpy).toHaveBeenCalled();
@@ -454,7 +454,7 @@ describe("Unit test", function () {
                 return false;
               });
               _context12.next = 4;
-              return (0, _fetch.fetchChapterData)(req, res);
+              return _fetch["default"].chapterData(req, res);
 
             case 4:
               expect(getEntrySpy).toHaveBeenCalled();
@@ -486,7 +486,7 @@ describe("Unit test", function () {
                 throw new Error("This is just a test");
               });
               _context13.next = 4;
-              return (0, _fetch.fetchChapterData)(req, res);
+              return _fetch["default"].chapterData(req, res);
 
             case 4:
               expect(getEntrySpy).toHaveBeenCalled();

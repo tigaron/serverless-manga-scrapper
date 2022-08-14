@@ -1,8 +1,5 @@
 .dynamodb
 .serverless
-coverage
 logs
 node_modules
 .env
-data.json
-serverless.yml

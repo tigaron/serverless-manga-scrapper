@@ -1,122 +1,206 @@
-"use strict";
+/* import scraper, * as scraperService from "./scraper";
+import * as cheerio from "cheerio";
+import { jest } from "@jest/globals";
 
-function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
-
-var scraperService = _interopRequireWildcard(require("./scraper"));
-
-var cheerio = _interopRequireWildcard(require("cheerio"));
-
-var _globals = require("@jest/globals");
-
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-
-afterEach(function () {
-  _globals.jest.clearAllMocks();
+afterEach(() => {
+	jest.clearAllMocks();
 });
-describe("Unit test", function () {
-  test("Cheerio loads correctly when valid HTML string passed as argument", function () {
-    var htmlString = "<h1>Hello</h1>";
 
-    var loadSpy = _globals.jest.spyOn(cheerio, "load");
+describe("Unit test", () => {
+	test("Cheerio loads correctly when valid HTML string passed as argument", () => {
+		const htmlString = "<h1>Hello</h1>";
+		const loadSpy = jest.spyOn(cheerio, "load");
+		scraperService.loadHTML(htmlString);
+		expect(loadSpy).toHaveBeenCalledWith(htmlString);
+	});
+	
+	test("Cheerio throws error when no valid HTML string detected", () => {
+		const htmlString = new Error("Failed to crawl", { cause: 404 });
+		try {
+			scraperService.loadHTML(htmlString);
+		} catch (error) {
+			expect(error.message).toEqual("Failed to crawl");
+			expect(error.cause).toEqual(404);
+		}
+	});
+	
+	test("parseMangaList returns expected values", () => {
+		const $ = cheerio.load(`
+			<div class="soralist">
+				<a class="series" rel="107248" href="https://www.asurascans.com/manga/damn-reincarnation/">Damn Reincarnation</a>
+				<a class="series" rel="70812" href="https://www.asurascans.com/comics/101-duke-pendragon/">Duke Pendragon</a>
+			</div>
+			`);
+			
+		const result = scraperService.parseMangaList($, "asura");
+		expect(result).toBeInstanceOf(Set);
+	});
+	
+	test("parseManga returns expected values", () => {
+		const $ = cheerio.load(`
+			<link rel="canonical" href="https://www.asurascans.com/comics/chronicles-of-the-martial-gods-return/" />
+			<h1 class="entry-title" itemprop="name">Chronicles Of The Martial God&#8217;s Return</h1>
+			<div class="thumb" itemprop="image" itemscope itemtype="https://schema.org/ImageObject">
+				<img width="720" height="972" src="https://www.asurascans.com/wp-content/uploads/2022/05/martialreturnCover01.png" class="attachment- size- wp-post-image" alt="Chronicles Of The Martial God&#8217;s Return" loading="lazy" title="Chronicles Of The Martial God&#8217;s Return" itemprop="image" />
+			</div>
+			<div class="entry-content entry-content-single" itemprop="description"><div class='code-block code-block-21' style='margin: 8px auto; text-align: center; display: block; clear: both;'>
+				<p>The sixth masterpiece of the Wuxia Genre that&#8217;ll meet your expectations, just like the [Third-rate Chronicles of Return], [The Conquer of the Heavenly Faction], and the [Chronicles of Seven Dragons and Seven Demons]. [Chronicles of the Martial God&#8217;s Return] The Ultimate Martial Divine Demon, Dan Woohyun, was sealed up because he was too strong for the world to handle. After a millennium passed by, he was released from his seal and felt like everything was meaningless as he wandered the back alleys&#8230; Just as he fell down because he was sick of the world, a small hand appeared in front of him. &#8220;What&#8217;s this?&#8221; asked Dan Woohyun. &#8220;A dumpling!&#8221; came a reply. This was the first time in his life that someone had been nice to him without any impure intentions, and that changed his fate. This is the chronicles of a martial god who traversed through a thousand years of time and space!</p>
+			</div>
+			`);
+		const result = scraperService.parseManga($, "asura");
+		expect(result).toBeInstanceOf(Map);
+		expect(Object.fromEntries(result)).toEqual(
+			expect.objectContaining({
+				Id: expect.any(String),
+				MangaTitle: expect.any(String),
+				MangaSlug: expect.any(String),
+				MangaType: expect.any(String),
+				MangaProvider: expect.any(String),
+				MangaUrl: expect.any(String),
+				MangaCover: expect.any(String),
+				MangaSynopsis: expect.any(String),
+				UpdatedAt: expect.any(String),
+			})
+		);
+	});
+	
+	test("parseChapterList for flame provider returns expected values", () => {
+		const $ = cheerio.load(`
+			<div class="eplister" id="chapterlist">
+				<a href="https://flamescans.org/the-ancient-sovereign-of-eternity-chapter-116/">
+				<span class="chapternum">
+					Chapter
+					116</span>
+				<span class="chapterdate">August 9, 2022</span>
+				</a>
+				<a href="https://flamescans.org/the-ancient-sovereign-of-eternity-chapter-115/">
+					<span class="chapternum">
+						Chapter
+						115</span>
+					<span class="chapterdate">August 9, 2022</span>
+				</a>
+				<a href="https://flamescans.org/the-ancient-sovereign-of-eternity-chapter-114/">
+					<span class="chapternum">
+						Chapter
+						114</span>
+					<span class="chapterdate">August 2, 2022</span>
+				</a>
+			</div>
+			`);
+		const result = scraperService.parseChapterList($, "flame");
+		expect(result).toBeInstanceOf(Set);
+		const iterator = result[Symbol.iterator]();
+		expect(iterator.next().value).toBeInstanceOf(Map);
+		expect(Object.fromEntries(iterator.next().value)).toEqual(
+			expect.objectContaining({
+				Id: expect.any(String),
+				ChapterTitle: expect.any(String),
+				ChapterSlug: expect.any(String),
+				ChapterProvider: expect.any(String),
+				ChapterUrl: expect.any(String),
+				UpdatedAt: expect.any(String),
+			})
+		);
+	});
 
-    scraperService.loadHTML(htmlString);
-    expect(loadSpy).toHaveBeenCalledWith(htmlString);
-  });
-  test("Cheerio throws error when no valid HTML string detected", function () {
-    var htmlString = new Error("Failed to crawl", {
-      cause: 404
-    });
+	test("parseChapterList for other provider returns expected values", () => {
+		const $ = cheerio.load(`
+			<div class="eplister" id="chapterlist">
+				<a href="https://www.asurascans.com/chronicles-of-the-martial-gods-return-chapter-29/">
+					<span class="chapternum">Chapter 29</span>
+					<span class="chapterdate">August 3, 2022</span>
+				</a>
+				<a href="https://www.asurascans.com/chronicles-of-the-martial-gods-return-chapter-28/">
+					<span class="chapternum">Chapter 28</span>
+					<span class="chapterdate">July 27, 2022</span>
+				</a>
+				<a href="https://www.asurascans.com/chronicles-of-the-martial-gods-return-chapter-27-2/">
+					<span class="chapternum">Chapter 27</span>
+					<span class="chapterdate">July 19, 2022</span>
+				</a>
+			</div>
+			`);
+		const result = scraperService.parseChapterList($, "asura");
+		expect(result).toBeInstanceOf(Set);
+		const iterator = result[Symbol.iterator]();
+		expect(iterator.next().value).toBeInstanceOf(Map);
+		expect(Object.fromEntries(iterator.next().value)).toEqual(
+			expect.objectContaining({
+				Id: expect.any(String),
+				ChapterTitle: expect.any(String),
+				ChapterSlug: expect.any(String),
+				ChapterProvider: expect.any(String),
+				ChapterUrl: expect.any(String),
+				UpdatedAt: expect.any(String),
+			})
+		);
+	});
+	
+	test("parseChapter for realm provider returns expected values", () => {
+		const $ = cheerio.load(`
+			<link rel="canonical" href="https://realmscans.com/infinite-level-up-in-murim-chapter-123/" />
+			<h1 class="entry-title" itemprop="name">Infinite Level up in Murim Chapter 123</h1>
+			<div id="readerarea">
+				<noscript>
+					<p>
+						<img src="https://s2.rwmert.space/2022/07/infinite-level-up-in-murim-119-00.webp" alt="" width="900" height="632" class="aligncenter size-full wp-image-2717" />
+					</p>
+					<p>
+						<img loading="lazy" src="https://s2.rwmert.space/2022/07/infinite-level-up-in-murim-chapter-123-1.webp" alt="" width="900" height="6112" class="aligncenter size-full wp-image-2718" />
+					</p>
+					<p>
+						<img loading="lazy" src="https://s2.rwmert.space/2022/07/infinite-level-up-in-murim-chapter-123-2.webp" alt="" width="900" height="4705" class="aligncenter size-full wp-image-2719" />
+					</p>
+				</noscript>
+			</div>
+			`);
+		const result = scraperService.parseChapter($, "realm");
+		expect(result).toBeInstanceOf(Map);
+		expect(Object.fromEntries(result)).toEqual(
+			expect.objectContaining({
+				Id: expect.any(String),
+				ChapterTitle: expect.any(String),
+				ChapterSlug: expect.any(String),
+				ChapterProvider: expect.any(String),
+				ChapterUrl: expect.any(String),
+				ChapterContent: expect.any(Set),
+				UpdatedAt: expect.any(String),
+			})
+		);
+	});
 
-    try {
-      scraperService.loadHTML(htmlString);
-    } catch (error) {
-      expect(error.message).toEqual("Failed to crawl");
-      expect(error.cause).toEqual(404);
-    }
-  });
-  test("parseMangaList returns expected values", function () {
-    var $ = cheerio.load("\n\t\t\t<div class=\"soralist\">\n\t\t\t\t<a class=\"series\" rel=\"107248\" href=\"https://www.asurascans.com/manga/damn-reincarnation/\">Damn Reincarnation</a>\n\t\t\t\t<a class=\"series\" rel=\"70812\" href=\"https://www.asurascans.com/comics/101-duke-pendragon/\">Duke Pendragon</a>\n\t\t\t</div>\n\t\t\t");
-    var result = scraperService.parseMangaList($, "asura");
-    expect(result).toBeInstanceOf(Set);
-  });
-  test("parseManga returns expected values", function () {
-    var $ = cheerio.load("\n\t\t\t<link rel=\"canonical\" href=\"https://www.asurascans.com/comics/chronicles-of-the-martial-gods-return/\" />\n\t\t\t<h1 class=\"entry-title\" itemprop=\"name\">Chronicles Of The Martial God&#8217;s Return</h1>\n\t\t\t<div class=\"thumb\" itemprop=\"image\" itemscope itemtype=\"https://schema.org/ImageObject\">\n\t\t\t\t<img width=\"720\" height=\"972\" src=\"https://www.asurascans.com/wp-content/uploads/2022/05/martialreturnCover01.png\" class=\"attachment- size- wp-post-image\" alt=\"Chronicles Of The Martial God&#8217;s Return\" loading=\"lazy\" title=\"Chronicles Of The Martial God&#8217;s Return\" itemprop=\"image\" />\n\t\t\t</div>\n\t\t\t<div class=\"entry-content entry-content-single\" itemprop=\"description\"><div class='code-block code-block-21' style='margin: 8px auto; text-align: center; display: block; clear: both;'>\n\t\t\t\t<p>The sixth masterpiece of the Wuxia Genre that&#8217;ll meet your expectations, just like the [Third-rate Chronicles of Return], [The Conquer of the Heavenly Faction], and the [Chronicles of Seven Dragons and Seven Demons]. [Chronicles of the Martial God&#8217;s Return] The Ultimate Martial Divine Demon, Dan Woohyun, was sealed up because he was too strong for the world to handle. After a millennium passed by, he was released from his seal and felt like everything was meaningless as he wandered the back alleys&#8230; Just as he fell down because he was sick of the world, a small hand appeared in front of him. &#8220;What&#8217;s this?&#8221; asked Dan Woohyun. &#8220;A dumpling!&#8221; came a reply. This was the first time in his life that someone had been nice to him without any impure intentions, and that changed his fate. This is the chronicles of a martial god who traversed through a thousand years of time and space!</p>\n\t\t\t</div>\n\t\t\t");
-    var result = scraperService.parseManga($, "asura");
-    expect(result).toBeInstanceOf(Map);
-    expect(Object.fromEntries(result)).toEqual(expect.objectContaining({
-      Id: expect.any(String),
-      MangaTitle: expect.any(String),
-      MangaSlug: expect.any(String),
-      MangaType: expect.any(String),
-      MangaProvider: expect.any(String),
-      MangaUrl: expect.any(String),
-      MangaCover: expect.any(String),
-      MangaSynopsis: expect.any(String),
-      UpdatedAt: expect.any(String)
-    }));
-  });
-  test("parseChapterList for flame provider returns expected values", function () {
-    var $ = cheerio.load("\n\t\t\t<div class=\"eplister\" id=\"chapterlist\">\n\t\t\t\t<a href=\"https://flamescans.org/the-ancient-sovereign-of-eternity-chapter-116/\">\n\t\t\t\t<span class=\"chapternum\">\n\t\t\t\t\tChapter\n\t\t\t\t\t116</span>\n\t\t\t\t<span class=\"chapterdate\">August 9, 2022</span>\n\t\t\t\t</a>\n\t\t\t\t<a href=\"https://flamescans.org/the-ancient-sovereign-of-eternity-chapter-115/\">\n\t\t\t\t\t<span class=\"chapternum\">\n\t\t\t\t\t\tChapter\n\t\t\t\t\t\t115</span>\n\t\t\t\t\t<span class=\"chapterdate\">August 9, 2022</span>\n\t\t\t\t</a>\n\t\t\t\t<a href=\"https://flamescans.org/the-ancient-sovereign-of-eternity-chapter-114/\">\n\t\t\t\t\t<span class=\"chapternum\">\n\t\t\t\t\t\tChapter\n\t\t\t\t\t\t114</span>\n\t\t\t\t\t<span class=\"chapterdate\">August 2, 2022</span>\n\t\t\t\t</a>\n\t\t\t</div>\n\t\t\t");
-    var result = scraperService.parseChapterList($, "flame");
-    expect(result).toBeInstanceOf(Set);
-    var iterator = result[Symbol.iterator]();
-    expect(iterator.next().value).toBeInstanceOf(Map);
-    expect(Object.fromEntries(iterator.next().value)).toEqual(expect.objectContaining({
-      Id: expect.any(String),
-      ChapterTitle: expect.any(String),
-      ChapterSlug: expect.any(String),
-      ChapterProvider: expect.any(String),
-      ChapterUrl: expect.any(String),
-      UpdatedAt: expect.any(String)
-    }));
-  });
-  test("parseChapterList for other provider returns expected values", function () {
-    var $ = cheerio.load("\n\t\t\t<div class=\"eplister\" id=\"chapterlist\">\n\t\t\t\t<a href=\"https://www.asurascans.com/chronicles-of-the-martial-gods-return-chapter-29/\">\n\t\t\t\t\t<span class=\"chapternum\">Chapter 29</span>\n\t\t\t\t\t<span class=\"chapterdate\">August 3, 2022</span>\n\t\t\t\t</a>\n\t\t\t\t<a href=\"https://www.asurascans.com/chronicles-of-the-martial-gods-return-chapter-28/\">\n\t\t\t\t\t<span class=\"chapternum\">Chapter 28</span>\n\t\t\t\t\t<span class=\"chapterdate\">July 27, 2022</span>\n\t\t\t\t</a>\n\t\t\t\t<a href=\"https://www.asurascans.com/chronicles-of-the-martial-gods-return-chapter-27-2/\">\n\t\t\t\t\t<span class=\"chapternum\">Chapter 27</span>\n\t\t\t\t\t<span class=\"chapterdate\">July 19, 2022</span>\n\t\t\t\t</a>\n\t\t\t</div>\n\t\t\t");
-    var result = scraperService.parseChapterList($, "asura");
-    expect(result).toBeInstanceOf(Set);
-    var iterator = result[Symbol.iterator]();
-    expect(iterator.next().value).toBeInstanceOf(Map);
-    expect(Object.fromEntries(iterator.next().value)).toEqual(expect.objectContaining({
-      Id: expect.any(String),
-      ChapterTitle: expect.any(String),
-      ChapterSlug: expect.any(String),
-      ChapterProvider: expect.any(String),
-      ChapterUrl: expect.any(String),
-      UpdatedAt: expect.any(String)
-    }));
-  });
-  test("parseChapter for realm provider returns expected values", function () {
-    var $ = cheerio.load("\n\t\t\t<link rel=\"canonical\" href=\"https://realmscans.com/infinite-level-up-in-murim-chapter-123/\" />\n\t\t\t<h1 class=\"entry-title\" itemprop=\"name\">Infinite Level up in Murim Chapter 123</h1>\n\t\t\t<div id=\"readerarea\">\n\t\t\t\t<noscript>\n\t\t\t\t\t<p>\n\t\t\t\t\t\t<img src=\"https://s2.rwmert.space/2022/07/infinite-level-up-in-murim-119-00.webp\" alt=\"\" width=\"900\" height=\"632\" class=\"aligncenter size-full wp-image-2717\" />\n\t\t\t\t\t</p>\n\t\t\t\t\t<p>\n\t\t\t\t\t\t<img loading=\"lazy\" src=\"https://s2.rwmert.space/2022/07/infinite-level-up-in-murim-chapter-123-1.webp\" alt=\"\" width=\"900\" height=\"6112\" class=\"aligncenter size-full wp-image-2718\" />\n\t\t\t\t\t</p>\n\t\t\t\t\t<p>\n\t\t\t\t\t\t<img loading=\"lazy\" src=\"https://s2.rwmert.space/2022/07/infinite-level-up-in-murim-chapter-123-2.webp\" alt=\"\" width=\"900\" height=\"4705\" class=\"aligncenter size-full wp-image-2719\" />\n\t\t\t\t\t</p>\n\t\t\t\t</noscript>\n\t\t\t</div>\n\t\t\t");
-    var result = scraperService.parseChapter($, "realm");
-    expect(result).toBeInstanceOf(Map);
-    expect(Object.fromEntries(result)).toEqual(expect.objectContaining({
-      Id: expect.any(String),
-      ChapterTitle: expect.any(String),
-      ChapterSlug: expect.any(String),
-      ChapterProvider: expect.any(String),
-      ChapterUrl: expect.any(String),
-      ChapterContent: expect.any(Set),
-      UpdatedAt: expect.any(String)
-    }));
-  });
-  test("parseChapter for other provider returns expected values", function () {
-    var $ = cheerio.load("\n\t\t\t<link rel=\"canonical\" href=\"https://www.asurascans.com/chronicles-of-the-martial-gods-return-chapter-27-2/\" />\n\t\t\t<h1 class=\"entry-title\" itemprop=\"name\">Chronicles Of The Martial God\u2019s Return Chapter 27</h1>\n\t\t\t<div id=\"readerarea\" class=\"rdminimal\">\n\t\t\t\t<p>\n\t\t\t\t\t<img src=\"https://www.asurascans.com/wp-content/uploads/2022/07/00-277.jpg\" alt=\"\" width=\"1200\" height=\"800\" class=\"alignnone size-full wp-image-113777\" />\n\t\t\t\t</p>\n\t\t\t\t<p>\n\t\t\t\t\t<img loading=\"lazy\" src=\"https://www.asurascans.com/wp-content/uploads/2022/07/01-221.jpg\" alt=\"\" width=\"800\" height=\"12222\" class=\"alignnone size-full wp-image-113778\" />\n\t\t\t\t</p>\n\t\t\t\t<p>\n\t\t\t\t\t<img loading=\"lazy\" src=\"https://www.asurascans.com/wp-content/uploads/2022/07/02-219.jpg\" alt=\"\" width=\"800\" height=\"12222\" class=\"alignnone size-medium wp-image-113779\" />\n\t\t\t\t</p>\n\t\t\t</div>\n\t\t\t");
-    var result = scraperService.parseChapter($, "asura");
-    expect(result).toBeInstanceOf(Map);
-    expect(Object.fromEntries(result)).toEqual(expect.objectContaining({
-      Id: expect.any(String),
-      ChapterTitle: expect.any(String),
-      ChapterSlug: expect.any(String),
-      ChapterProvider: expect.any(String),
-      ChapterUrl: expect.any(String),
-      ChapterContent: expect.any(Set),
-      UpdatedAt: expect.any(String)
-    }));
-  });
-});
-/* 
+	test("parseChapter for other provider returns expected values", () => {
+		const $ = cheerio.load(`
+			<link rel="canonical" href="https://www.asurascans.com/chronicles-of-the-martial-gods-return-chapter-27-2/" />
+			<h1 class="entry-title" itemprop="name">Chronicles Of The Martial God’s Return Chapter 27</h1>
+			<div id="readerarea" class="rdminimal">
+				<p>
+					<img src="https://www.asurascans.com/wp-content/uploads/2022/07/00-277.jpg" alt="" width="1200" height="800" class="alignnone size-full wp-image-113777" />
+				</p>
+				<p>
+					<img loading="lazy" src="https://www.asurascans.com/wp-content/uploads/2022/07/01-221.jpg" alt="" width="800" height="12222" class="alignnone size-full wp-image-113778" />
+				</p>
+				<p>
+					<img loading="lazy" src="https://www.asurascans.com/wp-content/uploads/2022/07/02-219.jpg" alt="" width="800" height="12222" class="alignnone size-medium wp-image-113779" />
+				</p>
+			</div>
+			`);
+		const result = scraperService.parseChapter($, "asura");
+		expect(result).toBeInstanceOf(Map);
+		expect(Object.fromEntries(result)).toEqual(
+			expect.objectContaining({
+				Id: expect.any(String),
+				ChapterTitle: expect.any(String),
+				ChapterSlug: expect.any(String),
+				ChapterProvider: expect.any(String),
+				ChapterUrl: expect.any(String),
+				ChapterContent: expect.any(Set),
+				UpdatedAt: expect.any(String),
+			})
+		);
+	});
+})
+
 describe("Integration test", () => {
 	test("Scraper success", async () => {
 		const urlString = "https://www.asurascans.com/manga/list-mode/";
@@ -140,3 +224,4 @@ describe("Integration test", () => {
 	}, 15000);
 });
  */
+"use strict";

@@ -5,9 +5,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" =
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.validateBody = validateBody;
-exports.validateProvider = validateProvider;
-exports.validateUUID = validateUUID;
+exports["default"] = void 0;
 
 var _providerList = _interopRequireDefault(require("../utils/providerList"));
 
@@ -19,7 +17,7 @@ function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
-function validateUUID(req, res, next) {
+function uuid(req, res, next) {
   var id = req.params.id;
   var regex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
   if (regex.test(id)) next();else return res.status(400).json({
@@ -28,7 +26,7 @@ function validateUUID(req, res, next) {
   });
 }
 
-function validateProvider(req, res, next) {
+function provider(req, res, next) {
   var provider = req.params.provider;
   if (_providerList["default"].has(provider)) next();else return res.status(404).json({
     status: 404,
@@ -38,7 +36,7 @@ function validateProvider(req, res, next) {
 
 ;
 
-function validateBody(items) {
+function body(items) {
   return /*#__PURE__*/function () {
     var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(req, res, next) {
       var _req$body, provider, manga, slug, itemsDictionary;
@@ -106,3 +104,10 @@ function validateBody(items) {
 }
 
 ;
+var validate = {
+  uuid: uuid,
+  provider: provider,
+  body: body
+};
+var _default = validate;
+exports["default"] = _default;

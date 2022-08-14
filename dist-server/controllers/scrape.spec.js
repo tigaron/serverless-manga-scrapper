@@ -6,7 +6,7 @@ var _express = require("@jest-mock/express");
 
 var _globals = require("@jest/globals");
 
-var _scrape = require("./scrape");
+var _scrape = _interopRequireDefault(require("./scrape"));
 
 var _scraper = _interopRequireDefault(require("../services/scraper"));
 
@@ -36,7 +36,7 @@ describe("Unit test", function () {
 
     _globals.jest.clearAllMocks();
   });
-  describe("scrapeMangaList behaviour", function () {
+  describe("scrape.mangaList behaviour", function () {
     test("Scraper return new data --> respond 202 --> process scraped data", /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
       var expectedUrlString, scraperSpy, createStatusSpy, getEntrySpy, createEntrySpy, updateStatusSpy, req;
       return _regeneratorRuntime().wrap(function _callee$(_context) {
@@ -63,7 +63,7 @@ describe("Unit test", function () {
                 }
               });
               _context.next = 9;
-              return (0, _scrape.scrapeMangaList)(req, res);
+              return _scrape["default"].mangaList(req, res);
 
             case 9:
               expect(scraperSpy).toHaveBeenCalledWith(expectedUrlString, "MangaList", "asura");
@@ -115,7 +115,7 @@ describe("Unit test", function () {
                 }
               });
               _context2.next = 9;
-              return (0, _scrape.scrapeMangaList)(req, res);
+              return _scrape["default"].mangaList(req, res);
 
             case 9:
               expect(scraperSpy).toHaveBeenCalledWith(expectedUrlString, "MangaList", "asura");
@@ -160,7 +160,7 @@ describe("Unit test", function () {
                 }
               });
               _context3.next = 5;
-              return (0, _scrape.scrapeMangaList)(req, res);
+              return _scrape["default"].mangaList(req, res);
 
             case 5:
               expect(scraperSpy).toHaveBeenCalledWith(expectedUrlString, "MangaList", "asura");
@@ -201,7 +201,7 @@ describe("Unit test", function () {
                 }
               });
               _context4.next = 5;
-              return (0, _scrape.scrapeMangaList)(req, res);
+              return _scrape["default"].mangaList(req, res);
 
             case 5:
               expect(createStatusSpy).toHaveBeenCalled();
@@ -219,7 +219,7 @@ describe("Unit test", function () {
       }, _callee4);
     })));
   });
-  describe("scrapeManga behaviour", function () {
+  describe("scrape.manga behaviour", function () {
     test("Scraper return new data --> process scraped data --> respond 201", /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee5() {
       var expectedUrlString, scraperSpy, getEntrySpy, updateMangaEntrySpy, req;
       return _regeneratorRuntime().wrap(function _callee5$(_context5) {
@@ -244,7 +244,7 @@ describe("Unit test", function () {
                 }
               });
               _context5.next = 7;
-              return (0, _scrape.scrapeManga)(req, res);
+              return _scrape["default"].manga(req, res);
 
             case 7:
               expect(getEntrySpy).toHaveBeenCalledWith("manga_luminous", "a-returners-magic-should-be-special");
@@ -284,7 +284,7 @@ describe("Unit test", function () {
                 }
               });
               _context6.next = 5;
-              return (0, _scrape.scrapeManga)(req, res);
+              return _scrape["default"].manga(req, res);
 
             case 5:
               expect(getEntrySpy).toHaveBeenCalledWith("manga_luminous", "a-returners-magic-should-be-special");
@@ -317,7 +317,7 @@ describe("Unit test", function () {
                 }
               });
               _context7.next = 4;
-              return (0, _scrape.scrapeManga)(req, res);
+              return _scrape["default"].manga(req, res);
 
             case 4:
               expect(getEntrySpy).toHaveBeenCalledWith("manga_luminous", "a-returners-magic-should-be-special");
@@ -358,7 +358,7 @@ describe("Unit test", function () {
                 }
               });
               _context8.next = 6;
-              return (0, _scrape.scrapeManga)(req, res);
+              return _scrape["default"].manga(req, res);
 
             case 6:
               expect(getEntrySpy).toHaveBeenCalledWith("manga_luminous", "a-returners-magic-should-be-special");
@@ -393,7 +393,7 @@ describe("Unit test", function () {
                 }
               });
               _context9.next = 4;
-              return (0, _scrape.scrapeManga)(req, res);
+              return _scrape["default"].manga(req, res);
 
             case 4:
               expect(getEntrySpy).toHaveBeenCalledWith("manga_luminous", "a-returners-magic-should-be-special");
@@ -411,7 +411,7 @@ describe("Unit test", function () {
       }, _callee9);
     })));
   });
-  describe("scrapeChapterList behaviour", function () {
+  describe("scrape.chapterList behaviour", function () {
     test("Scraper return new data --> respond 202 --> process scraped data", /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee10() {
       var expectedUrlString, scraperSpy, getEntrySpy, createStatusSpy, createEntrySpy, updateStatusSpy, req;
       return _regeneratorRuntime().wrap(function _callee10$(_context10) {
@@ -445,7 +445,7 @@ describe("Unit test", function () {
                 }
               });
               _context10.next = 11;
-              return (0, _scrape.scrapeChapterList)(req, res);
+              return _scrape["default"].chapterList(req, res);
 
             case 11:
               expect(getEntrySpy).toHaveBeenCalledWith("manga_luminous", "a-returners-magic-should-be-special");
@@ -505,7 +505,7 @@ describe("Unit test", function () {
                 }
               });
               _context11.next = 11;
-              return (0, _scrape.scrapeChapterList)(req, res);
+              return _scrape["default"].chapterList(req, res);
 
             case 11:
               expect(getEntrySpy).toHaveBeenCalledWith("manga_luminous", "a-returners-magic-should-be-special");
@@ -549,7 +549,7 @@ describe("Unit test", function () {
                 }
               });
               _context12.next = 4;
-              return (0, _scrape.scrapeChapterList)(req, res);
+              return _scrape["default"].chapterList(req, res);
 
             case 4:
               expect(getEntrySpy).toHaveBeenCalledWith("manga_luminous", "a-returners-magic-should-be-special");
@@ -590,7 +590,7 @@ describe("Unit test", function () {
                 }
               });
               _context13.next = 6;
-              return (0, _scrape.scrapeChapterList)(req, res);
+              return _scrape["default"].chapterList(req, res);
 
             case 6:
               expect(getEntrySpy).toHaveBeenCalledWith("manga_luminous", "a-returners-magic-should-be-special");
@@ -625,7 +625,7 @@ describe("Unit test", function () {
                 }
               });
               _context14.next = 4;
-              return (0, _scrape.scrapeChapterList)(req, res);
+              return _scrape["default"].chapterList(req, res);
 
             case 4:
               expect(getEntrySpy).toHaveBeenCalledWith("manga_luminous", "a-returners-magic-should-be-special");
@@ -643,7 +643,7 @@ describe("Unit test", function () {
       }, _callee14);
     })));
   });
-  describe("scrapeChapter behaviour", function () {
+  describe("scrape.chapter behaviour", function () {
     test("Scraper return new data --> process scraped data --> respond 201", /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee15() {
       var expectedUrlString, scraperSpy, getEntrySpy, updateChapterEntrySpy, req;
       return _regeneratorRuntime().wrap(function _callee15$(_context15) {
@@ -669,7 +669,7 @@ describe("Unit test", function () {
                 }
               });
               _context15.next = 7;
-              return (0, _scrape.scrapeChapter)(req, res);
+              return _scrape["default"].chapter(req, res);
 
             case 7:
               expect(getEntrySpy).toHaveBeenCalledWith("chapter_luminous_a-returners-magic-should-be-special", "a-returners-magic-should-be-special-chapter-1");
@@ -710,7 +710,7 @@ describe("Unit test", function () {
                 }
               });
               _context16.next = 5;
-              return (0, _scrape.scrapeChapter)(req, res);
+              return _scrape["default"].chapter(req, res);
 
             case 5:
               expect(getEntrySpy).toHaveBeenCalledWith("chapter_luminous_a-returners-magic-should-be-special", "a-returners-magic-should-be-special-chapter-1");
@@ -744,7 +744,7 @@ describe("Unit test", function () {
                 }
               });
               _context17.next = 4;
-              return (0, _scrape.scrapeChapter)(req, res);
+              return _scrape["default"].chapter(req, res);
 
             case 4:
               expect(getEntrySpy).toHaveBeenCalledWith("chapter_luminous_a-returners-magic-should-be-special", "a-returners-magic-should-be-special-chapter-1");
@@ -786,7 +786,7 @@ describe("Unit test", function () {
                 }
               });
               _context18.next = 6;
-              return (0, _scrape.scrapeChapter)(req, res);
+              return _scrape["default"].chapter(req, res);
 
             case 6:
               expect(getEntrySpy).toHaveBeenCalledWith("chapter_luminous_a-returners-magic-should-be-special", "a-returners-magic-should-be-special-chapter-1");
@@ -822,7 +822,7 @@ describe("Unit test", function () {
                 }
               });
               _context19.next = 4;
-              return (0, _scrape.scrapeChapter)(req, res);
+              return _scrape["default"].chapter(req, res);
 
             case 4:
               expect(getEntrySpy).toHaveBeenCalledWith("chapter_luminous_a-returners-magic-should-be-special", "a-returners-magic-should-be-special-chapter-1");

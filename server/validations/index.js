@@ -1,6 +1,6 @@
 import providerList from "../utils/providerList";
 
-function validateUUID(req, res, next) {
+function uuid(req, res, next) {
 	const { id } = req.params;
 	const regex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i
 	if (regex.test(id)) next();
@@ -10,7 +10,7 @@ function validateUUID(req, res, next) {
 	});
 }
 
-function validateProvider(req, res, next) {
+function provider(req, res, next) {
 	const { provider } = req.params;
 	if (providerList.has(provider)) next();
 	else return res.status(404).json({
@@ -19,7 +19,7 @@ function validateProvider(req, res, next) {
 	});
 };
 
-function validateBody(items) {
+function body(items) {
 	return async function(req, res, next) {
 		if (!req.is("json")) return res.status(406).json({
 			status: 406,
@@ -43,4 +43,10 @@ function validateBody(items) {
 	};
 };
 
-export { validateUUID, validateProvider, validateBody };
+const validate = {
+	uuid,
+	provider,
+	body,
+};
+
+export default validate;

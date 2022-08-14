@@ -3,11 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.fetchChapterData = fetchChapterData;
-exports.fetchListData = fetchListData;
-exports.fetchMangaData = fetchMangaData;
-exports.fetchProviderList = fetchProviderList;
-exports.fetchStatus = fetchStatus;
+exports["default"] = void 0;
 
 var _logger = _interopRequireDefault(require("../services/logger"));
 
@@ -30,12 +26,12 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 /*
 Function to fetch status of a specific request Id
 */
-function fetchStatus(_x, _x2) {
-  return _fetchStatus.apply(this, arguments);
+function status(_x, _x2) {
+  return _status.apply(this, arguments);
 }
 
-function _fetchStatus() {
-  _fetchStatus = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(req, res) {
+function _status() {
+  _status = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(req, res) {
     var EntrySlug, jsonResponse, data;
     return _regeneratorRuntime().wrap(function _callee$(_context) {
       while (1) {
@@ -87,7 +83,7 @@ function _fetchStatus() {
       }
     }, _callee, null, [[1, 14]]);
   }));
-  return _fetchStatus.apply(this, arguments);
+  return _status.apply(this, arguments);
 }
 
 ;
@@ -95,7 +91,7 @@ function _fetchStatus() {
 Function to fetch list of manga providers
 */
 
-function fetchProviderList(req, res) {
+function providerData(req, res) {
   var jsonResponse = new Map([["status", 200], ["statusText", "OK"], ["data", Array.from(_providerList["default"].keys())]]);
   return res.status(200).json((0, _mapToObject["default"])(jsonResponse));
 }
@@ -105,16 +101,16 @@ function fetchProviderList(req, res) {
 Function to fetch a collection from database
 */
 
-function fetchListData(_x3, _x4) {
-  return _fetchListData.apply(this, arguments);
+function listData(_x3, _x4) {
+  return _listData.apply(this, arguments);
 }
 /*
 Function to fetch a manga entry from database
 */
 
 
-function _fetchListData() {
-  _fetchListData = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(req, res) {
+function _listData() {
+  _listData = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(req, res) {
     var _req$params, provider, slug, jsonResponse, EntryId, data;
 
     return _regeneratorRuntime().wrap(function _callee2$(_context2) {
@@ -168,19 +164,19 @@ function _fetchListData() {
       }
     }, _callee2, null, [[1, 15]]);
   }));
-  return _fetchListData.apply(this, arguments);
+  return _listData.apply(this, arguments);
 }
 
-function fetchMangaData(_x5, _x6) {
-  return _fetchMangaData.apply(this, arguments);
+function mangaData(_x5, _x6) {
+  return _mangaData.apply(this, arguments);
 }
 /*
 Function to fetch a manga entry from database
 */
 
 
-function _fetchMangaData() {
-  _fetchMangaData = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3(req, res) {
+function _mangaData() {
+  _mangaData = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3(req, res) {
     var _req$params2, provider, slug, jsonResponse, data;
 
     return _regeneratorRuntime().wrap(function _callee3$(_context3) {
@@ -233,15 +229,15 @@ function _fetchMangaData() {
       }
     }, _callee3, null, [[1, 14]]);
   }));
-  return _fetchMangaData.apply(this, arguments);
+  return _mangaData.apply(this, arguments);
 }
 
-function fetchChapterData(_x7, _x8) {
-  return _fetchChapterData.apply(this, arguments);
+function chapterData(_x7, _x8) {
+  return _chapterData.apply(this, arguments);
 }
 
-function _fetchChapterData() {
-  _fetchChapterData = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(req, res) {
+function _chapterData() {
+  _chapterData = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(req, res) {
     var _req$params3, provider, manga, slug, jsonResponse, data;
 
     return _regeneratorRuntime().wrap(function _callee4$(_context4) {
@@ -294,5 +290,15 @@ function _fetchChapterData() {
       }
     }, _callee4, null, [[1, 14]]);
   }));
-  return _fetchChapterData.apply(this, arguments);
+  return _chapterData.apply(this, arguments);
 }
+
+var fetch = {
+  status: status,
+  providerData: providerData,
+  listData: listData,
+  mangaData: mangaData,
+  chapterData: chapterData
+};
+var _default = fetch;
+exports["default"] = _default;

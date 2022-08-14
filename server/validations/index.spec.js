@@ -1,4 +1,4 @@
-import { validateUUID, validateProvider, validateBody } from "../validations";
+import validate from "../validations";
 import { getMockReq, getMockRes } from "@jest-mock/express";
 
 const { res, next, clearMockRes } = getMockRes();
@@ -7,16 +7,16 @@ beforeEach(() => {
 	jest.clearAllMocks();
 });
 
-describe("validateUUID behaviour", () => {
+describe("validate.uuid behaviour", () => {
 	test("Validation success --> call next()", () => {
 		const req = getMockReq({ params: { id: "ac682d3d-83d7-4bb4-a81c-b2d61cf626b5" } });
-		validateUUID(req, res, next);
+		validate.uuid(req, res, next);
 		expect(next).toHaveBeenCalled();
 	});
 
 	test("Validation fail --> return 400", () => {
 		const req = getMockReq({ params: { id: "hello" } });
-		validateUUID(req, res, next);
+		validate.uuid(req, res, next);
 		expect(res.status).toHaveBeenCalledWith(400);
 		expect(res.json).toHaveBeenCalledWith({
 			status: 400,
@@ -25,16 +25,16 @@ describe("validateUUID behaviour", () => {
 	});
 });
 
-describe("validateProvider behaviour", () => {
+describe("validate.provider behaviour", () => {
 	test("Validation success --> call next()", () => {
 		const req = getMockReq({ params: { provider: "asura" } });
-		validateProvider(req, res, next);
+		validate.provider(req, res, next);
 		expect(next).toHaveBeenCalled();
 	});
 
 	test("Validation fail --> return 404", () => {
 		const req = getMockReq({ params: { provider: "hello" } });
-		validateProvider(req, res, next);
+		validate.provider(req, res, next);
 		expect(res.status).toHaveBeenCalledWith(404);
 		expect(res.json).toHaveBeenCalledWith({
 			status: 404,
@@ -43,7 +43,7 @@ describe("validateProvider behaviour", () => {
 	});
 });
 
-describe("validateBody behaviour", () => {
+describe("validate.body behaviour", () => {
 	test("Provider validation success --> call next()", () => {
 		const items = "Provider";
 		const req = getMockReq({
@@ -51,7 +51,7 @@ describe("validateBody behaviour", () => {
 			body: { provider: "asura" },
 			is: () => req.headers["content-type"] === "application/json",
 		});
-		validateBody(items)(req, res, next);
+		validate.body(items)(req, res, next);
 		expect(next).toHaveBeenCalled();
 	});
 
@@ -61,7 +61,7 @@ describe("validateBody behaviour", () => {
 			headers: { "content-type": "application/json" },
 			is: () => req.headers["content-type"] === "application/json",
 		});
-		validateBody(items)(req, res, next);
+		validate.body(items)(req, res, next);
 		expect(res.status).toHaveBeenCalledWith(400);
 		expect(res.json).toHaveBeenCalledWith({
 			status: 400,
@@ -76,7 +76,7 @@ describe("validateBody behaviour", () => {
 			body: { provider: "hello" },
 			is: () => req.headers["content-type"] === "application/json",
 		});
-		validateBody(items)(req, res, next);
+		validate.body(items)(req, res, next);
 		expect(res.status).toHaveBeenCalledWith(404);
 		expect(res.json).toHaveBeenCalledWith({
 			status: 404,
@@ -91,7 +91,7 @@ describe("validateBody behaviour", () => {
 			body: { provider: "asura", slug: "damn-reincarnation" },
 			is: () => req.headers["content-type"] === "application/json",
 		});
-		validateBody(items)(req, res, next);
+		validate.body(items)(req, res, next);
 		expect(next).toHaveBeenCalled();
 	});
 
@@ -102,7 +102,7 @@ describe("validateBody behaviour", () => {
 			body: { provider: "asura" },
 			is: () => req.headers["content-type"] === "application/json",
 		});
-		validateBody(items)(req, res, next);
+		validate.body(items)(req, res, next);
 		expect(res.status).toHaveBeenCalledWith(400);
 		expect(res.json).toHaveBeenCalledWith({
 			status: 400,
@@ -117,7 +117,7 @@ describe("validateBody behaviour", () => {
 			body: { provider: "asura", manga: "damn-reincarnation", slug: "damn-reincarnation-chapter-1" },
 			is: () => req.headers["content-type"] === "application/json",
 		});
-		validateBody(items)(req, res, next);
+		validate.body(items)(req, res, next);
 		expect(next).toHaveBeenCalled();
 	});
 
@@ -128,7 +128,7 @@ describe("validateBody behaviour", () => {
 			body: { provider: "asura", slug: "damn-reincarnation-chapter-1" },
 			is: () => req.headers["content-type"] === "application/json",
 		});
-		validateBody(items)(req, res, next);
+		validate.body(items)(req, res, next);
 		expect(res.status).toHaveBeenCalledWith(400);
 		expect(res.json).toHaveBeenCalledWith({
 			status: 400,
@@ -139,7 +139,7 @@ describe("validateBody behaviour", () => {
 	test("Invalid header's content-type --> return 406", () => {
 		const items = "Provider";
 		const req = getMockReq();
-		validateBody(items)(req, res, next);
+		validate.body(items)(req, res, next);
 		expect(res.status).toHaveBeenCalledWith(406);
 		expect(res.json).toHaveBeenCalledWith({
 			status: 406,

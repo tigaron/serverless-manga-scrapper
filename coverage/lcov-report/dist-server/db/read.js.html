@@ -1,0 +1,553 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Code coverage report for dist-server/db/read.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+    
+<body>
+<div class='wrapper'>
+    <div class='pad1'>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">dist-server/db</a> read.js</h1>
+        <div class='clearfix'>
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">3.29% </span>
+                <span class="quiet">Statements</span>
+                <span class='fraction'>9/273</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">1.4% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>3/214</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">1.44% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>1/69</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">13.63% </span>
+                <span class="quiet">Lines</span>
+                <span class='fraction'>9/66</span>
+            </div>
+        
+            
+        </div>
+        <p class="quiet">
+            Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
+        </p>
+        <template id="filterTemplate">
+            <div class="quiet">
+                Filter:
+                <input oninput="onInput()" type="search" id="fileSearch">
+            </div>
+        </template>
+    </div>
+    <div class='status-line low'></div>
+    <pre><table class="coverage">
+<tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
+<a name='L2'></a><a href='#L2'>2</a>
+<a name='L3'></a><a href='#L3'>3</a>
+<a name='L4'></a><a href='#L4'>4</a>
+<a name='L5'></a><a href='#L5'>5</a>
+<a name='L6'></a><a href='#L6'>6</a>
+<a name='L7'></a><a href='#L7'>7</a>
+<a name='L8'></a><a href='#L8'>8</a>
+<a name='L9'></a><a href='#L9'>9</a>
+<a name='L10'></a><a href='#L10'>10</a>
+<a name='L11'></a><a href='#L11'>11</a>
+<a name='L12'></a><a href='#L12'>12</a>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a>
+<a name='L16'></a><a href='#L16'>16</a>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a>
+<a name='L41'></a><a href='#L41'>41</a>
+<a name='L42'></a><a href='#L42'>42</a>
+<a name='L43'></a><a href='#L43'>43</a>
+<a name='L44'></a><a href='#L44'>44</a>
+<a name='L45'></a><a href='#L45'>45</a>
+<a name='L46'></a><a href='#L46'>46</a>
+<a name='L47'></a><a href='#L47'>47</a>
+<a name='L48'></a><a href='#L48'>48</a>
+<a name='L49'></a><a href='#L49'>49</a>
+<a name='L50'></a><a href='#L50'>50</a>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a>
+<a name='L53'></a><a href='#L53'>53</a>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a>
+<a name='L79'></a><a href='#L79'>79</a>
+<a name='L80'></a><a href='#L80'>80</a>
+<a name='L81'></a><a href='#L81'>81</a>
+<a name='L82'></a><a href='#L82'>82</a>
+<a name='L83'></a><a href='#L83'>83</a>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a>
+<a name='L87'></a><a href='#L87'>87</a>
+<a name='L88'></a><a href='#L88'>88</a>
+<a name='L89'></a><a href='#L89'>89</a>
+<a name='L90'></a><a href='#L90'>90</a>
+<a name='L91'></a><a href='#L91'>91</a>
+<a name='L92'></a><a href='#L92'>92</a>
+<a name='L93'></a><a href='#L93'>93</a>
+<a name='L94'></a><a href='#L94'>94</a>
+<a name='L95'></a><a href='#L95'>95</a>
+<a name='L96'></a><a href='#L96'>96</a>
+<a name='L97'></a><a href='#L97'>97</a>
+<a name='L98'></a><a href='#L98'>98</a>
+<a name='L99'></a><a href='#L99'>99</a>
+<a name='L100'></a><a href='#L100'>100</a>
+<a name='L101'></a><a href='#L101'>101</a>
+<a name='L102'></a><a href='#L102'>102</a>
+<a name='L103'></a><a href='#L103'>103</a>
+<a name='L104'></a><a href='#L104'>104</a>
+<a name='L105'></a><a href='#L105'>105</a>
+<a name='L106'></a><a href='#L106'>106</a>
+<a name='L107'></a><a href='#L107'>107</a>
+<a name='L108'></a><a href='#L108'>108</a>
+<a name='L109'></a><a href='#L109'>109</a>
+<a name='L110'></a><a href='#L110'>110</a>
+<a name='L111'></a><a href='#L111'>111</a>
+<a name='L112'></a><a href='#L112'>112</a>
+<a name='L113'></a><a href='#L113'>113</a>
+<a name='L114'></a><a href='#L114'>114</a>
+<a name='L115'></a><a href='#L115'>115</a>
+<a name='L116'></a><a href='#L116'>116</a>
+<a name='L117'></a><a href='#L117'>117</a>
+<a name='L118'></a><a href='#L118'>118</a>
+<a name='L119'></a><a href='#L119'>119</a>
+<a name='L120'></a><a href='#L120'>120</a>
+<a name='L121'></a><a href='#L121'>121</a>
+<a name='L122'></a><a href='#L122'>122</a>
+<a name='L123'></a><a href='#L123'>123</a>
+<a name='L124'></a><a href='#L124'>124</a>
+<a name='L125'></a><a href='#L125'>125</a>
+<a name='L126'></a><a href='#L126'>126</a>
+<a name='L127'></a><a href='#L127'>127</a>
+<a name='L128'></a><a href='#L128'>128</a>
+<a name='L129'></a><a href='#L129'>129</a>
+<a name='L130'></a><a href='#L130'>130</a>
+<a name='L131'></a><a href='#L131'>131</a>
+<a name='L132'></a><a href='#L132'>132</a>
+<a name='L133'></a><a href='#L133'>133</a>
+<a name='L134'></a><a href='#L134'>134</a>
+<a name='L135'></a><a href='#L135'>135</a>
+<a name='L136'></a><a href='#L136'>136</a>
+<a name='L137'></a><a href='#L137'>137</a>
+<a name='L138'></a><a href='#L138'>138</a>
+<a name='L139'></a><a href='#L139'>139</a>
+<a name='L140'></a><a href='#L140'>140</a>
+<a name='L141'></a><a href='#L141'>141</a>
+<a name='L142'></a><a href='#L142'>142</a>
+<a name='L143'></a><a href='#L143'>143</a>
+<a name='L144'></a><a href='#L144'>144</a>
+<a name='L145'></a><a href='#L145'>145</a>
+<a name='L146'></a><a href='#L146'>146</a>
+<a name='L147'></a><a href='#L147'>147</a>
+<a name='L148'></a><a href='#L148'>148</a>
+<a name='L149'></a><a href='#L149'>149</a>
+<a name='L150'></a><a href='#L150'>150</a>
+<a name='L151'></a><a href='#L151'>151</a>
+<a name='L152'></a><a href='#L152'>152</a>
+<a name='L153'></a><a href='#L153'>153</a>
+<a name='L154'></a><a href='#L154'>154</a>
+<a name='L155'></a><a href='#L155'>155</a>
+<a name='L156'></a><a href='#L156'>156</a>
+<a name='L157'></a><a href='#L157'>157</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">"use strict";
+&nbsp;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getCollection = getCollection;
+exports.getEntry = getEntry;
+&nbsp;
+var _clientDynamodb = require("@aws-sdk/client-dynamodb");
+&nbsp;
+var _utilDynamodb = require("@aws-sdk/util-dynamodb");
+&nbsp;
+var _configs = _interopRequireDefault(require("../configs"));
+&nbsp;
+var _logger = _interopRequireDefault(require("../services/logger"));
+&nbsp;
+function _interopRequireDefault(obj) { return obj &amp;&amp; obj.__esModule ? obj : <span class="branch-1 cbranch-no" title="branch not covered" >{ "default": obj };</span> }
+&nbsp;
+function <span class="fstat-no" title="function not covered" >_typeof(</span>obj) { "@babel/helpers - typeof"; <span class="cstat-no" title="statement not covered" >return _typeof = "function" == typeof Symbol &amp;&amp; "symbol" == typeof Symbol.iterator ? <span class="fstat-no" title="function not covered" >fu</span>nction (obj) { <span class="cstat-no" title="statement not covered" >return typeof obj; </span>} : <span class="fstat-no" title="function not covered" >fu</span>nction (obj) { <span class="cstat-no" title="statement not covered" >return obj &amp;&amp; "function" == typeof Symbol &amp;&amp; obj.constructor === Symbol &amp;&amp; obj !== Symbol.prototype ? "symbol" : typeof obj; </span>}, _typeof(obj); </span>}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >_regeneratorRuntime(</span>) { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ <span class="cstat-no" title="statement not covered" >_regeneratorRuntime = function <span class="fstat-no" title="function not covered" >_regeneratorRuntime(</span>) { <span class="cstat-no" title="statement not covered" >return exports; </span>}; </span>var exports = <span class="cstat-no" title="statement not covered" >{},</span> Op = <span class="cstat-no" title="statement not covered" >Object.prototype,</span> hasOwn = <span class="cstat-no" title="statement not covered" >Op.hasOwnProperty,</span> $Symbol = <span class="cstat-no" title="statement not covered" >"function" == typeof Symbol ? Symbol : {},</span> iteratorSymbol = <span class="cstat-no" title="statement not covered" >$Symbol.iterator || "@@iterator",</span> asyncIteratorSymbol = <span class="cstat-no" title="statement not covered" >$Symbol.asyncIterator || "@@asyncIterator",</span> toStringTagSymbol = <span class="cstat-no" title="statement not covered" >$Symbol.toStringTag || "@@toStringTag";</span> function <span class="fstat-no" title="function not covered" >define(</span>obj, key, value) { <span class="cstat-no" title="statement not covered" >return Object.defineProperty(obj, key, { value: value, enumerable: !0, configurable: !0, writable: !0 }), obj[key]; </span>} <span class="cstat-no" title="statement not covered" >try { <span class="cstat-no" title="statement not covered" >define({}, ""); </span>} catch (err) { <span class="cstat-no" title="statement not covered" >define = function <span class="fstat-no" title="function not covered" >define(</span>obj, key, value) { <span class="cstat-no" title="statement not covered" >return obj[key] = value; </span>}; </span>} </span>function <span class="fstat-no" title="function not covered" >wrap(</span>innerFn, outerFn, self, tryLocsList) { var protoGenerator = <span class="cstat-no" title="statement not covered" >outerFn &amp;&amp; outerFn.prototype instanceof Generator ? outerFn : Generator,</span> generator = <span class="cstat-no" title="statement not covered" >Object.create(protoGenerator.prototype),</span> context = <span class="cstat-no" title="statement not covered" >new Context(tryLocsList || []);</span> <span class="cstat-no" title="statement not covered" >return generator._invoke = <span class="fstat-no" title="function not covered" >fu</span>nction (innerFn, self, context) { var state = <span class="cstat-no" title="statement not covered" >"suspendedStart";</span> <span class="cstat-no" title="statement not covered" >return <span class="fstat-no" title="function not covered" >fu</span>nction (method, arg) { <span class="cstat-no" title="statement not covered" >if ("executing" === state) <span class="cstat-no" title="statement not covered" >throw new Error("Generator is already running"); <span class="cstat-no" title="statement not covered" ></span></span>if ("completed" === state) { <span class="cstat-no" title="statement not covered" >if ("throw" === method) <span class="cstat-no" title="statement not covered" >throw arg; <span class="cstat-no" title="statement not covered" ></span></span>return doneResult(); </span>} <span class="cstat-no" title="statement not covered" ></span>for (context.method = method, context.arg = arg;;) { var delegate = <span class="cstat-no" title="statement not covered" >context.delegate;</span> <span class="cstat-no" title="statement not covered" >if (delegate) { var delegateResult = <span class="cstat-no" title="statement not covered" >maybeInvokeDelegate(delegate, context);</span> <span class="cstat-no" title="statement not covered" >if (delegateResult) { <span class="cstat-no" title="statement not covered" >if (delegateResult === ContinueSentinel) <span class="cstat-no" title="statement not covered" >continue; <span class="cstat-no" title="statement not covered" ></span></span>return delegateResult; </span>} </span>} <span class="cstat-no" title="statement not covered" ></span>if ("next" === context.method) <span class="cstat-no" title="statement not covered" >context.sent = context._sent = context.arg;e</span>lse <span class="cstat-no" title="statement not covered" >if ("throw" === context.method) { <span class="cstat-no" title="statement not covered" >if ("suspendedStart" === state) <span class="cstat-no" title="statement not covered" >throw state = "completed", context.arg; <span class="cstat-no" title="statement not covered" ></span></span>context.dispatchException(context.arg); </span>} else <span class="cstat-no" title="statement not covered" >"return" === context.method &amp;&amp; context.abrupt("return", context.arg); <span class="cstat-no" title="statement not covered" ></span></span></span>state = "executing"; </span>var record = <span class="cstat-no" title="statement not covered" >tryCatch(innerFn, self, context);</span> <span class="cstat-no" title="statement not covered" >if ("normal" === record.type) { <span class="cstat-no" title="statement not covered" >if (state = context.done ? "completed" : "suspendedYield", record.arg === ContinueSentinel) <span class="cstat-no" title="statement not covered" >continue; <span class="cstat-no" title="statement not covered" ></span></span>return { value: record.arg, done: context.done }; </span>} <span class="cstat-no" title="statement not covered" ></span>"throw" === record.type &amp;&amp; (state = "completed", context.method = "throw", context.arg = record.arg); </span>} </span>}; </span>}(innerFn, self, context), generator; </span>} function <span class="fstat-no" title="function not covered" >tryCatch(</span>fn, obj, arg) { <span class="cstat-no" title="statement not covered" >try { <span class="cstat-no" title="statement not covered" >return { type: "normal", arg: fn.call(obj, arg) }; </span>} catch (err) { <span class="cstat-no" title="statement not covered" >return { type: "throw", arg: err }; </span>} </span>} <span class="cstat-no" title="statement not covered" >exports.wrap = wrap; </span>var ContinueSentinel = <span class="cstat-no" title="statement not covered" >{};</span> function <span class="fstat-no" title="function not covered" >Generator(</span>) {} function <span class="fstat-no" title="function not covered" >GeneratorFunction(</span>) {} function <span class="fstat-no" title="function not covered" >GeneratorFunctionPrototype(</span>) {} var IteratorPrototype = <span class="cstat-no" title="statement not covered" >{};</span> <span class="cstat-no" title="statement not covered" >define(IteratorPrototype, iteratorSymbol, <span class="fstat-no" title="function not covered" >fu</span>nction () { <span class="cstat-no" title="statement not covered" >return this; </span>}); </span>var getProto = <span class="cstat-no" title="statement not covered" >Object.getPrototypeOf,</span> NativeIteratorPrototype = <span class="cstat-no" title="statement not covered" >getProto &amp;&amp; getProto(getProto(values([])));</span> <span class="cstat-no" title="statement not covered" >NativeIteratorPrototype &amp;&amp; NativeIteratorPrototype !== Op &amp;&amp; hasOwn.call(NativeIteratorPrototype, iteratorSymbol) &amp;&amp; (IteratorPrototype = NativeIteratorPrototype); </span>var Gp = <span class="cstat-no" title="statement not covered" >GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(IteratorPrototype);</span> function <span class="fstat-no" title="function not covered" >defineIteratorMethods(</span>prototype) { <span class="cstat-no" title="statement not covered" >["next", "throw", "return"].forEach(<span class="fstat-no" title="function not covered" >fu</span>nction (method) { <span class="cstat-no" title="statement not covered" >define(prototype, method, <span class="fstat-no" title="function not covered" >fu</span>nction (arg) { <span class="cstat-no" title="statement not covered" >return this._invoke(method, arg); </span>}); </span>}); </span>} function <span class="fstat-no" title="function not covered" >AsyncIterator(</span>generator, PromiseImpl) { function <span class="fstat-no" title="function not covered" >invoke(</span>method, arg, resolve, reject) { var record = <span class="cstat-no" title="statement not covered" >tryCatch(generator[method], generator, arg);</span> <span class="cstat-no" title="statement not covered" >if ("throw" !== record.type) { var result = <span class="cstat-no" title="statement not covered" >record.arg,</span> value = <span class="cstat-no" title="statement not covered" >result.value;</span> <span class="cstat-no" title="statement not covered" >return value &amp;&amp; "object" == _typeof(value) &amp;&amp; hasOwn.call(value, "__await") ? PromiseImpl.resolve(value.__await).then(<span class="fstat-no" title="function not covered" >fu</span>nction (value) { <span class="cstat-no" title="statement not covered" >invoke("next", value, resolve, reject); </span>}, <span class="fstat-no" title="function not covered" >fu</span>nction (err) { <span class="cstat-no" title="statement not covered" >invoke("throw", err, resolve, reject); </span>}) : PromiseImpl.resolve(value).then(<span class="fstat-no" title="function not covered" >fu</span>nction (unwrapped) { <span class="cstat-no" title="statement not covered" >result.value = unwrapped, resolve(result); </span>}, <span class="fstat-no" title="function not covered" >fu</span>nction (error) { <span class="cstat-no" title="statement not covered" >return invoke("throw", error, resolve, reject); </span>}); </span>} <span class="cstat-no" title="statement not covered" ></span>reject(record.arg); </span>} var previousPromise; <span class="cstat-no" title="statement not covered" >this._invoke = <span class="fstat-no" title="function not covered" >fu</span>nction (method, arg) { function <span class="fstat-no" title="function not covered" >callInvokeWithMethodAndArg(</span>) { <span class="cstat-no" title="statement not covered" >return new PromiseImpl(<span class="fstat-no" title="function not covered" >fu</span>nction (resolve, reject) { <span class="cstat-no" title="statement not covered" >invoke(method, arg, resolve, reject); </span>}); </span>} <span class="cstat-no" title="statement not covered" >return previousPromise = previousPromise ? previousPromise.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); </span>}; </span>} function <span class="fstat-no" title="function not covered" >maybeInvokeDelegate(</span>delegate, context) { var method = <span class="cstat-no" title="statement not covered" >delegate.iterator[context.method];</span> <span class="cstat-no" title="statement not covered" >if (undefined === method) { <span class="cstat-no" title="statement not covered" >if (context.delegate = null, "throw" === context.method) { <span class="cstat-no" title="statement not covered" >if (delegate.iterator["return"] &amp;&amp; (context.method = "return", context.arg = undefined, maybeInvokeDelegate(delegate, context), "throw" === context.method)) <span class="cstat-no" title="statement not covered" >return ContinueSentinel; <span class="cstat-no" title="statement not covered" ></span></span>context.method = "throw", context.arg = new TypeError("The iterator does not provide a 'throw' method"); </span>} <span class="cstat-no" title="statement not covered" ></span>return ContinueSentinel; </span>} </span>var record = <span class="cstat-no" title="statement not covered" >tryCatch(method, delegate.iterator, context.arg);</span> <span class="cstat-no" title="statement not covered" >if ("throw" === record.type) <span class="cstat-no" title="statement not covered" >return context.method = "throw", context.arg = record.arg, context.delegate = null, ContinueSentinel; </span></span>var info = <span class="cstat-no" title="statement not covered" >record.arg;</span> <span class="cstat-no" title="statement not covered" >return info ? info.done ? (context[delegate.resultName] = info.value, context.next = delegate.nextLoc, "return" !== context.method &amp;&amp; (context.method = "next", context.arg = undefined), context.delegate = null, ContinueSentinel) : info : (context.method = "throw", context.arg = new TypeError("iterator result is not an object"), context.delegate = null, ContinueSentinel); </span>} function <span class="fstat-no" title="function not covered" >pushTryEntry(</span>locs) { var entry = <span class="cstat-no" title="statement not covered" >{ tryLoc: locs[0] };</span> <span class="cstat-no" title="statement not covered" >1 in locs &amp;&amp; (entry.catchLoc = locs[1]), 2 in locs &amp;&amp; (entry.finallyLoc = locs[2], entry.afterLoc = locs[3]), this.tryEntries.push(entry); </span>} function <span class="fstat-no" title="function not covered" >resetTryEntry(</span>entry) { var record = <span class="cstat-no" title="statement not covered" >entry.completion || {};</span> <span class="cstat-no" title="statement not covered" >record.type = "normal", delete record.arg, entry.completion = record; </span>} function <span class="fstat-no" title="function not covered" >Context(</span>tryLocsList) { <span class="cstat-no" title="statement not covered" >this.tryEntries = [{ tryLoc: "root" }], tryLocsList.forEach(pushTryEntry, this), this.reset(!0); </span>} function <span class="fstat-no" title="function not covered" >values(</span>iterable) { <span class="cstat-no" title="statement not covered" >if (iterable) { var iteratorMethod = <span class="cstat-no" title="statement not covered" >iterable[iteratorSymbol];</span> <span class="cstat-no" title="statement not covered" >if (iteratorMethod) <span class="cstat-no" title="statement not covered" >return iteratorMethod.call(iterable); <span class="cstat-no" title="statement not covered" ></span></span>if ("function" == typeof iterable.next) <span class="cstat-no" title="statement not covered" >return iterable; <span class="cstat-no" title="statement not covered" ></span></span>if (!isNaN(iterable.length)) { var i = <span class="cstat-no" title="statement not covered" >-1,</span> next = <span class="cstat-no" title="statement not covered" >function <span class="fstat-no" title="function not covered" >next(</span>) { <span class="cstat-no" title="statement not covered" >for (; ++i &lt; iterable.length;) { <span class="cstat-no" title="statement not covered" >if (hasOwn.call(iterable, i)) <span class="cstat-no" title="statement not covered" >return next.value = iterable[i], next.done = !1, next; </span></span>} <span class="cstat-no" title="statement not covered" ></span>return next.value = undefined, next.done = !0, next; </span>};</span> <span class="cstat-no" title="statement not covered" >return next.next = next; </span>} </span>} <span class="cstat-no" title="statement not covered" ></span>return { next: doneResult }; </span>} function <span class="fstat-no" title="function not covered" >doneResult(</span>) { <span class="cstat-no" title="statement not covered" >return { value: undefined, done: !0 }; </span>} <span class="cstat-no" title="statement not covered" >return GeneratorFunction.prototype = GeneratorFunctionPrototype, define(Gp, "constructor", GeneratorFunctionPrototype), define(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, toStringTagSymbol, "GeneratorFunction"), exports.isGeneratorFunction = <span class="fstat-no" title="function not covered" >fu</span>nction (genFun) { var ctor = <span class="cstat-no" title="statement not covered" >"function" == typeof genFun &amp;&amp; genFun.constructor;</span> <span class="cstat-no" title="statement not covered" >return !!ctor &amp;&amp; (ctor === GeneratorFunction || "GeneratorFunction" === (ctor.displayName || ctor.name)); </span>}, exports.mark = <span class="fstat-no" title="function not covered" >fu</span>nction (genFun) { <span class="cstat-no" title="statement not covered" >return Object.setPrototypeOf ? Object.setPrototypeOf(genFun, GeneratorFunctionPrototype) : (genFun.__proto__ = GeneratorFunctionPrototype, define(genFun, toStringTagSymbol, "GeneratorFunction")), genFun.prototype = Object.create(Gp), genFun; </span>}, exports.awrap = <span class="fstat-no" title="function not covered" >fu</span>nction (arg) { <span class="cstat-no" title="statement not covered" >return { __await: arg }; </span>}, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, asyncIteratorSymbol, <span class="fstat-no" title="function not covered" >fu</span>nction () { <span class="cstat-no" title="statement not covered" >return this; </span>}), exports.AsyncIterator = AsyncIterator, exports.async = <span class="fstat-no" title="function not covered" >fu</span>nction (innerFn, outerFn, self, tryLocsList, PromiseImpl) { <span class="cstat-no" title="statement not covered" >void 0 === PromiseImpl &amp;&amp; (PromiseImpl = Promise); </span>var iter = <span class="cstat-no" title="statement not covered" >new AsyncIterator(wrap(innerFn, outerFn, self, tryLocsList), PromiseImpl);</span> <span class="cstat-no" title="statement not covered" >return exports.isGeneratorFunction(outerFn) ? iter : iter.next().then(<span class="fstat-no" title="function not covered" >fu</span>nction (result) { <span class="cstat-no" title="statement not covered" >return result.done ? result.value : iter.next(); </span>}); </span>}, defineIteratorMethods(Gp), define(Gp, toStringTagSymbol, "Generator"), define(Gp, iteratorSymbol, <span class="fstat-no" title="function not covered" >fu</span>nction () { <span class="cstat-no" title="statement not covered" >return this; </span>}), define(Gp, "toString", <span class="fstat-no" title="function not covered" >fu</span>nction () { <span class="cstat-no" title="statement not covered" >return "[object Generator]"; </span>}), exports.keys = <span class="fstat-no" title="function not covered" >fu</span>nction (object) { var keys = <span class="cstat-no" title="statement not covered" >[];</span> <span class="cstat-no" title="statement not covered" >for (var key in object) { <span class="cstat-no" title="statement not covered" >keys.push(key); </span>} <span class="cstat-no" title="statement not covered" ></span>return keys.reverse(), function <span class="fstat-no" title="function not covered" >next(</span>) { <span class="cstat-no" title="statement not covered" >for (; keys.length;) { var key = <span class="cstat-no" title="statement not covered" >keys.pop();</span> <span class="cstat-no" title="statement not covered" >if (key in object) <span class="cstat-no" title="statement not covered" >return next.value = key, next.done = !1, next; </span></span>} <span class="cstat-no" title="statement not covered" ></span>return next.done = !0, next; </span>}; </span>}, exports.values = values, Context.prototype = { constructor: Context, reset: function <span class="fstat-no" title="function not covered" >reset(</span>skipTempReset) { <span class="cstat-no" title="statement not covered" >if (this.prev = 0, this.next = 0, this.sent = this._sent = undefined, this.done = !1, this.delegate = null, this.method = "next", this.arg = undefined, this.tryEntries.forEach(resetTryEntry), !skipTempReset) <span class="cstat-no" title="statement not covered" >for (var name in this) { <span class="cstat-no" title="statement not covered" >"t" === name.charAt(0) &amp;&amp; hasOwn.call(this, name) &amp;&amp; !isNaN(+name.slice(1)) &amp;&amp; (this[name] = undefined); </span>} </span></span>}, stop: function <span class="fstat-no" title="function not covered" >stop(</span>) { <span class="cstat-no" title="statement not covered" >this.done = !0; </span>var rootRecord = <span class="cstat-no" title="statement not covered" >this.tryEntries[0].completion;</span> <span class="cstat-no" title="statement not covered" >if ("throw" === rootRecord.type) <span class="cstat-no" title="statement not covered" >throw rootRecord.arg; <span class="cstat-no" title="statement not covered" ></span></span>return this.rval; </span>}, dispatchException: function <span class="fstat-no" title="function not covered" >dispatchException(</span>exception) { <span class="cstat-no" title="statement not covered" >if (this.done) <span class="cstat-no" title="statement not covered" >throw exception; </span></span>var context = <span class="cstat-no" title="statement not covered" >this;</span> function <span class="fstat-no" title="function not covered" >handle(</span>loc, caught) { <span class="cstat-no" title="statement not covered" >return record.type = "throw", record.arg = exception, context.next = loc, caught &amp;&amp; (context.method = "next", context.arg = undefined), !!caught; </span>} <span class="cstat-no" title="statement not covered" >for (var i = <span class="cstat-no" title="statement not covered" >this.tryEntries.length - 1;</span> i &gt;= 0; --i) { var entry = <span class="cstat-no" title="statement not covered" >this.tryEntries[i],</span> record = <span class="cstat-no" title="statement not covered" >entry.completion;</span> <span class="cstat-no" title="statement not covered" >if ("root" === entry.tryLoc) <span class="cstat-no" title="statement not covered" >return handle("end"); <span class="cstat-no" title="statement not covered" ></span></span>if (entry.tryLoc &lt;= this.prev) { var hasCatch = <span class="cstat-no" title="statement not covered" >hasOwn.call(entry, "catchLoc"),</span> hasFinally = <span class="cstat-no" title="statement not covered" >hasOwn.call(entry, "finallyLoc");</span> <span class="cstat-no" title="statement not covered" >if (hasCatch &amp;&amp; hasFinally) { <span class="cstat-no" title="statement not covered" >if (this.prev &lt; entry.catchLoc) <span class="cstat-no" title="statement not covered" >return handle(entry.catchLoc, !0); <span class="cstat-no" title="statement not covered" ></span></span>if (this.prev &lt; entry.finallyLoc) <span class="cstat-no" title="statement not covered" >return handle(entry.finallyLoc); </span></span>} else <span class="cstat-no" title="statement not covered" >if (hasCatch) { <span class="cstat-no" title="statement not covered" >if (this.prev &lt; entry.catchLoc) <span class="cstat-no" title="statement not covered" >return handle(entry.catchLoc, !0); </span></span>} else { <span class="cstat-no" title="statement not covered" >if (!hasFinally) <span class="cstat-no" title="statement not covered" >throw new Error("try statement without catch or finally"); <span class="cstat-no" title="statement not covered" ></span></span>if (this.prev &lt; entry.finallyLoc) <span class="cstat-no" title="statement not covered" >return handle(entry.finallyLoc); </span></span>} </span></span>} </span>} </span>}, abrupt: function <span class="fstat-no" title="function not covered" >abrupt(</span>type, arg) { <span class="cstat-no" title="statement not covered" >for (var i = <span class="cstat-no" title="statement not covered" >this.tryEntries.length - 1;</span> i &gt;= 0; --i) { var entry = <span class="cstat-no" title="statement not covered" >this.tryEntries[i];</span> <span class="cstat-no" title="statement not covered" >if (entry.tryLoc &lt;= this.prev &amp;&amp; hasOwn.call(entry, "finallyLoc") &amp;&amp; this.prev &lt; entry.finallyLoc) { var finallyEntry = <span class="cstat-no" title="statement not covered" >entry;</span> <span class="cstat-no" title="statement not covered" >break; </span>} </span>} <span class="cstat-no" title="statement not covered" ></span>finallyEntry &amp;&amp; ("break" === type || "continue" === type) &amp;&amp; finallyEntry.tryLoc &lt;= arg &amp;&amp; arg &lt;= finallyEntry.finallyLoc &amp;&amp; (finallyEntry = null); </span>var record = <span class="cstat-no" title="statement not covered" >finallyEntry ? finallyEntry.completion : {};</span> <span class="cstat-no" title="statement not covered" >return record.type = type, record.arg = arg, finallyEntry ? (this.method = "next", this.next = finallyEntry.finallyLoc, ContinueSentinel) : this.complete(record); </span>}, complete: function <span class="fstat-no" title="function not covered" >complete(</span>record, afterLoc) { <span class="cstat-no" title="statement not covered" >if ("throw" === record.type) <span class="cstat-no" title="statement not covered" >throw record.arg; <span class="cstat-no" title="statement not covered" ></span></span>return "break" === record.type || "continue" === record.type ? this.next = record.arg : "return" === record.type ? (this.rval = this.arg = record.arg, this.method = "return", this.next = "end") : "normal" === record.type &amp;&amp; afterLoc &amp;&amp; (this.next = afterLoc), ContinueSentinel; </span>}, finish: function <span class="fstat-no" title="function not covered" >finish(</span>finallyLoc) { <span class="cstat-no" title="statement not covered" >for (var i = <span class="cstat-no" title="statement not covered" >this.tryEntries.length - 1;</span> i &gt;= 0; --i) { var entry = <span class="cstat-no" title="statement not covered" >this.tryEntries[i];</span> <span class="cstat-no" title="statement not covered" >if (entry.finallyLoc === finallyLoc) <span class="cstat-no" title="statement not covered" >return this.complete(entry.completion, entry.afterLoc), resetTryEntry(entry), ContinueSentinel; </span></span>} </span>}, "catch": function <span class="fstat-no" title="function not covered" >_catch(</span>tryLoc) { <span class="cstat-no" title="statement not covered" >for (var i = <span class="cstat-no" title="statement not covered" >this.tryEntries.length - 1;</span> i &gt;= 0; --i) { var entry = <span class="cstat-no" title="statement not covered" >this.tryEntries[i];</span> <span class="cstat-no" title="statement not covered" >if (entry.tryLoc === tryLoc) { var record = <span class="cstat-no" title="statement not covered" >entry.completion;</span> <span class="cstat-no" title="statement not covered" >if ("throw" === record.type) { var thrown = <span class="cstat-no" title="statement not covered" >record.arg;</span> <span class="cstat-no" title="statement not covered" >resetTryEntry(entry); </span>} <span class="cstat-no" title="statement not covered" ></span>return thrown; </span>} </span>} <span class="cstat-no" title="statement not covered" ></span>throw new Error("illegal catch attempt"); </span>}, delegateYield: function <span class="fstat-no" title="function not covered" >delegateYield(</span>iterable, resultName, nextLoc) { <span class="cstat-no" title="statement not covered" >return this.delegate = { iterator: values(iterable), resultName: resultName, nextLoc: nextLoc }, "next" === this.method &amp;&amp; (this.arg = undefined), ContinueSentinel; </span>} }, exports; </span>}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >asyncGeneratorStep(</span>gen, resolve, reject, _next, _throw, key, arg) { <span class="cstat-no" title="statement not covered" >try { var info = <span class="cstat-no" title="statement not covered" >gen[key](arg);</span> var value = <span class="cstat-no" title="statement not covered" >info.value;</span> } catch (error) { <span class="cstat-no" title="statement not covered" >reject(error); <span class="cstat-no" title="statement not covered" ></span>return; </span>} <span class="cstat-no" title="statement not covered" ></span>if (info.done) { <span class="cstat-no" title="statement not covered" >resolve(value); </span>} else { <span class="cstat-no" title="statement not covered" >Promise.resolve(value).then(_next, _throw); </span>} </span>}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >_asyncToGenerator(</span>fn) { <span class="cstat-no" title="statement not covered" >return <span class="fstat-no" title="function not covered" >fu</span>nction () { var self = <span class="cstat-no" title="statement not covered" >this,</span> args = <span class="cstat-no" title="statement not covered" >arguments;</span> <span class="cstat-no" title="statement not covered" >return new Promise(<span class="fstat-no" title="function not covered" >fu</span>nction (resolve, reject) { var gen = <span class="cstat-no" title="statement not covered" >fn.apply(self, args);</span> function <span class="fstat-no" title="function not covered" >_next(</span>value) { <span class="cstat-no" title="statement not covered" >asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); </span>} function <span class="fstat-no" title="function not covered" >_throw(</span>err) { <span class="cstat-no" title="statement not covered" >asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); </span>} <span class="cstat-no" title="statement not covered" >_next(undefined); </span>}); </span>}; </span>}
+&nbsp;
+var TABLE_MANGA = process.env.TABLE_MANGA;
+&nbsp;
+function <span class="fstat-no" title="function not covered" >getEntry(</span>_x, _x2) {
+<span class="cstat-no" title="statement not covered" >  return _getEntry.apply(this, arguments);</span>
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >_getEntry(</span>) {
+<span class="cstat-no" title="statement not covered" >  _getEntry = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function <span class="fstat-no" title="function not covered" >_callee(</span>entryId, entrySlug) {</span>
+    var tableName,
+        params,
+        _yield$dbclient$send,
+        Item,
+        _args = <span class="cstat-no" title="statement not covered" >arguments;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    return _regeneratorRuntime().wrap(function <span class="fstat-no" title="function not covered" >_callee$(</span>_context) {</span>
+<span class="cstat-no" title="statement not covered" >      while (1) {</span>
+<span class="cstat-no" title="statement not covered" >        switch (_context.prev = _context.next) {</span>
+          case 0:
+<span class="cstat-no" title="statement not covered" >            tableName = _args.length &gt; 2 &amp;&amp; _args[2] !== undefined ? _args[2] : TABLE_MANGA;</span>
+<span class="cstat-no" title="statement not covered" >            params = {</span>
+              TableName: tableName,
+              Key: {
+                EntryId: (0, _utilDynamodb.marshall)(entryId),
+                EntrySlug: (0, _utilDynamodb.marshall)(entrySlug)
+              }
+            };
+<span class="cstat-no" title="statement not covered" >            _context.prev = 2;</span>
+<span class="cstat-no" title="statement not covered" >            _context.next = 5;</span>
+<span class="cstat-no" title="statement not covered" >            return _configs["default"].send(new _clientDynamodb.GetItemCommand(params));</span>
+&nbsp;
+          case 5:
+<span class="cstat-no" title="statement not covered" >            _yield$dbclient$send = _context.sent;</span>
+<span class="cstat-no" title="statement not covered" >            Item = _yield$dbclient$send.Item;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >            if (!Item) {</span>
+<span class="cstat-no" title="statement not covered" >              _context.next = 11;</span>
+<span class="cstat-no" title="statement not covered" >              break;</span>
+            }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >            return _context.abrupt("return", (0, _utilDynamodb.unmarshall)(Item));</span>
+&nbsp;
+          case 11:
+<span class="cstat-no" title="statement not covered" >            return _context.abrupt("return", false);</span>
+&nbsp;
+          case 12:
+<span class="cstat-no" title="statement not covered" >            _context.next = 18;</span>
+<span class="cstat-no" title="statement not covered" >            break;</span>
+&nbsp;
+          case 14:
+<span class="cstat-no" title="statement not covered" >            _context.prev = 14;</span>
+<span class="cstat-no" title="statement not covered" >            _context.t0 = _context["catch"](2);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >            _logger["default"].debug("getEntry fail: ".concat(entryId));</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >            _logger["default"].debug(_context.t0.stack);</span>
+&nbsp;
+          case 18:
+          case "end":
+<span class="cstat-no" title="statement not covered" >            return _context.stop();</span>
+        }
+      }
+    }, _callee, null, [[2, 14]]);
+  }));
+<span class="cstat-no" title="statement not covered" >  return _getEntry.apply(this, arguments);</span>
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >getCollection(</span>_x3) {
+<span class="cstat-no" title="statement not covered" >  return _getCollection.apply(this, arguments);</span>
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >_getCollection(</span>) {
+<span class="cstat-no" title="statement not covered" >  _getCollection = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function <span class="fstat-no" title="function not covered" >_callee2(</span>entryId) {</span>
+    var tableName,
+        params,
+        _yield$dbclient$send2,
+        Items,
+        _args2 = <span class="cstat-no" title="statement not covered" >arguments;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    return _regeneratorRuntime().wrap(function <span class="fstat-no" title="function not covered" >_callee2$(</span>_context2) {</span>
+<span class="cstat-no" title="statement not covered" >      while (1) {</span>
+<span class="cstat-no" title="statement not covered" >        switch (_context2.prev = _context2.next) {</span>
+          case 0:
+<span class="cstat-no" title="statement not covered" >            tableName = _args2.length &gt; 1 &amp;&amp; _args2[1] !== undefined ? _args2[1] : TABLE_MANGA;</span>
+<span class="cstat-no" title="statement not covered" >            params = {</span>
+              TableName: tableName,
+              ExpressionAttributeValues: {
+                ":ei": (0, _utilDynamodb.marshall)(entryId)
+              },
+              KeyConditionExpression: "EntryId = :ei"
+            };
+<span class="cstat-no" title="statement not covered" >            _context2.prev = 2;</span>
+<span class="cstat-no" title="statement not covered" >            _context2.next = 5;</span>
+<span class="cstat-no" title="statement not covered" >            return _configs["default"].send(new _clientDynamodb.QueryCommand(params));</span>
+&nbsp;
+          case 5:
+<span class="cstat-no" title="statement not covered" >            _yield$dbclient$send2 = _context2.sent;</span>
+<span class="cstat-no" title="statement not covered" >            Items = _yield$dbclient$send2.Items;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >            if (!Items) {</span>
+<span class="cstat-no" title="statement not covered" >              _context2.next = 11;</span>
+<span class="cstat-no" title="statement not covered" >              break;</span>
+            }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >            return _context2.abrupt("return", Items.map(<span class="fstat-no" title="function not covered" >fu</span>nction (item) {</span>
+<span class="cstat-no" title="statement not covered" >              return (0, _utilDynamodb.unmarshall)(item);</span>
+            }));
+&nbsp;
+          case 11:
+<span class="cstat-no" title="statement not covered" >            return _context2.abrupt("return", false);</span>
+&nbsp;
+          case 12:
+<span class="cstat-no" title="statement not covered" >            _context2.next = 18;</span>
+<span class="cstat-no" title="statement not covered" >            break;</span>
+&nbsp;
+          case 14:
+<span class="cstat-no" title="statement not covered" >            _context2.prev = 14;</span>
+<span class="cstat-no" title="statement not covered" >            _context2.t0 = _context2["catch"](2);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >            _logger["default"].debug("getCollection fail: ".concat(entryId));</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >            _logger["default"].debug(_context2.t0.stack);</span>
+&nbsp;
+          case 18:
+          case "end":
+<span class="cstat-no" title="statement not covered" >            return _context2.stop();</span>
+        }
+      }
+    }, _callee2, null, [[2, 14]]);
+  }));
+<span class="cstat-no" title="statement not covered" >  return _getCollection.apply(this, arguments);</span>
+}</pre></td></tr></table></pre>
+
+                <div class='push'></div><!-- for sticky footer -->
+            </div><!-- /wrapper -->
+            <div class='footer quiet pad2 space-top1 center small'>
+                Code coverage generated by
+                <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
+                at 2022-08-14T15:05:26.798Z
+            </div>
+        <script src="../../prettify.js"></script>
+        <script>
+            window.onload = function () {
+                prettyPrint();
+            };
+        </script>
+        <script src="../../sorter.js"></script>
+        <script src="../../block-navigation.js"></script>
+    </body>
+</html>
+    

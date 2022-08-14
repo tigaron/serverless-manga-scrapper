@@ -1,4 +1,4 @@
-import scraper, * as scraperService from "./scraper";
+/* import scraper, * as scraperService from "./scraper";
 import * as cheerio from "cheerio";
 import { jest } from "@jest/globals";
 
@@ -200,7 +200,7 @@ describe("Unit test", () => {
 		);
 	});
 })
-/* 
+
 describe("Integration test", () => {
 	test("Scraper success", async () => {
 		const urlString = "https://www.asurascans.com/manga/list-mode/";

@@ -150,7 +150,7 @@ describe("Unit test", function () {
             case 0:
               expectedUrlString = "https://www.asurascans.com/manga/list-mode/";
               scraperSpy = _scraper["default"].mockImplementation(function () {
-                return Error("Failed to crawl 'urlString'", {
+                return Error("Failed to crawl '".concat(expectedUrlString, "'"), {
                   cause: 404
                 });
               });
@@ -301,7 +301,7 @@ describe("Unit test", function () {
         }
       }, _callee6);
     })));
-    test("Data does not exist in the database --> 404", /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee7() {
+    test("Initial data does not exist in the database --> 404", /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee7() {
       var getEntrySpy, req;
       return _regeneratorRuntime().wrap(function _callee7$(_context7) {
         while (1) {
@@ -342,7 +342,7 @@ describe("Unit test", function () {
             case 0:
               expectedUrlString = "https://luminousscans.com/series/a-returners-magic-should-be-special/";
               scraperSpy = _scraper["default"].mockImplementation(function () {
-                return Error("Failed to crawl 'urlString'", {
+                return Error("Failed to crawl '".concat(expectedUrlString, "'"), {
                   cause: 404
                 });
               });
@@ -411,5 +411,433 @@ describe("Unit test", function () {
       }, _callee9);
     })));
   });
-  describe("scrapeChapterList behaviour", function () {});
+  describe("scrapeChapterList behaviour", function () {
+    test("Scraper return new data --> respond 202 --> process scraped data", /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee10() {
+      var expectedUrlString, scraperSpy, getEntrySpy, createStatusSpy, createEntrySpy, updateStatusSpy, req;
+      return _regeneratorRuntime().wrap(function _callee10$(_context10) {
+        while (1) {
+          switch (_context10.prev = _context10.next) {
+            case 0:
+              expectedUrlString = "https://luminousscans.com/series/a-returners-magic-should-be-special/";
+              scraperSpy = _scraper["default"].mockImplementation(function () {
+                var result = new Set();
+                result.add(new Map([["EntryId", "Entry 1"], ["EntrySlug", "This is a test entry 1"]]));
+                result.add(new Map([["EntryId", "Entry 2"], ["EntrySlug", "This is a test entry 2"]]));
+                result.add(new Map([["EntryId", "Entry 3"], ["EntrySlug", "This is a test entry 3"]]));
+                return result;
+              });
+              getEntrySpy = _db["default"].getEntry;
+              getEntrySpy.mockImplementationOnce(function () {
+                return {
+                  MangaUrl: expectedUrlString
+                };
+              });
+              getEntrySpy.mockImplementation(function () {
+                return null;
+              });
+              createStatusSpy = _db["default"].createStatus.mockImplementation();
+              createEntrySpy = _db["default"].createEntry.mockImplementation();
+              updateStatusSpy = _db["default"].updateStatus.mockImplementation();
+              req = (0, _express.getMockReq)({
+                body: {
+                  provider: "luminous",
+                  slug: "a-returners-magic-should-be-special"
+                }
+              });
+              _context10.next = 11;
+              return (0, _scrape.scrapeChapterList)(req, res);
+
+            case 11:
+              expect(getEntrySpy).toHaveBeenCalledWith("manga_luminous", "a-returners-magic-should-be-special");
+              expect(scraperSpy).toHaveBeenCalledWith(expectedUrlString, "ChapterList", "luminous");
+              expect(createStatusSpy).toHaveBeenCalledWith(expect.objectContaining({
+                RequestStatus: "pending"
+              }));
+              expect(res.status).toHaveBeenCalledWith(202);
+              expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+                status: 202,
+                statusText: expect.any(String),
+                data: expect.any(Object)
+              }));
+              expect(getEntrySpy).toHaveBeenCalledTimes(4);
+              expect(createEntrySpy).toHaveBeenCalledTimes(3);
+              expect(updateStatusSpy).toHaveBeenCalledWith(expect.objectContaining({
+                RequestStatus: "completed"
+              }));
+
+            case 19:
+            case "end":
+              return _context10.stop();
+          }
+        }
+      }, _callee10);
+    })));
+    test("Scraper return old data --> respond 202 --> inform old data", /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee11() {
+      var expectedUrlString, scraperSpy, getEntrySpy, createStatusSpy, createEntrySpy, updateStatusSpy, req;
+      return _regeneratorRuntime().wrap(function _callee11$(_context11) {
+        while (1) {
+          switch (_context11.prev = _context11.next) {
+            case 0:
+              expectedUrlString = "https://luminousscans.com/series/a-returners-magic-should-be-special/";
+              scraperSpy = _scraper["default"].mockImplementation(function () {
+                var result = new Set();
+                result.add(new Map([["EntryId", "Entry 1"], ["EntrySlug", "This is a test entry 1"]]));
+                result.add(new Map([["EntryId", "Entry 2"], ["EntrySlug", "This is a test entry 2"]]));
+                result.add(new Map([["EntryId", "Entry 3"], ["EntrySlug", "This is a test entry 3"]]));
+                return result;
+              });
+              getEntrySpy = _db["default"].getEntry;
+              getEntrySpy.mockImplementationOnce(function () {
+                return {
+                  MangaUrl: expectedUrlString
+                };
+              });
+              getEntrySpy.mockImplementation(function () {
+                return true;
+              });
+              createStatusSpy = _db["default"].createStatus.mockImplementation();
+              createEntrySpy = _db["default"].createEntry.mockImplementation();
+              updateStatusSpy = _db["default"].updateStatus.mockImplementation();
+              req = (0, _express.getMockReq)({
+                body: {
+                  provider: "luminous",
+                  slug: "a-returners-magic-should-be-special"
+                }
+              });
+              _context11.next = 11;
+              return (0, _scrape.scrapeChapterList)(req, res);
+
+            case 11:
+              expect(getEntrySpy).toHaveBeenCalledWith("manga_luminous", "a-returners-magic-should-be-special");
+              expect(scraperSpy).toHaveBeenCalledWith(expectedUrlString, "ChapterList", "luminous");
+              expect(createStatusSpy).toHaveBeenCalledWith(expect.objectContaining({
+                RequestStatus: "pending"
+              }));
+              expect(res.status).toHaveBeenCalledWith(202);
+              expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+                status: 202,
+                statusText: expect.any(String),
+                data: expect.any(Object)
+              }));
+              expect(getEntrySpy).toHaveBeenCalledTimes(4);
+              expect(createEntrySpy).not.toHaveBeenCalled();
+              expect(updateStatusSpy).toHaveBeenCalledWith(expect.objectContaining({
+                RequestStatus: "completed",
+                FailedItems: expect.any(Array)
+              }));
+
+            case 19:
+            case "end":
+              return _context11.stop();
+          }
+        }
+      }, _callee11);
+    })));
+    test("Initial data does not exist in the database --> 404", /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee12() {
+      var getEntrySpy, req;
+      return _regeneratorRuntime().wrap(function _callee12$(_context12) {
+        while (1) {
+          switch (_context12.prev = _context12.next) {
+            case 0:
+              getEntrySpy = _db["default"].getEntry.mockImplementation(function () {
+                return false;
+              });
+              req = (0, _express.getMockReq)({
+                body: {
+                  provider: "luminous",
+                  slug: "a-returners-magic-should-be-special"
+                }
+              });
+              _context12.next = 4;
+              return (0, _scrape.scrapeChapterList)(req, res);
+
+            case 4:
+              expect(getEntrySpy).toHaveBeenCalledWith("manga_luminous", "a-returners-magic-should-be-special");
+              expect(res.status).toHaveBeenCalledWith(404);
+              expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+                status: 404,
+                statusText: expect.any(String)
+              }));
+
+            case 7:
+            case "end":
+              return _context12.stop();
+          }
+        }
+      }, _callee12);
+    })));
+    test("Crawler/scraper failed to process request --> request aborted", /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee13() {
+      var expectedUrlString, scraperSpy, getEntrySpy, req;
+      return _regeneratorRuntime().wrap(function _callee13$(_context13) {
+        while (1) {
+          switch (_context13.prev = _context13.next) {
+            case 0:
+              expectedUrlString = "https://luminousscans.com/series/a-returners-magic-should-be-special/";
+              scraperSpy = _scraper["default"].mockImplementation(function () {
+                return Error("Failed to crawl '".concat(expectedUrlString, "'"), {
+                  cause: 404
+                });
+              });
+              getEntrySpy = _db["default"].getEntry.mockImplementation(function () {
+                return {
+                  MangaUrl: expectedUrlString
+                };
+              });
+              req = (0, _express.getMockReq)({
+                body: {
+                  provider: "luminous",
+                  slug: "a-returners-magic-should-be-special"
+                }
+              });
+              _context13.next = 6;
+              return (0, _scrape.scrapeChapterList)(req, res);
+
+            case 6:
+              expect(getEntrySpy).toHaveBeenCalledWith("manga_luminous", "a-returners-magic-should-be-special");
+              expect(scraperSpy).toHaveBeenCalledWith(expectedUrlString, "ChapterList", "luminous");
+              expect(scraperSpy).toHaveReturnedWith(expect.any(Error));
+              expect(res.status).toHaveBeenCalledWith(404);
+              expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+                status: 404,
+                statusText: expect.any(String)
+              }));
+
+            case 11:
+            case "end":
+              return _context13.stop();
+          }
+        }
+      }, _callee13);
+    })));
+    test("Error occurs on the server/database --> 500", /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee14() {
+      var getEntrySpy, req;
+      return _regeneratorRuntime().wrap(function _callee14$(_context14) {
+        while (1) {
+          switch (_context14.prev = _context14.next) {
+            case 0:
+              getEntrySpy = _db["default"].getEntry.mockImplementation(function () {
+                throw new Error("This is just a test");
+              });
+              req = (0, _express.getMockReq)({
+                body: {
+                  provider: "luminous",
+                  slug: "a-returners-magic-should-be-special"
+                }
+              });
+              _context14.next = 4;
+              return (0, _scrape.scrapeChapterList)(req, res);
+
+            case 4:
+              expect(getEntrySpy).toHaveBeenCalledWith("manga_luminous", "a-returners-magic-should-be-special");
+              expect(res.status).toHaveBeenCalledWith(500);
+              expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+                status: 500,
+                statusText: expect.any(String)
+              }));
+
+            case 7:
+            case "end":
+              return _context14.stop();
+          }
+        }
+      }, _callee14);
+    })));
+  });
+  describe("scrapeChapter behaviour", function () {
+    test("Scraper return new data --> process scraped data --> respond 201", /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee15() {
+      var expectedUrlString, scraperSpy, getEntrySpy, updateChapterEntrySpy, req;
+      return _regeneratorRuntime().wrap(function _callee15$(_context15) {
+        while (1) {
+          switch (_context15.prev = _context15.next) {
+            case 0:
+              expectedUrlString = "https://luminousscans.com/a-returners-magic-should-be-special-chapter-1/";
+              scraperSpy = _scraper["default"].mockImplementation(function () {
+                var result = new Map([["EntryId", "chapter_luminous_a-returners-magic-should-be-special"], ["EntrySlug", "a-returners-magic-should-be-special-chapter-1"]]);
+                return result;
+              });
+              getEntrySpy = _db["default"].getEntry.mockImplementation(function () {
+                return {
+                  ChapterUrl: expectedUrlString
+                };
+              });
+              updateChapterEntrySpy = _db["default"].updateChapterEntry.mockImplementation();
+              req = (0, _express.getMockReq)({
+                body: {
+                  provider: "luminous",
+                  manga: "a-returners-magic-should-be-special",
+                  slug: "a-returners-magic-should-be-special-chapter-1"
+                }
+              });
+              _context15.next = 7;
+              return (0, _scrape.scrapeChapter)(req, res);
+
+            case 7:
+              expect(getEntrySpy).toHaveBeenCalledWith("chapter_luminous_a-returners-magic-should-be-special", "a-returners-magic-should-be-special-chapter-1");
+              expect(scraperSpy).toHaveBeenCalledWith(expectedUrlString, "Chapter", "luminous");
+              expect(updateChapterEntrySpy).toHaveBeenCalled();
+              expect(res.status).toHaveBeenCalledWith(201);
+              expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+                status: 201,
+                statusText: "Created",
+                data: expect.any(Object)
+              }));
+
+            case 12:
+            case "end":
+              return _context15.stop();
+          }
+        }
+      }, _callee15);
+    })));
+    test("Full data exists in the database --> 409", /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee16() {
+      var expectedUrlString, getEntrySpy, req;
+      return _regeneratorRuntime().wrap(function _callee16$(_context16) {
+        while (1) {
+          switch (_context16.prev = _context16.next) {
+            case 0:
+              expectedUrlString = "https://luminousscans.com/a-returners-magic-should-be-special-chapter-1/";
+              getEntrySpy = _db["default"].getEntry.mockImplementation(function () {
+                return {
+                  ChapterUrl: expectedUrlString,
+                  ChapterContent: "This is just a test"
+                };
+              });
+              req = (0, _express.getMockReq)({
+                body: {
+                  provider: "luminous",
+                  manga: "a-returners-magic-should-be-special",
+                  slug: "a-returners-magic-should-be-special-chapter-1"
+                }
+              });
+              _context16.next = 5;
+              return (0, _scrape.scrapeChapter)(req, res);
+
+            case 5:
+              expect(getEntrySpy).toHaveBeenCalledWith("chapter_luminous_a-returners-magic-should-be-special", "a-returners-magic-should-be-special-chapter-1");
+              expect(res.status).toHaveBeenCalledWith(409);
+              expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+                status: 409,
+                statusText: expect.any(String)
+              }));
+
+            case 8:
+            case "end":
+              return _context16.stop();
+          }
+        }
+      }, _callee16);
+    })));
+    test("Initial data does not exist in the database --> 404", /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee17() {
+      var getEntrySpy, req;
+      return _regeneratorRuntime().wrap(function _callee17$(_context17) {
+        while (1) {
+          switch (_context17.prev = _context17.next) {
+            case 0:
+              getEntrySpy = _db["default"].getEntry.mockImplementation(function () {
+                return false;
+              });
+              req = (0, _express.getMockReq)({
+                body: {
+                  provider: "luminous",
+                  manga: "a-returners-magic-should-be-special",
+                  slug: "a-returners-magic-should-be-special-chapter-1"
+                }
+              });
+              _context17.next = 4;
+              return (0, _scrape.scrapeChapter)(req, res);
+
+            case 4:
+              expect(getEntrySpy).toHaveBeenCalledWith("chapter_luminous_a-returners-magic-should-be-special", "a-returners-magic-should-be-special-chapter-1");
+              expect(res.status).toHaveBeenCalledWith(404);
+              expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+                status: 404,
+                statusText: expect.any(String)
+              }));
+
+            case 7:
+            case "end":
+              return _context17.stop();
+          }
+        }
+      }, _callee17);
+    })));
+    test("Crawler/scraper failed to process request --> request aborted", /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee18() {
+      var expectedUrlString, scraperSpy, getEntrySpy, req;
+      return _regeneratorRuntime().wrap(function _callee18$(_context18) {
+        while (1) {
+          switch (_context18.prev = _context18.next) {
+            case 0:
+              expectedUrlString = "https://luminousscans.com/a-returners-magic-should-be-special-chapter-1/";
+              scraperSpy = _scraper["default"].mockImplementation(function () {
+                return Error("Failed to crawl '".concat(expectedUrlString, "'"), {
+                  cause: 404
+                });
+              });
+              getEntrySpy = _db["default"].getEntry.mockImplementation(function () {
+                return {
+                  ChapterUrl: expectedUrlString
+                };
+              });
+              req = (0, _express.getMockReq)({
+                body: {
+                  provider: "luminous",
+                  manga: "a-returners-magic-should-be-special",
+                  slug: "a-returners-magic-should-be-special-chapter-1"
+                }
+              });
+              _context18.next = 6;
+              return (0, _scrape.scrapeChapter)(req, res);
+
+            case 6:
+              expect(getEntrySpy).toHaveBeenCalledWith("chapter_luminous_a-returners-magic-should-be-special", "a-returners-magic-should-be-special-chapter-1");
+              expect(scraperSpy).toHaveBeenCalledWith(expectedUrlString, "Chapter", "luminous");
+              expect(scraperSpy).toHaveReturnedWith(expect.any(Error));
+              expect(res.status).toHaveBeenCalledWith(404);
+              expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+                status: 404,
+                statusText: expect.any(String)
+              }));
+
+            case 11:
+            case "end":
+              return _context18.stop();
+          }
+        }
+      }, _callee18);
+    })));
+    test("Error occurs on the server/database --> 500", /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee19() {
+      var getEntrySpy, req;
+      return _regeneratorRuntime().wrap(function _callee19$(_context19) {
+        while (1) {
+          switch (_context19.prev = _context19.next) {
+            case 0:
+              getEntrySpy = _db["default"].getEntry.mockImplementation(function () {
+                throw new Error("This is just a test");
+              });
+              req = (0, _express.getMockReq)({
+                body: {
+                  provider: "luminous",
+                  manga: "a-returners-magic-should-be-special",
+                  slug: "a-returners-magic-should-be-special-chapter-1"
+                }
+              });
+              _context19.next = 4;
+              return (0, _scrape.scrapeChapter)(req, res);
+
+            case 4:
+              expect(getEntrySpy).toHaveBeenCalledWith("chapter_luminous_a-returners-magic-should-be-special", "a-returners-magic-should-be-special-chapter-1");
+              expect(res.status).toHaveBeenCalledWith(500);
+              expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+                status: 500,
+                statusText: expect.any(String)
+              }));
+
+            case 7:
+            case "end":
+              return _context19.stop();
+          }
+        }
+      }, _callee19);
+    })));
+  });
 });

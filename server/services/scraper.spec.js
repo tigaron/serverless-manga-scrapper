@@ -1,24 +1,28 @@
-/* import scraper, * as scraperService from "./scraper";
+import scraper, * as scraperService from "./scraper";
 import * as cheerio from "cheerio";
+import mapToObject from "../utils/mapToObject";
 import { jest } from "@jest/globals";
 
+jest.mock("../services/logger");
 afterEach(() => {
 	jest.clearAllMocks();
 });
 
 describe("Unit test", () => {
-	test("Cheerio loads correctly when valid HTML string passed as argument", () => {
+	test("loadHTML loads valid HTML when string passed as argument", () => {
 		const htmlString = "<h1>Hello</h1>";
 		const loadSpy = jest.spyOn(cheerio, "load");
 		scraperService.loadHTML(htmlString);
 		expect(loadSpy).toHaveBeenCalledWith(htmlString);
 	});
 	
-	test("Cheerio throws error when no valid HTML string detected", () => {
+	test("loadHTML throws error when no valid HTML string detected", () => {
 		const htmlString = new Error("Failed to crawl", { cause: 404 });
+		const loadSpy = jest.spyOn(cheerio, "load");
 		try {
 			scraperService.loadHTML(htmlString);
 		} catch (error) {
+			expect(loadSpy).not.toHaveBeenCalled();
 			expect(error.message).toEqual("Failed to crawl");
 			expect(error.cause).toEqual(404);
 		}
@@ -31,14 +35,24 @@ describe("Unit test", () => {
 				<a class="series" rel="70812" href="https://www.asurascans.com/comics/101-duke-pendragon/">Duke Pendragon</a>
 			</div>
 			`);
-			
 		const result = scraperService.parseMangaList($, "asura");
 		expect(result).toBeInstanceOf(Set);
+		expect(Array.from(result)).toContainEqual(expect.any(Map));
+		expect(mapToObject(Array.from(result)[0])).toEqual(
+			expect.objectContaining({
+				EntryId: expect.any(String),
+				EntrySlug: expect.any(String),
+				MangaTitle: expect.any(String),
+				MangaUrl: expect.any(String),
+				ScrapeDate: expect.any(String),
+			})
+		);
 	});
-	
+
 	test("parseManga returns expected values", () => {
 		const $ = cheerio.load(`
 			<link rel="canonical" href="https://www.asurascans.com/comics/chronicles-of-the-martial-gods-return/" />
+			<link rel="shortlink" href="https://www.asurascans.com/?p=1234/" />
 			<h1 class="entry-title" itemprop="name">Chronicles Of The Martial God&#8217;s Return</h1>
 			<div class="thumb" itemprop="image" itemscope itemtype="https://schema.org/ImageObject">
 				<img width="720" height="972" src="https://www.asurascans.com/wp-content/uploads/2022/05/martialreturnCover01.png" class="attachment- size- wp-post-image" alt="Chronicles Of The Martial God&#8217;s Return" loading="lazy" title="Chronicles Of The Martial God&#8217;s Return" itemprop="image" />
@@ -49,23 +63,23 @@ describe("Unit test", () => {
 			`);
 		const result = scraperService.parseManga($, "asura");
 		expect(result).toBeInstanceOf(Map);
-		expect(Object.fromEntries(result)).toEqual(
+		expect(mapToObject(result)).toEqual(
 			expect.objectContaining({
-				Id: expect.any(String),
-				MangaTitle: expect.any(String),
-				MangaSlug: expect.any(String),
-				MangaType: expect.any(String),
-				MangaProvider: expect.any(String),
-				MangaUrl: expect.any(String),
+				EntryId: expect.any(String),
+				EntrySlug: expect.any(String),
+				MangaCanonicalUrl: expect.any(String),
 				MangaCover: expect.any(String),
+				MangaShortUrl: expect.any(String),
 				MangaSynopsis: expect.any(String),
-				UpdatedAt: expect.any(String),
+				MangaTitle: expect.any(String),
+				ScrapeDate: expect.any(String),
 			})
 		);
 	});
-	
+
 	test("parseChapterList for flame provider returns expected values", () => {
 		const $ = cheerio.load(`
+			<link rel="canonical" href="https://flamescans.org/series/the-ancient-sovereign-of-eternity/" />
 			<div class="eplister" id="chapterlist">
 				<a href="https://flamescans.org/the-ancient-sovereign-of-eternity-chapter-116/">
 				<span class="chapternum">
@@ -89,22 +103,22 @@ describe("Unit test", () => {
 			`);
 		const result = scraperService.parseChapterList($, "flame");
 		expect(result).toBeInstanceOf(Set);
-		const iterator = result[Symbol.iterator]();
-		expect(iterator.next().value).toBeInstanceOf(Map);
-		expect(Object.fromEntries(iterator.next().value)).toEqual(
+		expect(Array.from(result)).toContainEqual(expect.any(Map));
+		expect(mapToObject(Array.from(result)[0])).toEqual(
 			expect.objectContaining({
-				Id: expect.any(String),
-				ChapterTitle: expect.any(String),
-				ChapterSlug: expect.any(String),
-				ChapterProvider: expect.any(String),
+				EntryId: expect.any(String),
+				EntrySlug: expect.any(String),
+				ChapterNumber: expect.any(String),
+				ChapterDate: expect.any(String),
 				ChapterUrl: expect.any(String),
-				UpdatedAt: expect.any(String),
+				ScrapeDate: expect.any(String),
 			})
 		);
 	});
-
+ 
 	test("parseChapterList for other provider returns expected values", () => {
 		const $ = cheerio.load(`
+			<link rel="canonical" href="https://www.asurascans.com/comics/chronicles-of-the-martial-gods-return/" />
 			<div class="eplister" id="chapterlist">
 				<a href="https://www.asurascans.com/chronicles-of-the-martial-gods-return-chapter-29/">
 					<span class="chapternum">Chapter 29</span>
@@ -122,23 +136,24 @@ describe("Unit test", () => {
 			`);
 		const result = scraperService.parseChapterList($, "asura");
 		expect(result).toBeInstanceOf(Set);
-		const iterator = result[Symbol.iterator]();
-		expect(iterator.next().value).toBeInstanceOf(Map);
-		expect(Object.fromEntries(iterator.next().value)).toEqual(
+		expect(Array.from(result)).toContainEqual(expect.any(Map));
+		expect(mapToObject(Array.from(result)[0])).toEqual(
 			expect.objectContaining({
-				Id: expect.any(String),
-				ChapterTitle: expect.any(String),
-				ChapterSlug: expect.any(String),
-				ChapterProvider: expect.any(String),
+				EntryId: expect.any(String),
+				EntrySlug: expect.any(String),
+				ChapterNumber: expect.any(String),
+				ChapterDate: expect.any(String),
 				ChapterUrl: expect.any(String),
-				UpdatedAt: expect.any(String),
+				ScrapeDate: expect.any(String),
 			})
 		);
 	});
-	
+
 	test("parseChapter for realm provider returns expected values", () => {
 		const $ = cheerio.load(`
 			<link rel="canonical" href="https://realmscans.com/infinite-level-up-in-murim-chapter-123/" />
+			<link rel="shortlink" href="https://realmscans.com/?p=1234/" />
+			<div class="allc"><a href="https://realmscans.com/series/infinite-level-up-in-murim/">Infinite Level up in Murim</a></div>
 			<h1 class="entry-title" itemprop="name">Infinite Level up in Murim Chapter 123</h1>
 			<div id="readerarea">
 				<noscript>
@@ -156,15 +171,15 @@ describe("Unit test", () => {
 			`);
 		const result = scraperService.parseChapter($, "realm");
 		expect(result).toBeInstanceOf(Map);
-		expect(Object.fromEntries(result)).toEqual(
+		expect(mapToObject(result)).toEqual(
 			expect.objectContaining({
-				Id: expect.any(String),
+				EntryId: expect.any(String),
+				EntrySlug: expect.any(String),
 				ChapterTitle: expect.any(String),
-				ChapterSlug: expect.any(String),
-				ChapterProvider: expect.any(String),
-				ChapterUrl: expect.any(String),
-				ChapterContent: expect.any(Set),
-				UpdatedAt: expect.any(String),
+				ChapterShortUrl: expect.any(String),
+				ChapterCanonicalUrl: expect.any(String),
+				ChapterContent: expect.any(Array),
+				ScrapeDate: expect.any(String),
 			})
 		);
 	});
@@ -172,6 +187,8 @@ describe("Unit test", () => {
 	test("parseChapter for other provider returns expected values", () => {
 		const $ = cheerio.load(`
 			<link rel="canonical" href="https://www.asurascans.com/chronicles-of-the-martial-gods-return-chapter-27-2/" />
+			<link rel="shortlink" href="https://www.asurascans.com/?p=1234/" />
+			<div class="allc"><a href="https://www.asurascans.com/manga/chronicles-of-the-martial-gods-return/">Chronicles Of The Martial God’s Return</a></div>
 			<h1 class="entry-title" itemprop="name">Chronicles Of The Martial God’s Return Chapter 27</h1>
 			<div id="readerarea" class="rdminimal">
 				<p>
@@ -187,15 +204,15 @@ describe("Unit test", () => {
 			`);
 		const result = scraperService.parseChapter($, "asura");
 		expect(result).toBeInstanceOf(Map);
-		expect(Object.fromEntries(result)).toEqual(
+		expect(mapToObject(result)).toEqual(
 			expect.objectContaining({
-				Id: expect.any(String),
+				EntryId: expect.any(String),
+				EntrySlug: expect.any(String),
 				ChapterTitle: expect.any(String),
-				ChapterSlug: expect.any(String),
-				ChapterProvider: expect.any(String),
-				ChapterUrl: expect.any(String),
-				ChapterContent: expect.any(Set),
-				UpdatedAt: expect.any(String),
+				ChapterShortUrl: expect.any(String),
+				ChapterCanonicalUrl: expect.any(String),
+				ChapterContent: expect.any(Array),
+				ScrapeDate: expect.any(String),
 			})
 		);
 	});
@@ -216,11 +233,10 @@ describe("Integration test", () => {
 		const urlString = "https://www.asurascans.com/manga/random-mode/";
 		try {
 			const result = await scraper(urlString, "MangaList", "asura");
-			expect(result).toBeInstanceOf(Set);
+			expect(result).toBeInstanceOf(Error);
 		} catch (error) {
 			expect(error.message).toBe(`Failed to crawl '${urlString}'`);
 			expect(error.cause).not.toEqual(200);
 		}
 	}, 15000);
 });
- */

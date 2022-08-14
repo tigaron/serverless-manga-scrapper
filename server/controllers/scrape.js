@@ -88,7 +88,7 @@ async function scrapeMangaList(req, res) {
 Function to scrape a specific manga from a specific provider
 Example:
 path: /scrape/manga
-body: { provider: "asura", type: "comics", slug: "damn-reincarnation" }
+body: { provider: "asura", slug: "damn-reincarnation" }
 */
 async function scrapeManga(req, res) {
 	const { provider: MangaProvider, slug: MangaSlug } = req.body;
@@ -114,7 +114,6 @@ async function scrapeManga(req, res) {
 			]);
 			return res.status(404).json(mapToObject(jsonResponse));
 		}
-
 
 		/*
 		Try to scrape manga provider's website
@@ -154,7 +153,7 @@ async function scrapeManga(req, res) {
 Function to scrape chapter list for a specific manga from a specific provider
 Example:
 path: /scrape/chapter-list
-body: { provider: "asura", type: "comics", slug: "damn-reincarnation" }
+body: { provider: "asura", slug: "damn-reincarnation" }
 */
 async function scrapeChapterList(req, res) {
 	const { provider: MangaProvider, slug: MangaSlug } = req.body;
@@ -245,7 +244,7 @@ async function scrapeChapterList(req, res) {
 Function to scrape a specific chapter from a specific provider
 Example:
 path: /scrape/chapter
-body: { provider: "asura", slug: "damn-reincarnation-01" }
+body: { provider: "asura", manga: "damn-reincarnation", slug: "damn-reincarnation-chapter-1" }
 */
 async function scrapeChapter(req, res) {
 	const { provider: MangaProvider, manga: MangaSlug, slug:ChapterSlug } = req.body;

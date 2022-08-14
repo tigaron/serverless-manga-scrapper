@@ -10,7 +10,7 @@ async function fetchStatus(req, res) {
 	const { id: EntrySlug } = req.params;
 	let jsonResponse;
 	try {
-		const data = await db.getEntry("read-status", EntrySlug);
+		const data = await db.getEntry("request-status", EntrySlug);
 		if (!data) {
 			/*
 			Return with 404 if not in the database
@@ -106,7 +106,7 @@ async function fetchMangaData(req, res) {
 			*/
 			jsonResponse = new Map([
 				["status", 404],
-				["statusText", `Cannot find data of'${slug}' in the database`],
+				["statusText", `Cannot find '${slug}' in the database`],
 			]);
 			return res.status(404).json(mapToObject(jsonResponse));
 		} else {
@@ -137,14 +137,14 @@ async function fetchChapterData(req, res) {
 	const { provider, manga, slug } = req.params;
 	let jsonResponse;
 	try {
-		const data = await db.getEntry(`manga_${provider}_${manga}`, slug);
+		const data = await db.getEntry(`chapter_${provider}_${manga}`, slug);
 		if (!data) {
 			/*
 			Return with 404 if not in the database
 			*/
 			jsonResponse = new Map([
 				["status", 404],
-				["statusText", `Cannot find data of '${slug}' in the database`],
+				["statusText", `Cannot find '${slug}' in the database`],
 			]);
 			return res.status(404).json(mapToObject(jsonResponse));
 		} else {

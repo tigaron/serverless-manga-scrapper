@@ -44,7 +44,7 @@ function _fetchStatus() {
             EntrySlug = req.params.id;
             _context.prev = 1;
             _context.next = 4;
-            return _db["default"].getEntry("read-status", EntrySlug);
+            return _db["default"].getEntry("request-status", EntrySlug);
 
           case 4:
             data = _context.sent;
@@ -203,7 +203,7 @@ function _fetchMangaData() {
             /*
             Return with 404 if not in the database
             */
-            jsonResponse = new Map([["status", 404], ["statusText", "Cannot find data of'".concat(slug, "' in the database")]]);
+            jsonResponse = new Map([["status", 404], ["statusText", "Cannot find '".concat(slug, "' in the database")]]);
             return _context3.abrupt("return", res.status(404).json((0, _mapToObject["default"])(jsonResponse)));
 
           case 10:
@@ -251,7 +251,7 @@ function _fetchChapterData() {
             _req$params3 = req.params, provider = _req$params3.provider, manga = _req$params3.manga, slug = _req$params3.slug;
             _context4.prev = 1;
             _context4.next = 4;
-            return _db["default"].getEntry("manga_".concat(provider, "_").concat(manga), slug);
+            return _db["default"].getEntry("chapter_".concat(provider, "_").concat(manga), slug);
 
           case 4:
             data = _context4.sent;
@@ -264,7 +264,7 @@ function _fetchChapterData() {
             /*
             Return with 404 if not in the database
             */
-            jsonResponse = new Map([["status", 404], ["statusText", "Cannot find data of '".concat(slug, "' in the database")]]);
+            jsonResponse = new Map([["status", 404], ["statusText", "Cannot find '".concat(slug, "' in the database")]]);
             return _context4.abrupt("return", res.status(404).json((0, _mapToObject["default"])(jsonResponse)));
 
           case 10:

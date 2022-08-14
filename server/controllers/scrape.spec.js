@@ -10,6 +10,7 @@ import scraper from "../services/scraper";
 import db from "../db";
 
 jest.mock("../services/scraper");
+jest.mock("../services/logger");
 jest.mock("../db");
 
 describe("Unit test", () => {
@@ -24,9 +25,9 @@ describe("Unit test", () => {
 			const expectedUrlString = "https://www.asurascans.com/manga/list-mode/";
 			const scraperSpy = scraper.mockImplementation(() => {
 				const result = new Set();
-				result.add(new Map([ ["Id", "Entry 1"], ["MangaSlug", "This is a test entry 1"] ]));
-				result.add(new Map([ ["Id", "Entry 2"], ["MangaSlug", "This is a test entry 2"] ]));
-				result.add(new Map([ ["Id", "Entry 3"], ["MangaSlug", "This is a test entry 3"] ]));
+				result.add(new Map([ ["EntryId", "Entry 1"], ["EntrySlug", "This is a test entry 1"] ]));
+				result.add(new Map([ ["EntryId", "Entry 2"], ["EntrySlug", "This is a test entry 2"] ]));
+				result.add(new Map([ ["EntryId", "Entry 3"], ["EntrySlug", "This is a test entry 3"] ]));
 				return result;
 			});
 			const createStatusSpy = db.createStatus.mockImplementation();
@@ -47,26 +48,19 @@ describe("Unit test", () => {
 				expect.objectContaining({ RequestStatus: "pending" })
 			);
 
-			expect(getEntrySpy).toHaveBeenCalledTimes(3);
-			expect(getEntrySpy).toHaveReturnedWith(null);
-
-			expect(createEntrySpy).toHaveBeenCalledTimes(3);
-			expect(createEntrySpy).toHaveBeenCalledWith(expect.any(Object));
-
-			expect(updateStatusSpy).toHaveBeenCalledWith(
-				expect.objectContaining({ RequestStatus: "completed" })
-			);
-
 			expect(res.status).toHaveBeenCalledWith(202);
 			expect(res.json).toHaveBeenCalledWith(
 				expect.objectContaining({
 					status: 202,
 					statusText: expect.any(String),
-					data: {
-						requestId: expect.any(String),
-						requestType: expect.any(String),
-					},
+					data: expect.any(Object),
 				})
+			);
+
+			expect(getEntrySpy).toHaveBeenCalledTimes(3);
+			expect(createEntrySpy).toHaveBeenCalledTimes(3);
+			expect(updateStatusSpy).toHaveBeenCalledWith(
+				expect.objectContaining({ RequestStatus: "completed" })
 			);
 		});
 
@@ -74,19 +68,13 @@ describe("Unit test", () => {
 			const expectedUrlString = "https://www.asurascans.com/manga/list-mode/";
 			const scraperSpy = scraper.mockImplementation(() => {
 				const result = new Set();
-				result.add(new Map([ ["Id", "Entry 1"], ["MangaSlug", "This is a test entry 1"] ]));
-				result.add(new Map([ ["Id", "Entry 2"], ["MangaSlug", "This is a test entry 2"] ]));
-				result.add(new Map([ ["Id", "Entry 3"], ["MangaSlug", "This is a test entry 3"] ]));
+				result.add(new Map([ ["EntryId", "Entry 1"], ["EntrySlug", "This is a test entry 1"] ]));
+				result.add(new Map([ ["EntryId", "Entry 2"], ["EntrySlug", "This is a test entry 2"] ]));
+				result.add(new Map([ ["EntryId", "Entry 3"], ["EntrySlug", "This is a test entry 3"] ]));
 				return result;
 			});
 			const createStatusSpy = db.createStatus.mockImplementation();
-			const getEntrySpy = db.getEntry.mockImplementation(() => {
-				const data = {
-					Id: "Entry",
-					MangaSlug: "This is a test entry",
-				};
-				return data;
-			});
+			const getEntrySpy = db.getEntry.mockImplementation(() => true);
 			const createEntrySpy = db.createEntry.mockImplementation();
 			const updateStatusSpy = db.updateStatus.mockImplementation();
 
@@ -104,10 +92,7 @@ describe("Unit test", () => {
 			);
 
 			expect(getEntrySpy).toHaveBeenCalledTimes(3);
-			expect(getEntrySpy).toHaveReturnedWith(expect.any(Object));
-
 			expect(createEntrySpy).not.toHaveBeenCalled();
-
 			expect(updateStatusSpy).toHaveBeenCalledWith(
 				expect.objectContaining({
 					RequestStatus: "completed",
@@ -120,10 +105,7 @@ describe("Unit test", () => {
 				expect.objectContaining({
 					status: 202,
 					statusText: expect.any(String),
-					data: {
-						requestId: expect.any(String),
-						requestType: expect.any(String),
-					},
+					data: expect.any(Object),
 				})
 			);
 		});
@@ -144,10 +126,35 @@ describe("Unit test", () => {
 			);
 			expect(scraperSpy).toHaveReturnedWith(expect.any(Error));
 	
-			expect(res.status).toHaveBeenCalledWith(expect.any(Number));
+			expect(res.status).toHaveBeenCalledWith(404);
 			expect(res.json).toHaveBeenCalledWith(
 				expect.objectContaining({
-					status: expect.any(Number),
+					status: 404,
+					statusText: expect.any(String),
+				})
+			);
+		});
+
+		test("Error occurs on the server/database --> 500", async () => {
+			scraper.mockImplementation(() => {
+				const result = new Set();
+				result.add(new Map([ ["EntryId", "Entry 1"], ["EntrySlug", "This is a test entry 1"] ]));
+				result.add(new Map([ ["EntryId", "Entry 2"], ["EntrySlug", "This is a test entry 2"] ]));
+				result.add(new Map([ ["EntryId", "Entry 3"], ["EntrySlug", "This is a test entry 3"] ]));
+				return result;
+			});
+			const createStatusSpy = db.createStatus.mockImplementation(() => {
+				throw new Error("This is just a test");
+			});
+
+			const req = getMockReq({ body: { provider: "asura" } });
+			await scrapeMangaList(req, res);
+
+			expect(createStatusSpy).toHaveBeenCalled();
+			expect(res.status).toHaveBeenCalledWith(500);
+			expect(res.json).toHaveBeenCalledWith(
+				expect.objectContaining({
+					status: 500,
 					statusText: expect.any(String),
 				})
 			);
@@ -159,33 +166,33 @@ describe("Unit test", () => {
 			const expectedUrlString = "https://luminousscans.com/series/a-returners-magic-should-be-special/";
 			const scraperSpy = scraper.mockImplementation(() => {
 				const result = new Map([
-					["Id", `manga_luminous_a-returners-magic-should-be-special`],
-					["MangaSlug", "a-returners-magic-should-be-special"],
-					["MangaType", "series"],
-					["MangaProvider", "luminous"]
+					["EntryId", `manga_luminous_a-returners-magic-should-be-special`],
+					["EntrySlug", "a-returners-magic-should-be-special"],
 				]);
 				return result;
 			});
-			const getEntrySpy = db.getEntry.mockImplementation(() => null);
-			const createEntrySpy = db.createEntry.mockImplementation();
+			const getEntrySpy = db.getEntry.mockImplementation(() => {
+				return {
+					MangaUrl: expectedUrlString
+				}
+			});
+			const updateMangaEntrySpy = db.updateMangaEntry.mockImplementation();
 
 			const req = getMockReq({
 				body: {
 					provider: "luminous",
-					type: "series",
 					slug: "a-returners-magic-should-be-special",
 				},
 			});
 			await scrapeManga(req, res);
 
-			expect(getEntrySpy).toHaveReturnedWith(null);
+			expect(getEntrySpy).toHaveBeenCalledWith("manga_luminous", "a-returners-magic-should-be-special");
 			expect(scraperSpy).toHaveBeenCalledWith(
 				expectedUrlString,
 				"Manga",
 				"luminous"
 			);
-			expect(createEntrySpy).toHaveBeenCalledWith(expect.any(Object));
-
+			expect(updateMangaEntrySpy).toHaveBeenCalled();
 			expect(res.status).toHaveBeenCalledWith(201);
 			expect(res.json).toHaveBeenCalledWith(
 				expect.objectContaining({
@@ -196,42 +203,48 @@ describe("Unit test", () => {
 			);
 		});
 
-		test("Scraper return old data --> respond 409", async () => {
+		test("Full data exists in the database --> 409", async () => {
 			const expectedUrlString = "https://luminousscans.com/series/a-returners-magic-should-be-special/";
-			const scraperSpy = scraper.mockImplementation(() => {
-				const result = new Map([
-					["Id", `manga_luminous_a-returners-magic-should-be-special`],
-					["MangaSlug", "a-returners-magic-should-be-special"],
-					["MangaType", "series"],
-					["MangaProvider", "luminous"]
-				]);
-				return result;
-			});
 			const getEntrySpy = db.getEntry.mockImplementation(() => {
-				const data = {
-					Id: "Entry",
-					MangaSlug: "This is a test entry",
-				};
-				return data;
+				return {
+					MangaUrl: expectedUrlString,
+					MangaCover: "This is just a test",
+				}
 			});
-			const createEntrySpy = db.createEntry.mockImplementation();
 
 			const req = getMockReq({
 				body: {
 					provider: "luminous",
-					type: "series",
 					slug: "a-returners-magic-should-be-special",
 				},
 			});
 			await scrapeManga(req, res);
 
-			expect(getEntrySpy).toHaveReturnedWith(expect.any(Object));
-			expect(createEntrySpy).not.toHaveBeenCalled();
-
+			expect(getEntrySpy).toHaveBeenCalledWith("manga_luminous", "a-returners-magic-should-be-special");
 			expect(res.status).toHaveBeenCalledWith(409);
 			expect(res.json).toHaveBeenCalledWith(
 				expect.objectContaining({
 					status: 409,
+					statusText: expect.any(String),
+				})
+			);
+		});
+
+		test("Data does not exist in the database --> 404", async () => {
+			const getEntrySpy = db.getEntry.mockImplementation(() => false);
+			const req = getMockReq({
+				body: {
+					provider: "luminous",
+					slug: "a-returners-magic-should-be-special",
+				},
+			});
+			await scrapeManga(req, res);
+
+			expect(getEntrySpy).toHaveBeenCalledWith("manga_luminous", "a-returners-magic-should-be-special");
+			expect(res.status).toHaveBeenCalledWith(404);
+			expect(res.json).toHaveBeenCalledWith(
+				expect.objectContaining({
+					status: 404,
 					statusText: expect.any(String),
 				})
 			);
@@ -242,18 +255,21 @@ describe("Unit test", () => {
 			const scraperSpy = scraper.mockImplementation(() => {
 				return Error("Failed to crawl 'urlString'", { cause: 404 });
 			});
-			const getEntrySpy = db.getEntry.mockImplementation(() => null);
+			const getEntrySpy = db.getEntry.mockImplementation(() => {
+				return {
+					MangaUrl: expectedUrlString
+				}
+			});
 	
 			const req = getMockReq({
 				body: {
 					provider: "luminous",
-					type: "series",
 					slug: "a-returners-magic-should-be-special",
 				},
 			});
 			await scrapeManga(req, res);
-
-			expect(getEntrySpy).toHaveReturnedWith(null);
+	
+			expect(getEntrySpy).toHaveBeenCalledWith("manga_luminous", "a-returners-magic-should-be-special");
 			expect(scraperSpy).toHaveBeenCalledWith(
 				expectedUrlString,
 				"Manga",
@@ -261,13 +277,38 @@ describe("Unit test", () => {
 			);
 			expect(scraperSpy).toHaveReturnedWith(expect.any(Error));
 	
-			expect(res.status).toHaveBeenCalledWith(expect.any(Number));
+			expect(res.status).toHaveBeenCalledWith(404);
 			expect(res.json).toHaveBeenCalledWith(
 				expect.objectContaining({
-					status: expect.any(Number),
+					status: 404,
 					statusText: expect.any(String),
 				})
 			);
 		});
+
+		test("Error occurs on the server/database --> 500", async () => {
+			const getEntrySpy = db.getEntry.mockImplementation(() => {
+				throw new Error("This is just a test");
+			});
+			const req = getMockReq({
+				body: {
+					provider: "luminous",
+					slug: "a-returners-magic-should-be-special",
+				},
+			});
+			await scrapeManga(req, res);
+
+			expect(getEntrySpy).toHaveBeenCalledWith("manga_luminous", "a-returners-magic-should-be-special");
+			expect(res.status).toHaveBeenCalledWith(500);
+			expect(res.json).toHaveBeenCalledWith(
+				expect.objectContaining({
+					status: 500,
+					statusText: expect.any(String),
+				})
+			);
+		});
+	});
+
+	describe("scrapeChapterList behaviour", () => {
 	});
 });

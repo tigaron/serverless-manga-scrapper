@@ -47,7 +47,7 @@ function scrapeMangaList(_x, _x2) {
 Function to scrape a specific manga from a specific provider
 Example:
 path: /scrape/manga
-body: { provider: "asura", type: "comics", slug: "damn-reincarnation" }
+body: { provider: "asura", slug: "damn-reincarnation" }
 */
 
 
@@ -214,7 +214,7 @@ function scrapeManga(_x3, _x4) {
 Function to scrape chapter list for a specific manga from a specific provider
 Example:
 path: /scrape/chapter-list
-body: { provider: "asura", type: "comics", slug: "damn-reincarnation" }
+body: { provider: "asura", slug: "damn-reincarnation" }
 */
 
 
@@ -302,7 +302,7 @@ function scrapeChapterList(_x5, _x6) {
 Function to scrape a specific chapter from a specific provider
 Example:
 path: /scrape/chapter
-body: { provider: "asura", slug: "damn-reincarnation-01" }
+body: { provider: "asura", manga: "damn-reincarnation", slug: "damn-reincarnation-chapter-1" }
 */
 
 

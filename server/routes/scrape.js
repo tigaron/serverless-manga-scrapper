@@ -4,8 +4,8 @@ import {
 	scrapeManga,
 	scrapeChapterList,
 	scrapeChapter,
-} from "../controllers/scrape.js";
-import { validateBody } from "../validations/index.js";
+} from "../controllers/scrape";
+import { validateBody } from "../validations";
 const router = express.Router();
 
 router.route("/manga-list").post(validateBody("Provider"), scrapeMangaList);

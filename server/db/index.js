@@ -1,11 +1,12 @@
-import { createStatus, createEntry } from "./create.js";
-import { getEntry } from "./read.js";
-import { updateMangaEntry, updateChapterEntry, updateStatus } from "./update.js";
+import { createEntry, createStatus } from "./create";
+import { getEntry, getCollection } from "./read";
+import { updateMangaEntry, updateChapterEntry, updateStatus } from "./update";
 
 const db = {
-	createStatus,
 	createEntry,
+	createStatus,
 	getEntry,
+	getCollection,
 	updateMangaEntry,
 	updateChapterEntry,
 	updateStatus,

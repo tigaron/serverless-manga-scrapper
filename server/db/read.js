@@ -1,7 +1,7 @@
-import { GetItemCommand } from "@aws-sdk/client-dynamodb";
+import { GetItemCommand, QueryCommand } from "@aws-sdk/client-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
-import dbclient from "../configs/index.js";
-import logger from "../services/logger.js";
+import dbclient from "../configs";
+import logger from "../services/logger";
 
 const { TABLE_MANGA } = process.env;
 
@@ -18,10 +18,27 @@ async function getEntry(entryId, entrySlug, tableName = TABLE_MANGA) {
 		if (Item) return unmarshall(Item);
 		else return false;
 	} catch (error) {
-		logger.debug(`getEntry fail: ${id}`);
-		logger.debug(error.message);
+		logger.debug(`getEntry fail: ${entryId}`);
 		logger.debug(error.stack);
 	}
 }
 
-export { getEntry };
+async function getCollection(entryId, tableName = TABLE_MANGA) {
+	const params = {
+		TableName: tableName,
+		ExpressionAttributeValues: {
+			":ei": marshall(entryId),
+		},
+		KeyConditionExpression: "EntryId = :ei",
+	};
+	try {
+		const { Items } = await dbclient.send(new QueryCommand(params));
+		if (Items) return Items.map((item) => unmarshall(item));
+		else return false;
+	} catch (error) {
+		logger.debug(`getCollection fail: ${entryId}`);
+		logger.debug(error.stack);
+	}
+}
+
+export { getEntry, getCollection };

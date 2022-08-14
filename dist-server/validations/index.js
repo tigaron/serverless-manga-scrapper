@@ -9,7 +9,7 @@ exports.validateBody = validateBody;
 exports.validateProvider = validateProvider;
 exports.validateUUID = validateUUID;
 
-var _providerList = _interopRequireDefault(require("../utils/providerList.js"));
+var _providerList = _interopRequireDefault(require("../utils/providerList"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 

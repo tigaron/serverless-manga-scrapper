@@ -3,15 +3,16 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.getCollection = getCollection;
 exports.getEntry = getEntry;
 
 var _clientDynamodb = require("@aws-sdk/client-dynamodb");
 
 var _utilDynamodb = require("@aws-sdk/util-dynamodb");
 
-var _index = _interopRequireDefault(require("../configs/index.js"));
+var _configs = _interopRequireDefault(require("../configs"));
 
-var _logger = _interopRequireDefault(require("../services/logger.js"));
+var _logger = _interopRequireDefault(require("../services/logger"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -51,7 +52,7 @@ function _getEntry() {
             };
             _context.prev = 2;
             _context.next = 5;
-            return _index["default"].send(new _clientDynamodb.GetItemCommand(params));
+            return _configs["default"].send(new _clientDynamodb.GetItemCommand(params));
 
           case 5:
             _yield$dbclient$send = _context.sent;
@@ -68,20 +69,18 @@ function _getEntry() {
             return _context.abrupt("return", false);
 
           case 12:
-            _context.next = 19;
+            _context.next = 18;
             break;
 
           case 14:
             _context.prev = 14;
             _context.t0 = _context["catch"](2);
 
-            _logger["default"].debug("getEntry fail: ".concat(id));
-
-            _logger["default"].debug(_context.t0.message);
+            _logger["default"].debug("getEntry fail: ".concat(entryId));
 
             _logger["default"].debug(_context.t0.stack);
 
-          case 19:
+          case 18:
           case "end":
             return _context.stop();
         }
@@ -89,4 +88,70 @@ function _getEntry() {
     }, _callee, null, [[2, 14]]);
   }));
   return _getEntry.apply(this, arguments);
+}
+
+function getCollection(_x3) {
+  return _getCollection.apply(this, arguments);
+}
+
+function _getCollection() {
+  _getCollection = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(entryId) {
+    var tableName,
+        params,
+        _yield$dbclient$send2,
+        Items,
+        _args2 = arguments;
+
+    return _regeneratorRuntime().wrap(function _callee2$(_context2) {
+      while (1) {
+        switch (_context2.prev = _context2.next) {
+          case 0:
+            tableName = _args2.length > 1 && _args2[1] !== undefined ? _args2[1] : TABLE_MANGA;
+            params = {
+              TableName: tableName,
+              ExpressionAttributeValues: {
+                ":ei": (0, _utilDynamodb.marshall)(entryId)
+              },
+              KeyConditionExpression: "EntryId = :ei"
+            };
+            _context2.prev = 2;
+            _context2.next = 5;
+            return _configs["default"].send(new _clientDynamodb.QueryCommand(params));
+
+          case 5:
+            _yield$dbclient$send2 = _context2.sent;
+            Items = _yield$dbclient$send2.Items;
+
+            if (!Items) {
+              _context2.next = 11;
+              break;
+            }
+
+            return _context2.abrupt("return", Items.map(function (item) {
+              return (0, _utilDynamodb.unmarshall)(item);
+            }));
+
+          case 11:
+            return _context2.abrupt("return", false);
+
+          case 12:
+            _context2.next = 18;
+            break;
+
+          case 14:
+            _context2.prev = 14;
+            _context2.t0 = _context2["catch"](2);
+
+            _logger["default"].debug("getCollection fail: ".concat(entryId));
+
+            _logger["default"].debug(_context2.t0.stack);
+
+          case 18:
+          case "end":
+            return _context2.stop();
+        }
+      }
+    }, _callee2, null, [[2, 14]]);
+  }));
+  return _getCollection.apply(this, arguments);
 }

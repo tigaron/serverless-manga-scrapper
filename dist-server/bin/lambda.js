@@ -7,7 +7,7 @@ exports.handler = void 0;
 
 var _serverlessHttp = _interopRequireDefault(require("serverless-http"));
 
-var _app = _interopRequireDefault(require("../app.js"));
+var _app = _interopRequireDefault(require("../app"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 

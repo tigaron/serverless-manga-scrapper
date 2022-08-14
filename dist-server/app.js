@@ -7,13 +7,15 @@ exports["default"] = void 0;
 
 var _express = _interopRequireDefault(require("express"));
 
-var _morganMiddleware = _interopRequireDefault(require("./middlewares/morganMiddleware.js"));
+var _path = _interopRequireDefault(require("path"));
 
-var _index = _interopRequireDefault(require("./routes/index.js"));
+var _morganMiddleware = _interopRequireDefault(require("./middlewares/morganMiddleware"));
 
-var _fetch = _interopRequireDefault(require("./routes/fetch.js"));
+var _index = _interopRequireDefault(require("./routes/index"));
 
-var _scrape = _interopRequireDefault(require("./routes/scrape.js"));
+var _fetch = _interopRequireDefault(require("./routes/fetch"));
+
+var _scrape = _interopRequireDefault(require("./routes/scrape"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -23,7 +25,7 @@ app.use(_express["default"].json());
 app.use(_express["default"].urlencoded({
   extended: true
 }));
-app.use(_express["default"]["static"]("../public")); // TODO Add auth for endpoint other than GET
+app.use(_express["default"]["static"](_path["default"].join(__dirname, "../public"))); // TODO Add auth for endpoint other than GET
 
 app.use("/", _index["default"]);
 app.use("/fetch", _fetch["default"]);

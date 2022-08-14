@@ -1,7 +1,7 @@
 import { PutItemCommand } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
-import dbclient from "../configs/index.js";
-import logger from "../services/logger.js";
+import dbclient from "../configs";
+import logger from "../services/logger";
 
 const { TABLE_MANGA } = process.env;
 
@@ -15,7 +15,6 @@ async function createEntry(item, tableName = TABLE_MANGA) {
 		await dbclient.send(new PutItemCommand(params));
 	} catch (error) {
 		logger.debug(`createEntry fail: ${item["EntrySlug"]}`);
-		logger.debug(error.message);
 		logger.debug(error.stack);
 	}
 }
@@ -30,7 +29,6 @@ async function createStatus(item, tableName = TABLE_MANGA) {
 		await dbclient.send(new PutItemCommand(params));
 	} catch (error) {
 		logger.debug(`createStatus fail: ${item["EntrySlug"]}`);
-		logger.debug(error.message);
 		logger.debug(error.stack);
 	}
 }

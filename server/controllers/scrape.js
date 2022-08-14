@@ -1,9 +1,9 @@
 import { v4 as uuidv4 } from "uuid";
-import scraper from "../services/scraper.js";
-import logger from "../services/logger.js";
-import providerList from "../utils/providerList.js";
-import mapToObject from "../utils/mapToObject.js";
-import db from "../db/index.js";
+import scraper from "../services/scraper";
+import logger from "../services/logger";
+import providerList from "../utils/providerList";
+import mapToObject from "../utils/mapToObject";
+import db from "../db";
 
 /*
 Function to scrape manga list from a specific manga provider
@@ -75,7 +75,6 @@ async function scrapeMangaList(req, res) {
 		]);
 		await db.updateStatus(mapToObject(updatedStatus));
 	} catch (error) {
-		logger.error(error.message);
 		logger.error(error.stack);
 		jsonResponse = new Map([
 			["status", 500],
@@ -142,7 +141,6 @@ async function scrapeManga(req, res) {
 		]);
 		return res.status(201).json(mapToObject(jsonResponse));
 	} catch (error) {
-		logger.error(error.message);
 		logger.error(error.stack);
 		jsonResponse = new Map([
 			["status", 500],
@@ -234,7 +232,6 @@ async function scrapeChapterList(req, res) {
 		await db.updateStatus(mapToObject(updatedStatus));
 	} catch (error) {
 		// TODO update status in the database if exist
-		logger.error(error.message);
 		logger.error(error.stack);
 		jsonResponse = new Map([
 			["status", 500],
@@ -300,7 +297,6 @@ async function scrapeChapter(req, res) {
 		]);
 		return res.status(201).json(mapToObject(jsonResponse));
 	} catch (error) {
-		logger.error(error.message);
 		logger.error(error.stack);
 		jsonResponse = new Map([
 			["status", 500],

@@ -10,9 +10,9 @@ var _clientDynamodb = require("@aws-sdk/client-dynamodb");
 
 var _utilDynamodb = require("@aws-sdk/util-dynamodb");
 
-var _index = _interopRequireDefault(require("../configs/index.js"));
+var _configs = _interopRequireDefault(require("../configs"));
 
-var _logger = _interopRequireDefault(require("../services/logger.js"));
+var _logger = _interopRequireDefault(require("../services/logger"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -47,10 +47,10 @@ function _createEntry() {
             };
             _context.prev = 2;
             _context.next = 5;
-            return _index["default"].send(new _clientDynamodb.PutItemCommand(params));
+            return _configs["default"].send(new _clientDynamodb.PutItemCommand(params));
 
           case 5:
-            _context.next = 12;
+            _context.next = 11;
             break;
 
           case 7:
@@ -59,11 +59,9 @@ function _createEntry() {
 
             _logger["default"].debug("createEntry fail: ".concat(item["EntrySlug"]));
 
-            _logger["default"].debug(_context.t0.message);
-
             _logger["default"].debug(_context.t0.stack);
 
-          case 12:
+          case 11:
           case "end":
             return _context.stop();
         }
@@ -94,10 +92,10 @@ function _createStatus() {
             };
             _context2.prev = 2;
             _context2.next = 5;
-            return _index["default"].send(new _clientDynamodb.PutItemCommand(params));
+            return _configs["default"].send(new _clientDynamodb.PutItemCommand(params));
 
           case 5:
-            _context2.next = 12;
+            _context2.next = 11;
             break;
 
           case 7:
@@ -106,11 +104,9 @@ function _createStatus() {
 
             _logger["default"].debug("createStatus fail: ".concat(item["EntrySlug"]));
 
-            _logger["default"].debug(_context2.t0.message);
-
             _logger["default"].debug(_context2.t0.stack);
 
-          case 12:
+          case 11:
           case "end":
             return _context2.stop();
         }

@@ -15,7 +15,7 @@ var _chromeAwsLambda = _interopRequireDefault(require("@sparticuz/chrome-aws-lam
 
 var cheerio = _interopRequireWildcard(require("cheerio"));
 
-var _logger = _interopRequireDefault(require("./logger.js"));
+var _logger = _interopRequireDefault(require("./logger"));
 
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 

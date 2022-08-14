@@ -1,7 +1,7 @@
 import { UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
-import dbclient from "../configs/index.js";
-import logger from "../services/logger.js";
+import dbclient from "../configs/index";
+import logger from "../services/logger";
 
 const { TABLE_MANGA } = process.env;
 
@@ -34,7 +34,6 @@ async function updateMangaEntry(item, tableName = TABLE_MANGA) {
 		await dbclient.send(new UpdateItemCommand(params));
 	} catch (error) {
 		logger.debug(`updateMangaEntry fail: ${item["EntrySlug"]}`);
-		logger.debug(error.message);
 		logger.debug(error.stack);
 	}
 }
@@ -68,7 +67,6 @@ async function updateChapterEntry(item, tableName = TABLE_MANGA) {
 		await dbclient.send(new UpdateItemCommand(params));
 	} catch (error) {
 		logger.debug(`updateChapterEntry fail: ${item["EntrySlug"]}`);
-		logger.debug(error.message);
 		logger.debug(error.stack);
 	}
 }
@@ -96,7 +94,6 @@ async function updateStatus(item, tableName = TABLE_MANGA) {
 		await dbclient.send(new UpdateItemCommand(params));
 	} catch (error) {
 		logger.debug(`updateStatus fail: ${item["EntrySlug"]}`);
-		logger.debug(error.message);
 		logger.debug(error.stack);
 	}
 };

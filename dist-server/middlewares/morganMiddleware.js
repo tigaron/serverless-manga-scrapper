@@ -7,7 +7,7 @@ exports["default"] = void 0;
 
 var _morgan = _interopRequireDefault(require("morgan"));
 
-var _logger = _interopRequireDefault(require("../services/logger.js"));
+var _logger = _interopRequireDefault(require("../services/logger"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 

@@ -1,6 +1,6 @@
 import chromium from "@sparticuz/chrome-aws-lambda";
 import * as cheerio from "cheerio";
-import logger from "./logger.js";
+import logger from "./logger";
 
 async function crawler(urlString) {
 	const browser = await chromium.puppeteer.launch({

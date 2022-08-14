@@ -10,15 +10,15 @@ exports.scrapeMangaList = scrapeMangaList;
 
 var _uuid = require("uuid");
 
-var _scraper = _interopRequireDefault(require("../services/scraper.js"));
+var _scraper = _interopRequireDefault(require("../services/scraper"));
 
-var _logger = _interopRequireDefault(require("../services/logger.js"));
+var _logger = _interopRequireDefault(require("../services/logger"));
 
-var _providerList = _interopRequireDefault(require("../utils/providerList.js"));
+var _providerList = _interopRequireDefault(require("../utils/providerList"));
 
-var _mapToObject = _interopRequireDefault(require("../utils/mapToObject.js"));
+var _mapToObject = _interopRequireDefault(require("../utils/mapToObject"));
 
-var _index = _interopRequireDefault(require("../db/index.js"));
+var _db = _interopRequireDefault(require("../db"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -84,7 +84,7 @@ function _scrapeMangaList() {
             requestId = (0, _uuid.v4)();
             requestStatus = new Map([["EntryId", "request-status"], ["EntrySlug", requestId], ["RequestType", "manga-list_".concat(MangaProvider)], ["RequestStatus", "pending"]]);
             _context.next = 13;
-            return _index["default"].createStatus((0, _mapToObject["default"])(requestStatus));
+            return _db["default"].createStatus((0, _mapToObject["default"])(requestStatus));
 
           case 13:
             jsonResponse = new Map([["status", 202], ["statusText", "Processing request..."], ["data", {
@@ -115,7 +115,7 @@ function _scrapeMangaList() {
 
             element = _step.value;
             _context.next = 26;
-            return _index["default"].getEntry(element.get("EntryId"), element.get("EntrySlug"));
+            return _db["default"].getEntry(element.get("EntryId"), element.get("EntrySlug"));
 
           case 26:
             data = _context.sent;
@@ -130,7 +130,7 @@ function _scrapeMangaList() {
 
           case 32:
             _context.next = 34;
-            return _index["default"].createEntry((0, _mapToObject["default"])(element));
+            return _db["default"].createEntry((0, _mapToObject["default"])(element));
 
           case 34:
             _iteratorAbruptCompletion = false;
@@ -182,24 +182,22 @@ function _scrapeMangaList() {
             */
             updatedStatus = new Map([["EntryId", "request-status"], ["EntrySlug", requestId], ["RequestStatus", "completed"], ["FailedItems", Array.from(failedItems)]]);
             _context.next = 56;
-            return _index["default"].updateStatus((0, _mapToObject["default"])(updatedStatus));
+            return _db["default"].updateStatus((0, _mapToObject["default"])(updatedStatus));
 
           case 56:
-            _context.next = 64;
+            _context.next = 63;
             break;
 
           case 58:
             _context.prev = 58;
             _context.t1 = _context["catch"](2);
 
-            _logger["default"].error(_context.t1.message);
-
             _logger["default"].error(_context.t1.stack);
 
             jsonResponse = new Map([["status", 500], ["statusText", _context.t1.message]]);
             return _context.abrupt("return", res.status(500).json((0, _mapToObject["default"])(jsonResponse)));
 
-          case 64:
+          case 63:
           case "end":
             return _context.stop();
         }
@@ -231,7 +229,7 @@ function _scrapeManga() {
             _req$body = req.body, MangaProvider = _req$body.provider, MangaSlug = _req$body.slug;
             _context2.prev = 1;
             _context2.next = 4;
-            return _index["default"].getEntry("manga_".concat(MangaProvider), MangaSlug);
+            return _db["default"].getEntry("manga_".concat(MangaProvider), MangaSlug);
 
           case 4:
             _yield$db$getEntry = _context2.sent;
@@ -272,7 +270,7 @@ function _scrapeManga() {
 
           case 19:
             _context2.next = 21;
-            return _index["default"].updateMangaEntry((0, _mapToObject["default"])(response));
+            return _db["default"].updateMangaEntry((0, _mapToObject["default"])(response));
 
           case 21:
             jsonResponse = new Map([["status", 201], ["statusText", "Created"], ["data", (0, _mapToObject["default"])(response)]]);
@@ -282,14 +280,12 @@ function _scrapeManga() {
             _context2.prev = 25;
             _context2.t0 = _context2["catch"](1);
 
-            _logger["default"].error(_context2.t0.message);
-
             _logger["default"].error(_context2.t0.stack);
 
             jsonResponse = new Map([["status", 500], ["statusText", _context2.t0.message]]);
             return _context2.abrupt("return", res.status(500).json((0, _mapToObject["default"])(jsonResponse)));
 
-          case 31:
+          case 30:
           case "end":
             return _context2.stop();
         }
@@ -321,7 +317,7 @@ function _scrapeChapterList() {
             _req$body2 = req.body, MangaProvider = _req$body2.provider, MangaSlug = _req$body2.slug;
             _context3.prev = 1;
             _context3.next = 4;
-            return _index["default"].getEntry("manga_".concat(MangaProvider), MangaSlug);
+            return _db["default"].getEntry("manga_".concat(MangaProvider), MangaSlug);
 
           case 4:
             _yield$db$getEntry2 = _context3.sent;
@@ -358,7 +354,7 @@ function _scrapeChapterList() {
             requestId = (0, _uuid.v4)();
             requestStatus = new Map([["EntryId", "request-status"], ["EntrySlug", requestId], ["RequestType", "chapter-list_".concat(MangaProvider, "_").concat(MangaSlug)], ["RequestStatus", "pending"]]);
             _context3.next = 19;
-            return _index["default"].createStatus((0, _mapToObject["default"])(requestStatus));
+            return _db["default"].createStatus((0, _mapToObject["default"])(requestStatus));
 
           case 19:
             jsonResponse = new Map([["status", 202], ["statusText", "Processing request..."], ["data", {
@@ -389,7 +385,7 @@ function _scrapeChapterList() {
 
             element = _step2.value;
             _context3.next = 32;
-            return _index["default"].getEntry(element.get("EntryId"), element.get("EntrySlug"));
+            return _db["default"].getEntry(element.get("EntryId"), element.get("EntrySlug"));
 
           case 32:
             data = _context3.sent;
@@ -404,7 +400,7 @@ function _scrapeChapterList() {
 
           case 38:
             _context3.next = 40;
-            return _index["default"].createEntry((0, _mapToObject["default"])(element));
+            return _db["default"].createEntry((0, _mapToObject["default"])(element));
 
           case 40:
             _iteratorAbruptCompletion2 = false;
@@ -456,10 +452,10 @@ function _scrapeChapterList() {
             */
             updatedStatus = new Map([["EntryId", "request-status"], ["EntrySlug", requestId], ["RequestStatus", "completed"], ["FailedItems", Array.from(failedItems)]]);
             _context3.next = 62;
-            return _index["default"].updateStatus((0, _mapToObject["default"])(updatedStatus));
+            return _db["default"].updateStatus((0, _mapToObject["default"])(updatedStatus));
 
           case 62:
-            _context3.next = 70;
+            _context3.next = 69;
             break;
 
           case 64:
@@ -467,14 +463,12 @@ function _scrapeChapterList() {
             _context3.t1 = _context3["catch"](1);
 
             // TODO update status in the database if exist
-            _logger["default"].error(_context3.t1.message);
-
             _logger["default"].error(_context3.t1.stack);
 
             jsonResponse = new Map([["status", 500], ["statusText", _context3.t1.message]]);
             return _context3.abrupt("return", res.status(500).json((0, _mapToObject["default"])(jsonResponse)));
 
-          case 70:
+          case 69:
           case "end":
             return _context3.stop();
         }
@@ -499,7 +493,7 @@ function _scrapeChapter() {
             _req$body3 = req.body, MangaProvider = _req$body3.provider, MangaSlug = _req$body3.manga, ChapterSlug = _req$body3.slug;
             _context4.prev = 1;
             _context4.next = 4;
-            return _index["default"].getEntry("chapter_".concat(MangaProvider, "_").concat(MangaSlug), ChapterSlug);
+            return _db["default"].getEntry("chapter_".concat(MangaProvider, "_").concat(MangaSlug), ChapterSlug);
 
           case 4:
             _yield$db$getEntry3 = _context4.sent;
@@ -540,7 +534,7 @@ function _scrapeChapter() {
 
           case 19:
             _context4.next = 21;
-            return _index["default"].updateChapterEntry((0, _mapToObject["default"])(response));
+            return _db["default"].updateChapterEntry((0, _mapToObject["default"])(response));
 
           case 21:
             jsonResponse = new Map([["status", 201], ["statusText", "Created"], ["data", (0, _mapToObject["default"])(response)]]);
@@ -550,14 +544,12 @@ function _scrapeChapter() {
             _context4.prev = 25;
             _context4.t0 = _context4["catch"](1);
 
-            _logger["default"].error(_context4.t0.message);
-
             _logger["default"].error(_context4.t0.stack);
 
             jsonResponse = new Map([["status", 500], ["statusText", _context4.t0.message]]);
             return _context4.abrupt("return", res.status(500).json((0, _mapToObject["default"])(jsonResponse)));
 
-          case 31:
+          case 30:
           case "end":
             return _context4.stop();
         }

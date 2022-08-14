@@ -11,9 +11,9 @@ var _clientDynamodb = require("@aws-sdk/client-dynamodb");
 
 var _utilDynamodb = require("@aws-sdk/util-dynamodb");
 
-var _index = _interopRequireDefault(require("../configs/index.js"));
+var _index = _interopRequireDefault(require("../configs/index"));
 
-var _logger = _interopRequireDefault(require("../services/logger.js"));
+var _logger = _interopRequireDefault(require("../services/logger"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -70,7 +70,7 @@ function _updateMangaEntry() {
             return _index["default"].send(new _clientDynamodb.UpdateItemCommand(params));
 
           case 5:
-            _context.next = 12;
+            _context.next = 11;
             break;
 
           case 7:
@@ -79,11 +79,9 @@ function _updateMangaEntry() {
 
             _logger["default"].debug("updateMangaEntry fail: ".concat(item["EntrySlug"]));
 
-            _logger["default"].debug(_context.t0.message);
-
             _logger["default"].debug(_context.t0.stack);
 
-          case 12:
+          case 11:
           case "end":
             return _context.stop();
         }
@@ -136,7 +134,7 @@ function _updateChapterEntry() {
             return _index["default"].send(new _clientDynamodb.UpdateItemCommand(params));
 
           case 5:
-            _context2.next = 12;
+            _context2.next = 11;
             break;
 
           case 7:
@@ -145,11 +143,9 @@ function _updateChapterEntry() {
 
             _logger["default"].debug("updateChapterEntry fail: ".concat(item["EntrySlug"]));
 
-            _logger["default"].debug(_context2.t0.message);
-
             _logger["default"].debug(_context2.t0.stack);
 
-          case 12:
+          case 11:
           case "end":
             return _context2.stop();
         }
@@ -196,7 +192,7 @@ function _updateStatus() {
             return _index["default"].send(new _clientDynamodb.UpdateItemCommand(params));
 
           case 5:
-            _context3.next = 12;
+            _context3.next = 11;
             break;
 
           case 7:
@@ -205,11 +201,9 @@ function _updateStatus() {
 
             _logger["default"].debug("updateStatus fail: ".concat(item["EntrySlug"]));
 
-            _logger["default"].debug(_context3.t0.message);
-
             _logger["default"].debug(_context3.t0.stack);
 
-          case 12:
+          case 11:
           case "end":
             return _context3.stop();
         }

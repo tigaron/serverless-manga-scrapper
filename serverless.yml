@@ -15,6 +15,7 @@ provider:
   runtime: nodejs16.x
   region: ${self:custom.defaultRegion}
   stage: ${opt:stage, self:custom.defaultNodeEnv}
+  versionFunctions: false
   environment:
     NODE_ENV: ${opt:stage, self:custom.defaultNodeEnv}
     REGION: ${self:provider.region}
@@ -37,8 +38,10 @@ functions:
     handler: dist-server/bin/lambda.handler
     name: ${opt:stage, self:provider.stage}-scraper
     description: An API to scrape manga data from scanlation's website.
-    memorySize: 1024
-    timeout: 60
+    memorySize: 2048
+    ephemeralStorageSize: 1024
+    timeout: 15
+    logRetentionInDays: 14
     layers:
       - arn:aws:lambda:ap-southeast-1:764866452798:layer:chrome-aws-lambda:31
     url: true

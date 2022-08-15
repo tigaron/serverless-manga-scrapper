@@ -69,6 +69,7 @@ scrapeMangaList() {
 	done
 }
 
+# Scrape manga
 scrapeManga() {
 	mapfile -t providerList < <(fetchProvider | jq -r ".data[]")
 	for x in "${!providerList[@]}"
@@ -83,6 +84,7 @@ scrapeManga() {
 	done
 }
 
+# Scrape chater-list
 scrapeChapterList() {
 	mapfile -t providerList < <(fetchProvider | jq -r ".data[]")
 	for x in "${!providerList[@]}"
@@ -97,6 +99,7 @@ scrapeChapterList() {
 	done
 }
 
+# Scrape chapter
 scrapeChapter() {
 	mapfile -t providerList < <(fetchProvider | jq -r ".data[]")
 	for x in "${!providerList[@]}"

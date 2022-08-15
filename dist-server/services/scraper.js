@@ -172,7 +172,6 @@ function parseChapterList($, mangaProvider) {
 }
 
 function parseChapter($, mangaProvider) {
-  var MangaSlug = $("a", "div.allc").attr("href").split("/").slice(-2).shift().replace(/[\d]*[-]?/, "");
   var ChapterTitle = $("h1.entry-title").text().trim();
   var ChapterShortUrl = $("link[rel='shortlink']").attr("href");
   var ChapterCanonicalUrl = $("link[rel='canonical']").attr("href");
@@ -194,7 +193,14 @@ function parseChapter($, mangaProvider) {
     });
   }
 
-  var Chapter = new Map([["EntryId", "chapter_".concat(mangaProvider, "_").concat(MangaSlug)], ["EntrySlug", ChapterSlug], ["ChapterTitle", ChapterTitle], ["ChapterShortUrl", ChapterShortUrl], ["ChapterCanonicalUrl", ChapterCanonicalUrl], ["ChapterContent", ChapterContent], ["ScrapeDate", timestamp]]);
+  if (!ChapterContent.size) {
+    $("img[class*='size-full']", "div#readerarea").each(function (index, element) {
+      var img = $(element).attr("src");
+      ChapterContent.add(img);
+    });
+  }
+
+  var Chapter = new Map([["EntryId", mangaProvider], ["EntrySlug", ChapterSlug], ["ChapterTitle", ChapterTitle], ["ChapterShortUrl", ChapterShortUrl], ["ChapterCanonicalUrl", ChapterCanonicalUrl], ["ChapterContent", ChapterContent], ["ScrapeDate", timestamp]]);
   return Chapter;
 }
 

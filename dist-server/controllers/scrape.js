@@ -481,7 +481,7 @@ function chapter(_x7, _x8) {
 
 function _chapter() {
   _chapter = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(req, res) {
-    var _req$body3, MangaProvider, MangaSlug, ChapterSlug, jsonResponse, _yield$db$getEntry3, urlString, ChapterContent, response;
+    var _req$body3, MangaProvider, MangaSlug, ChapterSlug, jsonResponse, _yield$db$getEntry3, EntryId, urlString, ChapterContent, response;
 
     return _regeneratorRuntime().wrap(function _callee4$(_context4) {
       while (1) {
@@ -494,51 +494,52 @@ function _chapter() {
 
           case 4:
             _yield$db$getEntry3 = _context4.sent;
+            EntryId = _yield$db$getEntry3.EntryId;
             urlString = _yield$db$getEntry3.ChapterUrl;
             ChapterContent = _yield$db$getEntry3.ChapterContent;
 
             if (!ChapterContent) {
-              _context4.next = 10;
+              _context4.next = 11;
               break;
             }
 
             jsonResponse = new Map([["status", 409], ["statusText", "Already exist in the database: '".concat(ChapterSlug, "'")]]);
             return _context4.abrupt("return", res.status(409).json((0, _mapToObject["default"])(jsonResponse)));
 
-          case 10:
+          case 11:
             if (urlString) {
-              _context4.next = 13;
+              _context4.next = 14;
               break;
             }
 
             jsonResponse = new Map([["status", 404], ["statusText", "Cannot find initial data for '".concat(ChapterSlug, "', try to scrape chapter-list of '").concat(MangaSlug, "' first")]]);
             return _context4.abrupt("return", res.status(404).json((0, _mapToObject["default"])(jsonResponse)));
 
-          case 13:
-            _context4.next = 15;
-            return (0, _scraper["default"])(urlString, "Chapter", MangaProvider);
+          case 14:
+            _context4.next = 16;
+            return (0, _scraper["default"])(urlString, "Chapter", EntryId);
 
-          case 15:
+          case 16:
             response = _context4.sent;
 
             if (!(response.constructor === Error)) {
-              _context4.next = 19;
+              _context4.next = 20;
               break;
             }
 
             jsonResponse = new Map([["status", response.cause], ["statusText", response.message]]);
             return _context4.abrupt("return", res.status(response.cause).json((0, _mapToObject["default"])(jsonResponse)));
 
-          case 19:
-            _context4.next = 21;
+          case 20:
+            _context4.next = 22;
             return _db["default"].updateChapterEntry((0, _mapToObject["default"])(response));
 
-          case 21:
+          case 22:
             jsonResponse = new Map([["status", 201], ["statusText", "Created"], ["data", (0, _mapToObject["default"])(response)]]);
             return _context4.abrupt("return", res.status(201).json((0, _mapToObject["default"])(jsonResponse)));
 
-          case 25:
-            _context4.prev = 25;
+          case 26:
+            _context4.prev = 26;
             _context4.t0 = _context4["catch"](1);
 
             _logger["default"].error(_context4.t0.stack);
@@ -546,12 +547,12 @@ function _chapter() {
             jsonResponse = new Map([["status", 500], ["statusText", _context4.t0.message]]);
             return _context4.abrupt("return", res.status(500).json((0, _mapToObject["default"])(jsonResponse)));
 
-          case 30:
+          case 31:
           case "end":
             return _context4.stop();
         }
       }
-    }, _callee4, null, [[1, 25]]);
+    }, _callee4, null, [[1, 26]]);
   }));
   return _chapter.apply(this, arguments);
 }

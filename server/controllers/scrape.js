@@ -255,7 +255,7 @@ async function chapter(req, res) {
 		Return immediately if other than initial data exist in the database
 		Return immediately if nothing exist in the database
 		*/
-		const { ChapterUrl: urlString, ChapterContent } = await db.getEntry(`chapter_${MangaProvider}_${MangaSlug}`, ChapterSlug);
+		const { EntryId, ChapterUrl: urlString, ChapterContent } = await db.getEntry(`chapter_${MangaProvider}_${MangaSlug}`, ChapterSlug);
 		if (ChapterContent) {
 			jsonResponse = new Map([
 				["status", 409],
@@ -275,7 +275,7 @@ async function chapter(req, res) {
 		Try to scrape manga provider's website
 		Return immediately if error
 		*/
-		const response = await scraper(urlString, "Chapter", MangaProvider);
+		const response = await scraper(urlString, "Chapter", EntryId);
 		if (response.constructor === Error) {
 			jsonResponse = new Map([
 				["status", response.cause],

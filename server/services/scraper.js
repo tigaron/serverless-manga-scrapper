@@ -103,7 +103,6 @@ function parseChapterList($, mangaProvider) {
 }
 
 function parseChapter($, mangaProvider) {
-	const MangaSlug = $("a", "div.allc").attr("href").split("/").slice(-2).shift().replace(/[\d]*[-]?/, "");
 	const ChapterTitle = $("h1.entry-title").text().trim();
 	const ChapterShortUrl = $("link[rel='shortlink']").attr("href");
 	let ChapterCanonicalUrl = $("link[rel='canonical']").attr("href");
@@ -123,8 +122,14 @@ function parseChapter($, mangaProvider) {
 			ChapterContent.add(img);
 		});
 	}
+	if (!ChapterContent.size) {
+		$("img[class*='size-full']", "div#readerarea").each((index, element) => {
+			const img = $(element).attr("src");
+			ChapterContent.add(img);
+		});
+	}
 	const Chapter = new Map([
-		["EntryId", `chapter_${mangaProvider}_${MangaSlug}`],
+		["EntryId", mangaProvider],
 		["EntrySlug", ChapterSlug],
 		["ChapterTitle", ChapterTitle],
 		["ChapterShortUrl", ChapterShortUrl],

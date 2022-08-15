@@ -117,3 +117,5 @@ scrapeChapter() {
 		done
 	done
 }
+
+postChapter "luminous" "king-of-excavation" "tomb-raider-king-chapter-263"

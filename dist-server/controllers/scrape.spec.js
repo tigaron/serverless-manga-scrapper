@@ -657,7 +657,8 @@ describe("Unit test", function () {
               });
               getEntrySpy = _db["default"].getEntry.mockImplementation(function () {
                 return {
-                  ChapterUrl: expectedUrlString
+                  ChapterUrl: expectedUrlString,
+                  EntryId: "chapter_luminous_a-returners-magic-should-be-special"
                 };
               });
               updateChapterEntrySpy = _db["default"].updateChapterEntry.mockImplementation();
@@ -673,7 +674,7 @@ describe("Unit test", function () {
 
             case 7:
               expect(getEntrySpy).toHaveBeenCalledWith("chapter_luminous_a-returners-magic-should-be-special", "a-returners-magic-should-be-special-chapter-1");
-              expect(scraperSpy).toHaveBeenCalledWith(expectedUrlString, "Chapter", "luminous");
+              expect(scraperSpy).toHaveBeenCalledWith(expectedUrlString, "Chapter", "chapter_luminous_a-returners-magic-should-be-special");
               expect(updateChapterEntrySpy).toHaveBeenCalled();
               expect(res.status).toHaveBeenCalledWith(201);
               expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
@@ -699,7 +700,8 @@ describe("Unit test", function () {
               getEntrySpy = _db["default"].getEntry.mockImplementation(function () {
                 return {
                   ChapterUrl: expectedUrlString,
-                  ChapterContent: "This is just a test"
+                  ChapterContent: "This is just a test",
+                  EntryId: "chapter_luminous_a-returners-magic-should-be-special"
                 };
               });
               req = (0, _express.getMockReq)({
@@ -775,7 +777,8 @@ describe("Unit test", function () {
               });
               getEntrySpy = _db["default"].getEntry.mockImplementation(function () {
                 return {
-                  ChapterUrl: expectedUrlString
+                  ChapterUrl: expectedUrlString,
+                  EntryId: "chapter_luminous_a-returners-magic-should-be-special"
                 };
               });
               req = (0, _express.getMockReq)({
@@ -790,7 +793,7 @@ describe("Unit test", function () {
 
             case 6:
               expect(getEntrySpy).toHaveBeenCalledWith("chapter_luminous_a-returners-magic-should-be-special", "a-returners-magic-should-be-special-chapter-1");
-              expect(scraperSpy).toHaveBeenCalledWith(expectedUrlString, "Chapter", "luminous");
+              expect(scraperSpy).toHaveBeenCalledWith(expectedUrlString, "Chapter", "chapter_luminous_a-returners-magic-should-be-special");
               expect(scraperSpy).toHaveReturnedWith(expect.any(Error));
               expect(res.status).toHaveBeenCalledWith(404);
               expect(res.json).toHaveBeenCalledWith(expect.objectContaining({

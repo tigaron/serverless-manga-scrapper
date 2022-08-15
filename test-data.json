@@ -6,8 +6,8 @@
 		"content-type": "application/json"
 	},
 	"body": {
-		"provider": "alpha",
-		"manga": "kanojo-okarishimasu",
-		"slug": "kanojo-okarishimasu-chapter-214"
+		"provider": "flame",
+		"manga": "my-wife-is-a-demon-queen",
+		"slug": "my-wife-is-a-demon-queen-chapter-47"
 	}
 }

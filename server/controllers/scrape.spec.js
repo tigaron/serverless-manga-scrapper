@@ -490,7 +490,8 @@ describe("Unit test", () => {
 			});
 			const getEntrySpy = db.getEntry.mockImplementation(() => {
 				return {
-					ChapterUrl: expectedUrlString
+					ChapterUrl: expectedUrlString,
+					EntryId: "chapter_luminous_a-returners-magic-should-be-special"
 				}
 			});
 			const updateChapterEntrySpy = db.updateChapterEntry.mockImplementation();
@@ -508,7 +509,7 @@ describe("Unit test", () => {
 			expect(scraperSpy).toHaveBeenCalledWith(
 				expectedUrlString,
 				"Chapter",
-				"luminous"
+				"chapter_luminous_a-returners-magic-should-be-special"
 			);
 			expect(updateChapterEntrySpy).toHaveBeenCalled();
 			expect(res.status).toHaveBeenCalledWith(201);
@@ -527,6 +528,7 @@ describe("Unit test", () => {
 				return {
 					ChapterUrl: expectedUrlString,
 					ChapterContent: "This is just a test",
+					EntryId: "chapter_luminous_a-returners-magic-should-be-special"
 				}
 			});
 
@@ -578,6 +580,7 @@ describe("Unit test", () => {
 			const getEntrySpy = db.getEntry.mockImplementation(() => {
 				return {
 					ChapterUrl: expectedUrlString,
+					EntryId: "chapter_luminous_a-returners-magic-should-be-special"
 				}
 			});
 	
@@ -594,7 +597,7 @@ describe("Unit test", () => {
 			expect(scraperSpy).toHaveBeenCalledWith(
 				expectedUrlString,
 				"Chapter",
-				"luminous"
+				"chapter_luminous_a-returners-magic-should-be-special"
 			);
 			expect(scraperSpy).toHaveReturnedWith(expect.any(Error));
 			expect(res.status).toHaveBeenCalledWith(404);

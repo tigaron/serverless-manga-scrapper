@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-url="https://2ggly3lb2rinkob5t5c52ps3yi0dutqy.lambda-url.ap-southeast-1.on.aws"
+url="https://hojsn64cstjnlpdrpn72exvg3a0kmhtx.lambda-url.ap-southeast-1.on.aws"
 
 # OK
 fetchProvider() {
@@ -58,16 +58,59 @@ postChapter() {
 		--data '{ "provider": "'$1'", "manga": "'$2'", "slug": "'$3'" }'
 }
 
-mapfile -t providerList < <(fetchProvider | jq -r ".data[]")
-for x in "${!providerList[@]}"
-do
-postMangaList "${providerList[${x}]}"
-echo
-done
+# Scrape manga-list
+scrapeMangaList() {
+	mapfile -t providerList < <(fetchProvider | jq -r ".data[]")
+	for x in "${!providerList[@]}"
+	do
+	postMangaList "${providerList[${x}]}"
+	sleep 5
+	echo
+	done
+}
 
-# mapfile -t mangaList < <(fetchMangaList "asura" | jq -r ".data.MangaList | keys[]")
-# for x in "${!mangaList[@]}"; do
-# 	mapfile -t chapterList < <(fetchMangaList "asura" | jq -r ".data.MangaList | keys[]")
-# 	postChapterList "asura" "manga" "${mangaList[${x}]}"
-# 	echo
-# done
+scrapeManga() {
+	mapfile -t providerList < <(fetchProvider | jq -r ".data[]")
+	for x in "${!providerList[@]}"
+	do
+		mapfile -t mangaList < <(fetchMangaList "${providerList[${x}]}" | jq -r ".data[].EntrySlug")
+		for y in "${!mangaList[@]}"
+		do
+		postManga "${providerList[${x}]}" "${mangaList[${y}]}"
+		sleep 5
+		echo
+		done
+	done
+}
+
+scrapeChapterList() {
+	mapfile -t providerList < <(fetchProvider | jq -r ".data[]")
+	for x in "${!providerList[@]}"
+	do
+		mapfile -t mangaList < <(fetchMangaList "${providerList[${x}]}" | jq -r ".data[].EntrySlug")
+		for y in "${!mangaList[@]}"
+		do
+		postChapterList "${providerList[${x}]}" "${mangaList[${y}]}"
+		sleep 5
+		echo
+		done
+	done
+}
+
+scrapeChapter() {
+	mapfile -t providerList < <(fetchProvider | jq -r ".data[]")
+	for x in "${!providerList[@]}"
+	do
+		mapfile -t mangaList < <(fetchMangaList "${providerList[${x}]}" | jq -r ".data[].EntrySlug")
+		for y in "${!mangaList[@]}"
+		do
+			mapfile -t chapterList < <(fetchChapterList "${providerList[${x}]}" "${mangaList[${y}]}" | jq -r ".data[].EntrySlug")
+			for z in "${!chapterList[@]}"
+			do
+				postChapter "${providerList[${x}]}" "${mangaList[${y}]}" "${chapterList[${z}]}"
+				sleep 3
+				echo
+			done
+		done
+	done
+}

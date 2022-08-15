@@ -1,5 +1,12 @@
 {
 	"resource": "/",
-	"path": "/fetch/chapter/luminous/a-returners-magic-should-be-special/a-returners-magic-should-be-special-chapter-1",
-	"httpMethod": "GET"
+	"path": "/scrape/chapter-list",
+	"httpMethod": "POST",
+	"headers": {
+		"content-type": "application/json"
+	},
+	"body": {
+		"provider": "realm",
+		"slug": "weak-teacher"
+	}
 }

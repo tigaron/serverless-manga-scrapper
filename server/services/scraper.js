@@ -83,9 +83,8 @@ function parseChapterList($, mangaProvider) {
 	const MangaSlug = $("link[rel='canonical']").attr("href").split("/").slice(-2).shift().replace(/[\d]*[-]?/, "");
 	const ChapterList = new Set();
 	$("a", "div.eplister").each((index, element) => {
-		const ChapterNumber = $("span.chapternum", element).text().includes("\n")
-			? $("span.chapternum", element).text().trim().split("\n").slice(-2).join(" ")
-			: $("span.chapternum", element).text().trim();
+		let ChapterNumber = $("span.chapternum", element).text().trim();
+		if(ChapterNumber.includes("\n")) ChapterNumber = ChapterNumber.split("\n").slice(-2).join(" ");
 		const ChapterDate = $("span.chapterdate", element).text().trim();
 		const ChapterUrl = $(element).attr("href");
 		const ChapterSlug = ChapterUrl.split("/").slice(-2).shift().replace(/[\d]*[-]?/, "");
@@ -107,7 +106,8 @@ function parseChapter($, mangaProvider) {
 	const MangaSlug = $("a", "div.allc").attr("href").split("/").slice(-2).shift().replace(/[\d]*[-]?/, "");
 	const ChapterTitle = $("h1.entry-title").text().trim();
 	const ChapterShortUrl = $("link[rel='shortlink']").attr("href");
-	const ChapterCanonicalUrl = $("link[rel='canonical']").attr("href");
+	let ChapterCanonicalUrl = $("link[rel='canonical']").attr("href");
+	if (!ChapterCanonicalUrl) ChapterCanonicalUrl = $("meta[property='og:url']").attr("content");
 	const ChapterSlug = ChapterCanonicalUrl.split("/").slice(-2).shift().replace(/[\d]*[-]?/, "");
 	const timestamp = new Date().toUTCString();
 	const ChapterContent = new Set();

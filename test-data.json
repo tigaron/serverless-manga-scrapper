@@ -1,12 +1,13 @@
 {
 	"resource": "/",
-	"path": "/scrape/chapter-list",
+	"path": "/scrape/chapter",
 	"httpMethod": "POST",
 	"headers": {
 		"content-type": "application/json"
 	},
 	"body": {
-		"provider": "realm",
-		"slug": "weak-teacher"
+		"provider": "alpha",
+		"manga": "kanojo-okarishimasu",
+		"slug": "kanojo-okarishimasu-chapter-214"
 	}
 }

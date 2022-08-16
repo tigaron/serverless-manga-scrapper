@@ -115,6 +115,8 @@ function _updateChapterEntry() {
                 "#CT": "ChapterTitle",
                 "#CS": "ChapterShortUrl",
                 "#CU": "ChapterCanonicalUrl",
+                "#PS": "ChapterPrevSlug",
+                "#NS": "ChapterNextSlug",
                 "#CC": "ChapterContent",
                 "#SD": "ScrapeDate"
               },
@@ -122,12 +124,14 @@ function _updateChapterEntry() {
                 ":ct": (0, _utilDynamodb.marshall)(item["ChapterTitle"]),
                 ":cs": (0, _utilDynamodb.marshall)(item["ChapterShortUrl"]),
                 ":cu": (0, _utilDynamodb.marshall)(item["ChapterCanonicalUrl"]),
+                ":ps": (0, _utilDynamodb.marshall)(item["ChapterPrevSlug"]),
+                ":ns": (0, _utilDynamodb.marshall)(item["ChapterNextSlug"]),
                 ":cc": {
                   L: (0, _utilDynamodb.marshall)(Array.from(item["ChapterContent"]))
                 },
                 ":sd": (0, _utilDynamodb.marshall)(item["ScrapeDate"])
               },
-              UpdateExpression: "SET #CT = :ct, #CS = :cs, #CU = :cu, #CC = :cc, #SD = :sd"
+              UpdateExpression: "SET #CT = :ct, #CS = :cs, #CU = :cu, #PS = :ps, #NS = :ns, #CC = :cc, #SD = :sd"
             };
             _context2.prev = 2;
             _context2.next = 5;
@@ -177,15 +181,19 @@ function _updateStatus() {
               },
               ExpressionAttributeNames: {
                 "#RS": "RequestStatus",
+                "#CI": "CompletedItems",
                 "#FI": "FailedItems"
               },
               ExpressionAttributeValues: {
                 ":rs": (0, _utilDynamodb.marshall)(item["RequestStatus"]),
+                ":ci": {
+                  L: (0, _utilDynamodb.marshall)(item["CompletedItems"])
+                },
                 ":fi": {
                   L: (0, _utilDynamodb.marshall)(item["FailedItems"])
                 }
               },
-              UpdateExpression: "SET #RS = :rs, #FI = :fi"
+              UpdateExpression: "SET #RS = :rs, #CI = :ci, #FI = :fi"
             };
             _context3.prev = 2;
             _context3.next = 5;

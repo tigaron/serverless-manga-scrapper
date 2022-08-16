@@ -81,24 +81,30 @@ describe("Unit test", () => {
 		const $ = cheerio.load(`
 			<link rel="canonical" href="https://flamescans.org/series/the-ancient-sovereign-of-eternity/" />
 			<div class="eplister" id="chapterlist">
+			<li data-num="116">
 				<a href="https://flamescans.org/the-ancient-sovereign-of-eternity-chapter-116/">
 				<span class="chapternum">
 					Chapter
 					116</span>
 				<span class="chapterdate">August 9, 2022</span>
 				</a>
+				</li>
+				<li data-num="115">
 				<a href="https://flamescans.org/the-ancient-sovereign-of-eternity-chapter-115/">
 					<span class="chapternum">
 						Chapter
 						115</span>
 					<span class="chapterdate">August 9, 2022</span>
 				</a>
+				</li>
+				<li data-num="114">
 				<a href="https://flamescans.org/the-ancient-sovereign-of-eternity-chapter-114/">
 					<span class="chapternum">
 						Chapter
 						114</span>
 					<span class="chapterdate">August 2, 2022</span>
 				</a>
+				</li>
 			</div>
 			`);
 		const result = scraperService.parseChapterList($, "flame");
@@ -120,18 +126,24 @@ describe("Unit test", () => {
 		const $ = cheerio.load(`
 			<link rel="canonical" href="https://www.asurascans.com/comics/chronicles-of-the-martial-gods-return/" />
 			<div class="eplister" id="chapterlist">
+			<li data-num="29">
 				<a href="https://www.asurascans.com/chronicles-of-the-martial-gods-return-chapter-29/">
 					<span class="chapternum">Chapter 29</span>
 					<span class="chapterdate">August 3, 2022</span>
 				</a>
+				</li>
+				<li data-num="28">
 				<a href="https://www.asurascans.com/chronicles-of-the-martial-gods-return-chapter-28/">
 					<span class="chapternum">Chapter 28</span>
 					<span class="chapterdate">July 27, 2022</span>
 				</a>
+				</li>
+				<li data-num="27">
 				<a href="https://www.asurascans.com/chronicles-of-the-martial-gods-return-chapter-27-2/">
 					<span class="chapternum">Chapter 27</span>
 					<span class="chapterdate">July 19, 2022</span>
 				</a>
+				</li>
 			</div>
 			`);
 		const result = scraperService.parseChapterList($, "asura");
@@ -168,6 +180,10 @@ describe("Unit test", () => {
 					</p>
 				</noscript>
 			</div>
+			<script>asu1</script>
+			<script>asu2</script>
+			<script>asu3</script>
+			<script>ts_reader.run({"post_id":62671,"noimagehtml":"<center><h4>NO IMAGE YET<\/h4><\/center>","prevUrl":"https:\/\/realmscans.com\/infinite-level-up-in-murim-chapter-124\/","nextUrl":"","mode":"full","sources":[{"source":"Server 1","images":["http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-chapter-124-0.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-1.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-chapter-125-2-2.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-3.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-4.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-5.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-6.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-7.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-8.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-9.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-10.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-11.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-12.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-13.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-14.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-15.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-16.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-17.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-18.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-19.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-20.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-21.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-22.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-23.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-24.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-25.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-26.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-27.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-28.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-29.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-30.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-31.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-32.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-33.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-34.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-35.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-36.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-37.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-38.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-39.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-40.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-41.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-42.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-43.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-44.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-45.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-46.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-47.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-48.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-49.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-50.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-51.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-52.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-53.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-54.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-55.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-56.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-57.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-58.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-59.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-60.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-61.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-62.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-63.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-64.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-65.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-66.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-67.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-68.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-69.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-70.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-71.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-72.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-73.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-74.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-75.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-76.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-77.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-78.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-79.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-80.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-81.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-82.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-83.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-84.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-85.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-86.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-87.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-88.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-89.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-90.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-91.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-92.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-93.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-94.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-95.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-96.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-97.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-98.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-99.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-100.webp","http:\/\/rwmert.space\/wp-content\/uploads\/2022\/08\/infinite-level-up-in-murim-manga-chapter-125-101.webp"]}],"lazyload":true,"defaultSource":"Server 1","lazyloadPlaceHolder":"\/\/fdn.realmscans.com\/wp-content\/themes\/mangareader\/assets\/img\/readerarea.svg","progressBar":false,"contentmode":"advanced","protected":false,"is_novel":false,"unlock_token":null});</script>
 			`);
 		const result = scraperService.parseChapter($, "realm");
 		expect(result).toBeInstanceOf(Map);
@@ -201,6 +217,10 @@ describe("Unit test", () => {
 					<img loading="lazy" src="https://www.asurascans.com/wp-content/uploads/2022/07/02-219.jpg" alt="" width="800" height="12222" class="alignnone size-medium wp-image-113779" />
 				</p>
 			</div>
+			<script>asu1</script>
+			<script>asu2</script>
+			<script>asu3</script>
+			<script>ts_reader.run({"noimagehtml":"<h2>NO IMAGE YET<\/h2>","prevUrl":"https:\/\/luminousscans.com\/69420-avant-garde-covert-agent-phantom-blade-master-chapter-12\/","nextUrl":"https:\/\/luminousscans.com\/69420-avant-garde-covert-agent-phantom-blade-master-chapter-14\/","mode":"full","sources":[{"source":"Server 1","images":["https:\/\/luminousscans.com\/wp-content\/uploads\/2022\/01\/01-21.jpg","https:\/\/luminousscans.com\/wp-content\/uploads\/2022\/01\/02-21.jpg","https:\/\/luminousscans.com\/wp-content\/uploads\/2022\/01\/03-20.jpg","https:\/\/luminousscans.com\/wp-content\/uploads\/2022\/01\/04-20.jpg","https:\/\/luminousscans.com\/wp-content\/uploads\/2022\/01\/05-17.jpg","https:\/\/www.luminousscans.com\/wp-content\/uploads\/2021\/06\/13.png"]}],"lazyload":false,"defaultSource":"Server 1","lazyloadPlaceHolder":"https:\/\/luminousscans.com\/wp-content\/themes\/mangareader\/assets\/img\/readerarea.svg","progressBar":true,"contentmode":"minimal"});</script>
 			`);
 		const result = scraperService.parseChapter($, "asura");
 		expect(result).toBeInstanceOf(Map);

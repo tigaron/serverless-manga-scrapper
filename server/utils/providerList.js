@@ -3,6 +3,7 @@ const providerList = new Map([
 	["asura", "https://www.asurascans.com/manga/list-mode/"],
 	["flame", "https://flamescans.org/series/list-mode/"],
 	["luminous", "https://luminousscans.com/series/list-mode/"],
+	["omega", "https://omegascans.org/manga/list-mode/"],
 	["realm", "https://realmscans.com/series/list-mode/"],
 ]);
 

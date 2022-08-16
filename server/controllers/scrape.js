@@ -52,6 +52,7 @@ async function mangaList(req, res) {
 		Add each element of scraped manga list to database
 		Skip if already exist in the database
 		*/
+		const completedItems = new Set();
 		const failedItems = new Set();
 		for await (const element of response) {
 			const data = await db.getEntry(element.get("EntryId"), element.get("EntrySlug"));
@@ -60,6 +61,7 @@ async function mangaList(req, res) {
 				continue;
 			} else {
 				await db.createEntry(mapToObject(element));
+				completedItems.add(`${element.get("EntrySlug")}`);
 			}
 		}
 
@@ -71,6 +73,7 @@ async function mangaList(req, res) {
 			["EntryId", "request-status"],
 			["EntrySlug", requestId],
 			["RequestStatus", "completed"],
+			["CompletedItems", Array.from(completedItems)],
 			["FailedItems", Array.from(failedItems)],
 		]);
 		await db.updateStatus(mapToObject(updatedStatus));
@@ -207,6 +210,7 @@ async function chapterList(req, res) {
 		Add each element of scraped chapter list to database
 		Skip if already exist in the database
 		*/
+		const completedItems = new Set();
 		const failedItems = new Set();
 		for await (const element of response) {
 			const data = await db.getEntry(element.get("EntryId"), element.get("EntrySlug"));
@@ -215,6 +219,7 @@ async function chapterList(req, res) {
 				continue;
 			} else {
 				await db.createEntry(mapToObject(element));
+				completedItems.add(`${element.get("EntrySlug")}`);
 			}
 		}
 
@@ -226,6 +231,7 @@ async function chapterList(req, res) {
 			["EntryId", "request-status"],
 			["EntrySlug", requestId],
 			["RequestStatus", "completed"],
+			["CompletedItems", Array.from(completedItems)],
 			["FailedItems", Array.from(failedItems)],
 		]);
 		await db.updateStatus(mapToObject(updatedStatus));

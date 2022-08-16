@@ -50,7 +50,7 @@ body: { provider: "asura", slug: "damn-reincarnation" }
 
 function _mangaList() {
   _mangaList = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(req, res) {
-    var MangaProvider, urlString, jsonResponse, response, requestId, requestStatus, failedItems, _iteratorAbruptCompletion, _didIteratorError, _iteratorError, _iterator, _step, element, data, updatedStatus;
+    var MangaProvider, urlString, jsonResponse, response, requestId, requestStatus, completedItems, failedItems, _iteratorAbruptCompletion, _didIteratorError, _iteratorError, _iterator, _step, element, data, updatedStatus;
 
     return _regeneratorRuntime().wrap(function _callee$(_context) {
       while (1) {
@@ -94,99 +94,103 @@ function _mangaList() {
             Skip if already exist in the database
             */
 
+            completedItems = new Set();
             failedItems = new Set();
             _iteratorAbruptCompletion = false;
             _didIteratorError = false;
-            _context.prev = 18;
+            _context.prev = 19;
             _iterator = _asyncIterator(response);
 
-          case 20:
-            _context.next = 22;
+          case 21:
+            _context.next = 23;
             return _iterator.next();
 
-          case 22:
+          case 23:
             if (!(_iteratorAbruptCompletion = !(_step = _context.sent).done)) {
-              _context.next = 37;
+              _context.next = 39;
               break;
             }
 
             element = _step.value;
-            _context.next = 26;
+            _context.next = 27;
             return _db["default"].getEntry(element.get("EntryId"), element.get("EntrySlug"));
 
-          case 26:
+          case 27:
             data = _context.sent;
 
             if (!data) {
-              _context.next = 32;
+              _context.next = 33;
               break;
             }
 
             failedItems.add("Already exist in the database: '".concat(element.get("EntrySlug"), "'"));
-            return _context.abrupt("continue", 34);
+            return _context.abrupt("continue", 36);
 
-          case 32:
-            _context.next = 34;
+          case 33:
+            _context.next = 35;
             return _db["default"].createEntry((0, _mapToObject["default"])(element));
 
-          case 34:
-            _iteratorAbruptCompletion = false;
-            _context.next = 20;
-            break;
+          case 35:
+            completedItems.add("".concat(element.get("EntrySlug")));
 
-          case 37:
-            _context.next = 43;
+          case 36:
+            _iteratorAbruptCompletion = false;
+            _context.next = 21;
             break;
 
           case 39:
-            _context.prev = 39;
-            _context.t0 = _context["catch"](18);
+            _context.next = 45;
+            break;
+
+          case 41:
+            _context.prev = 41;
+            _context.t0 = _context["catch"](19);
             _didIteratorError = true;
             _iteratorError = _context.t0;
 
-          case 43:
-            _context.prev = 43;
-            _context.prev = 44;
+          case 45:
+            _context.prev = 45;
+            _context.prev = 46;
 
             if (!(_iteratorAbruptCompletion && _iterator["return"] != null)) {
-              _context.next = 48;
+              _context.next = 50;
               break;
             }
 
-            _context.next = 48;
+            _context.next = 50;
             return _iterator["return"]();
 
-          case 48:
-            _context.prev = 48;
+          case 50:
+            _context.prev = 50;
 
             if (!_didIteratorError) {
-              _context.next = 51;
+              _context.next = 53;
               break;
             }
 
             throw _iteratorError;
 
-          case 51:
-            return _context.finish(48);
-
-          case 52:
-            return _context.finish(43);
-
           case 53:
+            return _context.finish(50);
+
+          case 54:
+            return _context.finish(45);
+
+          case 55:
             /*
             Update request status in the database
             Add information of skipped item if any
             */
-            updatedStatus = new Map([["EntryId", "request-status"], ["EntrySlug", requestId], ["RequestStatus", "completed"], ["FailedItems", Array.from(failedItems)]]);
-            _context.next = 56;
+            updatedStatus = new Map([["EntryId", "request-status"], ["EntrySlug", requestId], ["RequestStatus", "completed"], ["CompletedItems", Array.from(completedItems)], ["FailedItems", Array.from(failedItems)]]);
+            _context.next = 58;
             return _db["default"].updateStatus((0, _mapToObject["default"])(updatedStatus));
 
-          case 56:
-            _context.next = 63;
+          case 58:
+            _context.next = 65;
             break;
 
-          case 58:
-            _context.prev = 58;
+          case 60:
+            _context.prev = 60;
             _context.t1 = _context["catch"](2);
 
             _logger["default"].error(_context.t1.stack);
@@ -194,12 +198,12 @@ function _mangaList() {
             jsonResponse = new Map([["status", 500], ["statusText", _context.t1.message]]);
             return _context.abrupt("return", res.status(500).json((0, _mapToObject["default"])(jsonResponse)));
 
-          case 63:
+          case 65:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee, null, [[2, 58], [18, 39, 43, 53], [44,, 48, 52]]);
+    }, _callee, null, [[2, 60], [19, 41, 45, 55], [46,, 50, 54]]);
   }));
   return _mangaList.apply(this, arguments);
 }
@@ -305,7 +309,7 @@ body: { provider: "asura", manga: "damn-reincarnation", slug: "damn-reincarnatio
 
 function _chapterList() {
   _chapterList = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3(req, res) {
-    var _req$body2, MangaProvider, MangaSlug, jsonResponse, _yield$db$getEntry2, urlString, response, requestId, requestStatus, failedItems, _iteratorAbruptCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, element, data, updatedStatus;
+    var _req$body2, MangaProvider, MangaSlug, jsonResponse, _yield$db$getEntry2, urlString, response, requestId, requestStatus, completedItems, failedItems, _iteratorAbruptCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, element, data, updatedStatus;
 
     return _regeneratorRuntime().wrap(function _callee3$(_context3) {
       while (1) {
@@ -364,99 +368,103 @@ function _chapterList() {
             Skip if already exist in the database
             */
 
+            completedItems = new Set();
             failedItems = new Set();
             _iteratorAbruptCompletion2 = false;
             _didIteratorError2 = false;
-            _context3.prev = 24;
+            _context3.prev = 25;
             _iterator2 = _asyncIterator(response);
 
-          case 26:
-            _context3.next = 28;
+          case 27:
+            _context3.next = 29;
             return _iterator2.next();
 
-          case 28:
+          case 29:
             if (!(_iteratorAbruptCompletion2 = !(_step2 = _context3.sent).done)) {
-              _context3.next = 43;
+              _context3.next = 45;
               break;
             }
 
             element = _step2.value;
-            _context3.next = 32;
+            _context3.next = 33;
             return _db["default"].getEntry(element.get("EntryId"), element.get("EntrySlug"));
 
-          case 32:
+          case 33:
             data = _context3.sent;
 
             if (!data) {
-              _context3.next = 38;
+              _context3.next = 39;
               break;
             }
 
             failedItems.add("Already exist in the database: '".concat(element.get("EntrySlug"), "'"));
-            return _context3.abrupt("continue", 40);
+            return _context3.abrupt("continue", 42);
 
-          case 38:
-            _context3.next = 40;
+          case 39:
+            _context3.next = 41;
             return _db["default"].createEntry((0, _mapToObject["default"])(element));
 
-          case 40:
-            _iteratorAbruptCompletion2 = false;
-            _context3.next = 26;
-            break;
+          case 41:
+            completedItems.add("".concat(element.get("EntrySlug")));
 
-          case 43:
-            _context3.next = 49;
+          case 42:
+            _iteratorAbruptCompletion2 = false;
+            _context3.next = 27;
             break;
 
           case 45:
-            _context3.prev = 45;
-            _context3.t0 = _context3["catch"](24);
+            _context3.next = 51;
+            break;
+
+          case 47:
+            _context3.prev = 47;
+            _context3.t0 = _context3["catch"](25);
             _didIteratorError2 = true;
             _iteratorError2 = _context3.t0;
 
-          case 49:
-            _context3.prev = 49;
-            _context3.prev = 50;
+          case 51:
+            _context3.prev = 51;
+            _context3.prev = 52;
 
             if (!(_iteratorAbruptCompletion2 && _iterator2["return"] != null)) {
-              _context3.next = 54;
+              _context3.next = 56;
               break;
             }
 
-            _context3.next = 54;
+            _context3.next = 56;
             return _iterator2["return"]();
 
-          case 54:
-            _context3.prev = 54;
+          case 56:
+            _context3.prev = 56;
 
             if (!_didIteratorError2) {
-              _context3.next = 57;
+              _context3.next = 59;
               break;
             }
 
             throw _iteratorError2;
 
-          case 57:
-            return _context3.finish(54);
-
-          case 58:
-            return _context3.finish(49);
-
           case 59:
+            return _context3.finish(56);
+
+          case 60:
+            return _context3.finish(51);
+
+          case 61:
             /*
             Update request status in the database
             Add information of skipped item if any
             */
-            updatedStatus = new Map([["EntryId", "request-status"], ["EntrySlug", requestId], ["RequestStatus", "completed"], ["FailedItems", Array.from(failedItems)]]);
-            _context3.next = 62;
+            updatedStatus = new Map([["EntryId", "request-status"], ["EntrySlug", requestId], ["RequestStatus", "completed"], ["CompletedItems", Array.from(completedItems)], ["FailedItems", Array.from(failedItems)]]);
+            _context3.next = 64;
             return _db["default"].updateStatus((0, _mapToObject["default"])(updatedStatus));
 
-          case 62:
-            _context3.next = 69;
+          case 64:
+            _context3.next = 71;
             break;
 
-          case 64:
-            _context3.prev = 64;
+          case 66:
+            _context3.prev = 66;
             _context3.t1 = _context3["catch"](1);
 
             // TODO update status in the database if exist
@@ -465,12 +473,12 @@ function _chapterList() {
             jsonResponse = new Map([["status", 500], ["statusText", _context3.t1.message]]);
             return _context3.abrupt("return", res.status(500).json((0, _mapToObject["default"])(jsonResponse)));
 
-          case 69:
+          case 71:
           case "end":
             return _context3.stop();
         }
       }
-    }, _callee3, null, [[1, 64], [24, 45, 49, 59], [50,, 54, 58]]);
+    }, _callee3, null, [[1, 66], [25, 47, 51, 61], [52,, 56, 60]]);
   }));
   return _chapterList.apply(this, arguments);
 }

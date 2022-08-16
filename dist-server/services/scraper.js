@@ -162,10 +162,11 @@ function parseChapterList($, mangaProvider) {
     var ChapterNumber = $("span.chapternum", element).text().trim();
     if (ChapterNumber.includes("\n")) ChapterNumber = ChapterNumber.split("\n").slice(-2).join(" ");
     var ChapterDate = $("span.chapterdate", element).text().trim();
+    var ChapterOrder = $(element).parent().data("num");
     var ChapterUrl = $(element).attr("href");
     var ChapterSlug = ChapterUrl.split("/").slice(-2).shift().replace(/[\d]*[-]?/, "");
     var timestamp = new Date().toUTCString();
-    var Chapter = new Map([["EntryId", "chapter_".concat(mangaProvider, "_").concat(MangaSlug)], ["EntrySlug", ChapterSlug], ["ChapterNumber", ChapterNumber], ["ChapterUrl", ChapterUrl], ["ChapterDate", ChapterDate], ["ScrapeDate", timestamp]]);
+    var Chapter = new Map([["EntryId", "chapter_".concat(mangaProvider, "_").concat(MangaSlug)], ["EntrySlug", ChapterSlug], ["ChapterOrder", ChapterOrder], ["ChapterNumber", ChapterNumber], ["ChapterUrl", ChapterUrl], ["ChapterDate", ChapterDate], ["ScrapeDate", timestamp]]);
     ChapterList.add(Chapter);
   });
   return ChapterList;
@@ -177,6 +178,9 @@ function parseChapter($, mangaProvider) {
   var ChapterCanonicalUrl = $("link[rel='canonical']").attr("href");
   if (!ChapterCanonicalUrl) ChapterCanonicalUrl = $("meta[property='og:url']").attr("content");
   var ChapterSlug = ChapterCanonicalUrl.split("/").slice(-2).shift().replace(/[\d]*[-]?/, "");
+  var navScript = $("script:contains('ts_reader.run')").contents().text();
+  var ChapterPrevSlug = navScript.match(/"prevUrl":"(.*?)"/)[1].split("/").slice(-2).shift().replace(/[\d]*[-]?/, "").replace(/\\/, "");
+  var ChapterNextSlug = navScript.match(/"nextUrl":"(.*?)"/)[1].split("/").slice(-2).shift().replace(/[\d]*[-]?/, "").replace(/\\/, "");
   var timestamp = new Date().toUTCString();
   var ChapterContent = new Set();
 
@@ -200,7 +204,7 @@ function parseChapter($, mangaProvider) {
     });
   }
 
-  var Chapter = new Map([["EntryId", mangaProvider], ["EntrySlug", ChapterSlug], ["ChapterTitle", ChapterTitle], ["ChapterShortUrl", ChapterShortUrl], ["ChapterCanonicalUrl", ChapterCanonicalUrl], ["ChapterContent", ChapterContent], ["ScrapeDate", timestamp]]);
+  var Chapter = new Map([["EntryId", mangaProvider], ["EntrySlug", ChapterSlug], ["ChapterTitle", ChapterTitle], ["ChapterShortUrl", ChapterShortUrl], ["ChapterCanonicalUrl", ChapterCanonicalUrl], ["ChapterPrevSlug", ChapterPrevSlug], ["ChapterNextSlug", ChapterNextSlug], ["ChapterContent", ChapterContent], ["ScrapeDate", timestamp]]);
   return Chapter;
 }
 

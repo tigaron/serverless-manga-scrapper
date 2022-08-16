@@ -86,12 +86,14 @@ function parseChapterList($, mangaProvider) {
 		let ChapterNumber = $("span.chapternum", element).text().trim();
 		if(ChapterNumber.includes("\n")) ChapterNumber = ChapterNumber.split("\n").slice(-2).join(" ");
 		const ChapterDate = $("span.chapterdate", element).text().trim();
+		const ChapterOrder = $(element).parent().data("num");
 		const ChapterUrl = $(element).attr("href");
 		const ChapterSlug = ChapterUrl.split("/").slice(-2).shift().replace(/[\d]*[-]?/, "");
 		const timestamp = new Date().toUTCString();
 		const Chapter = new Map([
 			["EntryId", `chapter_${mangaProvider}_${MangaSlug}`],
 			["EntrySlug", ChapterSlug],
+			["ChapterOrder", ChapterOrder],
 			["ChapterNumber", ChapterNumber],
 			["ChapterUrl", ChapterUrl],
 			["ChapterDate", ChapterDate],
@@ -108,6 +110,9 @@ function parseChapter($, mangaProvider) {
 	let ChapterCanonicalUrl = $("link[rel='canonical']").attr("href");
 	if (!ChapterCanonicalUrl) ChapterCanonicalUrl = $("meta[property='og:url']").attr("content");
 	const ChapterSlug = ChapterCanonicalUrl.split("/").slice(-2).shift().replace(/[\d]*[-]?/, "");
+	const navScript = $("script:contains('ts_reader.run')").contents().text();
+	const ChapterPrevSlug = navScript.match(/"prevUrl":"(.*?)"/)[1].split("/").slice(-2).shift().replace(/[\d]*[-]?/, "").replace(/\\/, "");
+	const ChapterNextSlug = navScript.match(/"nextUrl":"(.*?)"/)[1].split("/").slice(-2).shift().replace(/[\d]*[-]?/, "").replace(/\\/, "");
 	const timestamp = new Date().toUTCString();
 	const ChapterContent = new Set();
 	if (mangaProvider === "realm") {
@@ -134,6 +139,8 @@ function parseChapter($, mangaProvider) {
 		["ChapterTitle", ChapterTitle],
 		["ChapterShortUrl", ChapterShortUrl],
 		["ChapterCanonicalUrl", ChapterCanonicalUrl],
+		["ChapterPrevSlug", ChapterPrevSlug],
+		["ChapterNextSlug", ChapterNextSlug],
 		["ChapterContent", ChapterContent],
 		["ScrapeDate", timestamp],
 	]);

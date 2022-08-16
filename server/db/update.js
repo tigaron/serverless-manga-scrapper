@@ -49,6 +49,8 @@ async function updateChapterEntry(item, tableName = TABLE_MANGA) {
 			"#CT": "ChapterTitle",
 			"#CS": "ChapterShortUrl",
 			"#CU": "ChapterCanonicalUrl",
+			"#PS": "ChapterPrevSlug",
+			"#NS": "ChapterNextSlug",
 			"#CC": "ChapterContent",
 			"#SD": "ScrapeDate",
 		},
@@ -56,12 +58,14 @@ async function updateChapterEntry(item, tableName = TABLE_MANGA) {
 			":ct": marshall(item["ChapterTitle"]),
 			":cs": marshall(item["ChapterShortUrl"]),
 			":cu": marshall(item["ChapterCanonicalUrl"]),
+			":ps": marshall(item["ChapterPrevSlug"]),
+			":ns": marshall(item["ChapterNextSlug"]),
 			":cc": {
 				L: marshall(Array.from(item["ChapterContent"]))
 			},
 			":sd": marshall(item["ScrapeDate"]),
 		},
-		UpdateExpression: "SET #CT = :ct, #CS = :cs, #CU = :cu, #CC = :cc, #SD = :sd",
+		UpdateExpression: "SET #CT = :ct, #CS = :cs, #CU = :cu, #PS = :ps, #NS = :ns, #CC = :cc, #SD = :sd",
 	};
 	try {
 		await dbclient.send(new UpdateItemCommand(params));
@@ -80,15 +84,19 @@ async function updateStatus(item, tableName = TABLE_MANGA) {
 		},
 		ExpressionAttributeNames: {
 			"#RS": "RequestStatus",
+			"#CI": "CompletedItems",
 			"#FI": "FailedItems",
 		},
 		ExpressionAttributeValues: {
 			":rs": marshall(item["RequestStatus"]),
+			":ci": {
+				L: marshall(item["CompletedItems"]),
+			},
 			":fi": {
 				L: marshall(item["FailedItems"]),
 			},
 		},
-		UpdateExpression: "SET #RS = :rs, #FI = :fi",
+		UpdateExpression: "SET #RS = :rs, #CI = :ci, #FI = :fi",
 	};
 	try {
 		await dbclient.send(new UpdateItemCommand(params));

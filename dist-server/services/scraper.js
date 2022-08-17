@@ -146,6 +146,7 @@ function parseMangaList($, mangaProvider) {
 function parseManga($, mangaProvider) {
   var MangaTitle = $("h1.entry-title").text().trim();
   var MangaSynopsis = $("p", "div.entry-content").text();
+  if (!MangaSynopsis) MangaSynopsis = $("div.entry-content").contents().text();
   var MangaCover = $("img", "div.thumb").attr("src");
   var MangaShortUrl = $("link[rel='shortlink']").attr("href");
   var MangaCanonicalUrl = $("link[rel='canonical']").attr("href");

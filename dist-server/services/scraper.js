@@ -163,7 +163,7 @@ function parseChapterList($, mangaProvider) {
     var ChapterNumber = $("span.chapternum", element).text().trim();
     if (ChapterNumber.includes("\n")) ChapterNumber = ChapterNumber.split("\n").slice(-2).join(" ");
     var ChapterDate = $("span.chapterdate", element).text().trim();
-    var ChapterOrder = $(element).parent().data("num");
+    var ChapterOrder = $(element).parents("li").data("num");
     var ChapterUrl = $(element).attr("href");
     var ChapterSlug = ChapterUrl.split("/").slice(-2).shift().replace(/[\d]*[-]?/, "");
     var timestamp = new Date().toUTCString();

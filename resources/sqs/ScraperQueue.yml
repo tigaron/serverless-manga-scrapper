@@ -1,0 +1,9 @@
+Resources:
+  ScraperQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      DelaySeconds: 0
+      MaximumMessageSize: 262144
+      MessageRetentionPeriod: 345600
+      QueueName: ${self:custom.${self:provider.stage}.Stack}-scraperQueue-${self:provider.stage}
+      VisibilityTimeout: 30

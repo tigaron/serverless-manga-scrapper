@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.160.0",
+    "@aws-sdk/util-dynamodb": "^3.160.0",
+    "cheerio": "^1.0.0-rc.12",
+    "log4js": "^6.6.1",
+    "puppeteer-core": "^15.5.0"
+  },
+  "devDependencies": {
+    "@sparticuz/chrome-aws-lambda": "^15.5.0",
+    "puppeteer": "^15.5.0"
+  }
+}

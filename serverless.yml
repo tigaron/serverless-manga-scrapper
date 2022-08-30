@@ -1,80 +1,93 @@
-app: manga-scraper
-org: tigaron
-service: manga-scraper
-frameworkVersion: "3"
+service: mangaScraper
 
-package:
-  patterns:
-    - "!.dynamodb/**"
-    - "!coverage/**"
-    - "!server/**"
+frameworkVersion: '3'
+
+custom:
+  prod:
+    Stack: mangaScraper
+    LogLevel: info
+    MangaTableRCU: 10
+    MangaTableWCU: 10
+  dev:
+    Stack: mangaScraper
+    LogLevel: debug
+    MangaTableRCU: 1
+    MangaTableWCU: 1
 
 provider:
   name: aws
   runtime: nodejs16.x
-  region: ${self:custom.defaultRegion}
-  stage: ${opt:stage, self:custom.defaultNodeEnv}
-  versionFunctions: false
+  region: ap-southeast-1
+  stage: ${opt:stage, 'dev'}
+  logRetentionInDays: 14
   environment:
-    NODE_ENV: ${opt:stage, self:custom.defaultNodeEnv}
-    REGION: ${self:provider.region}
-    TABLE_MANGA: ${self:service}-table-${self:provider.stage}
-  iam:
-    role:
-      statements:
-      - Effect: Allow
-        Action:
-          - dynamodb:Query
-          - dynamodb:Scan
-          - dynamodb:GetItem
-          - dynamodb:PutItem
-          - dynamodb:UpdateItem
-          - dynamodb:DeleteItem
-        Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/*"
+    logLevel: ${self:custom.${self.provider.stage}.LogLevel}
+
+package:
+  individually: true
 
 functions:
-  scraper:
-    handler: dist-server/bin/lambda.handler
-    name: ${opt:stage, self:provider.stage}-scraper
-    description: An API to scrape manga data from scanlation's website.
-    memorySize: 2048
-    ephemeralStorageSize: 1024
-    timeout: 15
-    logRetentionInDays: 14
+  Root:
+    handler: src/_root/index.handler
+    memorySize: 128
+    timeout: 10
+    events:
+      - http:
+          path: /
+          method: get
+          cors: true
+  Scraper:
+    handler: src/scraper/index.handler
     layers:
       - arn:aws:lambda:ap-southeast-1:764866452798:layer:chrome-aws-lambda:31
-    url: true
+    memorySize: 2048
+    timeout: 20
+    environment:
+      region: ${self:provider.region}
+      scraperQueueUrl: !Ref ScraperQueue
+      mangaTable: !Ref MangaTable
+    iam:
+      role:
+        statements:
+          - Effect: Allow
+            Action:
+              - dynamodb:PutItem
+              - dynamodb:UpdateItem
+            Resource:
+              - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.${self:provider.stage}.Stack}-mangaTable-${self:provider.stage}
+          - Effect: Allow
+            Action:
+              - sqs:ReceiveMessage
+              - sqs:DeleteMessage
+              - sqs:GetQueueAttributes
+            Resource:
+              - arn:aws:sqs:${aws:region}:${aws:accountId}:table/${self:custom.${self:provider.stage}.Stack}-scraperQueue-${self:provider.stage}
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - ScraperQueue
+              - Arn
+          batchSize: 1
 
 resources:
-  Resources:
-    MangaTable:
-      Type: "AWS::DynamoDB::Table"
-      DeletionPolicy: Retain
-      Properties:
-        TableName: ${self:provider.environment.TABLE_MANGA}
-        AttributeDefinitions:
-          - AttributeName: "EntryId"
-            AttributeType: "S"
-          - AttributeName: "EntrySlug"
-            AttributeType: "S"
-        KeySchema:
-          - AttributeName: "EntryId"
-            KeyType: "HASH"
-          - AttributeName: "EntrySlug"
-            KeyType: "RANGE"
-        ProvisionedThroughput:
-          ReadCapacityUnits: 10
-          WriteCapacityUnits: 10
+  - ${file(resources/apigateway/RestApi.yml)}
+  - ${file(resources/dynamodb/MangaTable.yml)}
+  - ${file(resources/sqs/ScraperQueue.yml)}
+  - Outputs:
+      ApiGWRestApiId:
+        Value:
+          Ref: ApiGatewayRestApi
+        Export:
+          Name: ${self:custom.${self:provider.stage}.Stack}-restApiId-${self:provider.stage}
+      ApiGWRootResourceId:
+        Value:
+          Fn::GetAtt:
+            - ApiGatewayRestApi
+            - RootResourceId
+        Export:
+          Name: ${self:custom.${self:provider.stage}.Stack}-rootResourceId-${self:provider.stage}
 
 plugins:
-  - serverless-dynamodb-local
-  - serverless-offline
-
-custom:
-  defaultRegion: ap-southeast-1
-  defaultNodeEnv: development
-  dynamodb:
-    stages:
-      - development
-    start:
-      port: 8888
+  - serverless-iam-roles-per-function
+  - serverless-plugin-reducer

@@ -1,0 +1,19 @@
+Resources:
+  MangaTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    Properties:
+      TableName: ${self:custom.${self:provider.stage}.Stack}-mangaTable-${self:provider.stage}
+      AttributeDefinitions:
+        - AttributeName: 'EntryId'
+          AttributeType: 'S'
+        - AttributeName: 'EntrySlug'
+          AttributeType: 'S'
+      KeySchema:
+        - AttributeName: 'EntryId'
+          KeyType: 'HASH'
+        - AttributeName: 'EntrySlug'
+          KeyType: 'RANGE'
+      ProvisionedThroughput:
+        ReadCapacityUnits: 10
+        WriteCapacityUnits: 10

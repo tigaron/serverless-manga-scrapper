@@ -183,7 +183,7 @@ exports.handler = async function (event, context) {
   if (event.Records) {
     return Promise.all(event.Records.map(async function (message) {
       let body = JSON.parse(message.body);
-      console.log(body)
+      logger.debug(message)
       // TODO process queue
       // TODO update table
       // TODO delete message

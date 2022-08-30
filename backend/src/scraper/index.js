@@ -13,8 +13,6 @@ log4js.configure({
 
 const logger = log4js.getLogger('logger');
 
-const dbclient = new DynamoDBClient({ region });
-
 async function crawler (urlString) {
   const browser = await chromium.puppeteer.launch({
     args: chromium.args,
@@ -53,8 +51,8 @@ function parseMangaList ($, mangaProvider) {
     const MangaSlug = MangaUrl.split('/').slice(-2).shift().replace(/[\d]*[-]?/, '');
     const timestamp = new Date().toUTCString();
     const Manga = new Map([
-      ['EntryId', `manga_${mangaProvider}`],
-      ['EntrySlug', MangaSlug],
+      ['_type', `series_${mangaProvider}`],
+      ['_id', MangaSlug],
       ['MangaTitle', MangaTitle],
       ['MangaUrl', MangaUrl],
       ['ScrapeDate', timestamp],
@@ -74,8 +72,8 @@ function parseManga ($, mangaProvider) {
   const MangaSlug = MangaCanonicalUrl.split('/').slice(-2).shift().replace(/[\d]*[-]?/, '');
   const timestamp = new Date().toUTCString();
   const Manga = new Map([
-    ['EntryId', `manga_${mangaProvider}`],
-    ['EntrySlug', MangaSlug],
+    ['_type', `series_${mangaProvider}`],
+    ['_id', MangaSlug],
     ['MangaTitle', MangaTitle],
     ['MangaSynopsis', MangaSynopsis],
     ['MangaCover', MangaCover],
@@ -98,8 +96,8 @@ function parseChapterList ($, mangaProvider) {
     const ChapterSlug = ChapterUrl.split('/').slice(-2).shift().replace(/[\d]*[-]?/, '');
     const timestamp = new Date().toUTCString();
     const Chapter = new Map([
-      ['EntryId', `chapter_${mangaProvider}_${MangaSlug}`],
-      ['EntrySlug', ChapterSlug],
+      ['_type', `chapter_${mangaProvider}_${MangaSlug}`],
+      ['_id', ChapterSlug],
       ['ChapterOrder', ChapterOrder],
       ['ChapterNumber', ChapterNumber],
       ['ChapterUrl', ChapterUrl],
@@ -141,8 +139,8 @@ function parseChapter ($, mangaProvider) {
     });
   }
   const Chapter = new Map([
-    ['EntryId', mangaProvider],
-    ['EntrySlug', ChapterSlug],
+    ['_type', mangaProvider],
+    ['_id', ChapterSlug],
     ['ChapterTitle', ChapterTitle],
     ['ChapterShortUrl', ChapterShortUrl],
     ['ChapterCanonicalUrl', ChapterCanonicalUrl],
@@ -179,14 +177,6 @@ async function scraper (urlString, requestType, mangaProvider) {
     logger.warn(`Scraper fail: ${requestType} - ${urlString}`);
     return error;
   }
-}
-
-async function updateTable () {
-  
-}
-
-async function deleteMessage () {
-
 }
 
 exports.handler = async function (event, context) {

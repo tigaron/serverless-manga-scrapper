@@ -9,7 +9,8 @@
   "scripts": {
     "build": "make buildAll",
     "deploy": "make deployAll STAGE='dev'",
-    "start": "make buildAll && make deployAll STAGE='dev'"
+    "start": "make buildAll && make deployAll STAGE='dev'",
+    "del": "make removeAll"
   },
   "devDependencies": {
     "serverless": "^3.22.0",

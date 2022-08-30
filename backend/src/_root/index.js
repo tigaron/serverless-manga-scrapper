@@ -15,15 +15,19 @@ exports.handler = async function (event, context) {
   return {
     'statusCode': 200,
     'body': JSON.stringify({
-      providers: [
-        'alpha',
-        'asura',
-        'flame',
-        'luminous',
-        'manhwax',
-        'omega',
-        'realm',
-      ]
+      'status': 200,
+      'statusText': 'OK',
+      'data': {
+        'providers': [
+          'alpha',
+          'asura',
+          'flame',
+          'luminous',
+          'manhwax',
+          'omega',
+          'realm',
+        ]
+      },
     }),
   };
 };

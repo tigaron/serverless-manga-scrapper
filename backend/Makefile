@@ -47,7 +47,7 @@ buildAll:
 
 deploy: _check_stage_definition
 	$(info [*] Deploying to $(STAGE)....)
-	serverless deploy --org=tigaron --stage ${STAGE} --verbose
+	serverless deploy --stage ${STAGE} --verbose
 
 deployAll: _check_stage_definition
 	$(info [*] Deploying all infrastructure to $(STAGE)....)
@@ -72,7 +72,7 @@ _buildAll:
 	cd ../api && $(MAKE) buildAll
 
 _deployAll:
-	serverless deploy --org=tigaron --stage ${STAGE} --verbose
+	serverless deploy --stage ${STAGE} --verbose
 	cd ../api && $(MAKE) deployAll
 
 _check_service_definition:

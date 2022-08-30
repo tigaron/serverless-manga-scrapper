@@ -1,3 +1,5 @@
+app: manga-scraper
+org: tigaron
 service: mangaScraper
 
 frameworkVersion: '3'

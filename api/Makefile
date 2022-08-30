@@ -34,7 +34,7 @@ buildAll:
 	@$(MAKE) _buildAll
 
 deploy: _check_service_definition _check_stage_definition
-	cd ./src/${SERVICE} && serverless --org=tigaron deploy --stage ${STAGE} --verbose
+	cd ./src/${SERVICE} && serverless deploy --stage ${STAGE} --verbose
 
 deployAll: _check_stage_definition _deployAll
 
@@ -55,7 +55,6 @@ _createEndpoint:
 	@sed -i "s/__PATH__/${ESCAPED_SERVICE}/" ./src/${SERVICE}/serverless.yml
 	@yarn add --dev --cwd ./src/${SERVICE} serverless
 	@yarn add --dev --cwd ./src/${SERVICE} serverless-iam-roles-per-function
-	@yarn add --dev --cwd ./src/${SERVICE} serverless-plugin-reducer
 	@yarn add --cwd ./src/${SERVICE} cors
 	@yarn add --cwd ./src/${SERVICE} express
 	@yarn add --cwd ./src/${SERVICE} helmet
@@ -85,7 +84,7 @@ _deployAll:
 	@find ./src -type d -not -name 'src' -not -path "*/node_modules/*" -not -name 'node_modules' -not -name '.serverless' > results.txt
 	@while read line; do \
 		echo "Deploying $$line..."; \
-		cd $$line && serverless --org=tigaron deploy --stage ${STAGE} --verbose; \
+		cd $$line && serverless deploy --stage ${STAGE} --verbose; \
 		cd ${MKFILEPATH}; \
 	done < results.txt
 	@rm -rf results.txt

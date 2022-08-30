@@ -1,6 +1,6 @@
 app: manga-scraper
 org: tigaron
-service: mangaScraper-api-__SERVICE__
+service: mangaScraper-api-chapter
 
 frameworkVersion: '3'
 
@@ -32,11 +32,11 @@ provider:
     logLevel: ${self:custom.${self:provider.stage}.LogLevel}
 
 functions:
-  __FUNCTION__:
+  Chapter:
     handler: index.handler
     events:
       - http:
-          path: /__PATH__
+          path: /chapter
           method: get
           cors: true
 

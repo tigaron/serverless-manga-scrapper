@@ -194,9 +194,9 @@ exports.handler = async function (event, context) {
     return Promise.all(event.Records.map(async function (message) {
       let body = JSON.parse(message.body);
       console.log(body)
-      // process queue
-      // update table
-      // delete message
+      // TODO process queue
+      // TODO update table
+      // TODO delete message
     }));
   }
 };

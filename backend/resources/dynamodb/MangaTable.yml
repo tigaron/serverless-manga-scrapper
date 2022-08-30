@@ -1,7 +1,6 @@
 Resources:
   MangaTable:
     Type: AWS::DynamoDB::Table
-    DeletionPolicy: Retain
     Properties:
       TableName: ${self:custom.${self:provider.stage}.Stack}-mangaTable-${self:provider.stage}
       AttributeDefinitions:

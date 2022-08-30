@@ -46,22 +46,20 @@ functions:
       region: ${aws:region}
       mangaTable: ${self:custom.${self:provider.stage}.Stack}-mangaTable-${self:provider.stage}
       scraperQueueUrl: https://sqs.${aws:region}.amazonaws.com/${aws:accountId}/${self:custom.${self:provider.stage}.Stack}-scraperQueue-${self:provider.stage}
-    iam:
-      role:
-        statements:
-          - Effect: Allow
-            Action:
-              - dynamodb:PutItem
-              - dynamodb:UpdateItem
-            Resource:
-              - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.${self:provider.stage}.Stack}-mangaTable-${self:provider.stage}
-          - Effect: Allow
-            Action:
-              - sqs:ReceiveMessage
-              - sqs:DeleteMessage
-              - sqs:GetQueueAttributes
-            Resource:
-              - arn:aws:sqs:${aws:region}:${aws:accountId}:table/${self:custom.${self:provider.stage}.Stack}-scraperQueue-${self:provider.stage}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+          - dynamodb:UpdateItem
+        Resource:
+          - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.${self:provider.stage}.Stack}-mangaTable-${self:provider.stage}
+      - Effect: Allow
+        Action:
+          - sqs:ReceiveMessage
+          - sqs:DeleteMessage
+          - sqs:GetQueueAttributes
+        Resource:
+          - arn:aws:sqs:${aws:region}:${aws:accountId}:table/${self:custom.${self:provider.stage}.Stack}-scraperQueue-${self:provider.stage}
     events:
       - sqs:
           arn:
@@ -75,12 +73,12 @@ resources:
   - ${file(resources/dynamodb/MangaTable.yml)}
   - ${file(resources/sqs/ScraperQueue.yml)}
   - Outputs:
-      ApiGWRestApiId:
+      apiGatewayRestApiId:
         Value:
           Ref: ApiGatewayRestApi
         Export:
           Name: ${self:custom.${self:provider.stage}.Stack}-restApiId-${self:provider.stage}
-      ApiGWRootResourceId:
+      apiGatewayRestApiRootResourceId:
         Value:
           Fn::GetAtt:
             - ApiGatewayRestApi
@@ -90,4 +88,3 @@ resources:
 
 plugins:
   - serverless-iam-roles-per-function
-  - serverless-plugin-reducer

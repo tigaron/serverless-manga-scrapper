@@ -36,21 +36,19 @@ functions:
       region: ${aws:region}
       mangaTable: ${self:custom.${self:provider.stage}.Stack}-mangaTable-${self:provider.stage}
       scraperQueueUrl: https://sqs.${aws:region}.amazonaws.com/${aws:accountId}/${self:custom.${self:provider.stage}.Stack}-scraperQueue-${self:provider.stage}
-    iam:
-      role:
-        statements:
-          - Effect: Allow
-            Action:
-              - dynamodb:PutItem
-              - dynamodb:GetItem
-              - dynamodb:Query
-            Resource:
-              - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.${self:provider.stage}.Stack}-mangaTable-${self:provider.stage}
-          - Effect: Allow
-            Action:
-              - sqs:SendMessage
-            Resource:
-              - arn:aws:sqs:${aws:region}:${aws:accountId}:${self:custom.${self:provider.stage}.Stack}-scraperQueue-${self:provider.stage}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+          - dynamodb:GetItem
+          - dynamodb:Query
+        Resource:
+          - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.${self:provider.stage}.Stack}-mangaTable-${self:provider.stage}
+      - Effect: Allow
+        Action:
+          - sqs:SendMessage
+        Resource:
+          - arn:aws:sqs:${aws:region}:${aws:accountId}:${self:custom.${self:provider.stage}.Stack}-scraperQueue-${self:provider.stage}
     events:
       - http:
           path: /series
@@ -61,11 +59,11 @@ functions:
           method: post
           cors: true
       - http:
-          path: /series/{seriesId}
+          path: /series/{id}
           method: get
           cors: true
       - http:
-          path: /series/{seriesId}
+          path: /series/{id}
           method: post
           cors: true
 
@@ -76,12 +74,11 @@ resources:
         Ref: ApiGatewayResourceSeries
       Export:
         Name: ${self:custom.${self:provider.stage}.Stack}-ApiRootSeries-${self:provider.stage}
-    ApiRootSeriesSeriesIdVar:
+    ApiRootSeriesIdVar:
       Value:
-        Ref: ApiGatewayResourceSeriesSeriesIdVar
+        Ref: ApiGatewayResourceSeriesIdVar
       Export:
-        Name: ${self:custom.${self:provider.stage}.Stack}-ApiRootSeriesSeriesIdVar-${self:provider.stage}
+        Name: ${self:custom.${self:provider.stage}.Stack}-ApiRootSeriesIdVar-${self:provider.stage}
 
 plugins:
   - serverless-iam-roles-per-function
-  - serverless-plugin-reducer

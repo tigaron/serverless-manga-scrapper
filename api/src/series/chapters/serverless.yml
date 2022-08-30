@@ -21,8 +21,8 @@ provider:
     restApiId:
       Fn::ImportValue: ${self:custom.${self:provider.stage}.Stack}-restApiId-${self:provider.stage}
     restApiResources:
-      /series/{seriesId}:
-        Fn::ImportValue: ${self:custom.${self:provider.stage}.Stack}-ApiRootSeriesSeriesIdVar-${self:provider.stage}
+      /series/{id}:
+        Fn::ImportValue: ${self:custom.${self:provider.stage}.Stack}-ApiRootSeriesIdVar-${self:provider.stage}
   logRetentionInDays: 14
   environment:
     logLevel: ${self:custom.${self:provider.stage}.LogLevel}
@@ -37,30 +37,27 @@ functions:
       region: ${aws:region}
       mangaTable: ${self:custom.${self:provider.stage}.Stack}-mangaTable-${self:provider.stage}
       scraperQueueUrl: https://sqs.${aws:region}.amazonaws.com/${aws:accountId}/${self:custom.${self:provider.stage}.Stack}-scraperQueue-${self:provider.stage}
-    iam:
-      role:
-        statements:
-          - Effect: Allow
-            Action:
-              - dynamodb:PutItem
-              - dynamodb:Query
-            Resource:
-              - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.${self:provider.stage}.Stack}-mangaTable-${self:provider.stage}
-          - Effect: Allow
-            Action:
-              - sqs:SendMessage
-            Resource:
-              - arn:aws:sqs:${aws:region}:${aws:accountId}:${self:custom.${self:provider.stage}.Stack}-scraperQueue-${self:provider.stage}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+          - dynamodb:Query
+        Resource:
+          - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.${self:provider.stage}.Stack}-mangaTable-${self:provider.stage}
+      - Effect: Allow
+        Action:
+          - sqs:SendMessage
+        Resource:
+          - arn:aws:sqs:${aws:region}:${aws:accountId}:${self:custom.${self:provider.stage}.Stack}-scraperQueue-${self:provider.stage}
     events:
       - http:
-          path: /series/{seriesId}/chapters
+          path: /series/{id}/chapters
           method: get
           cors: true
       - http:
-          path: /series/{seriesId}/chapters
+          path: /series/{id}/chapters
           method: post
           cors: true
 
 plugins:
   - serverless-iam-roles-per-function
-  - serverless-plugin-reducer

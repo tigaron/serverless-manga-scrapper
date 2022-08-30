@@ -74,7 +74,7 @@ app.post('/series', async (req, res) => {
   }
 });
 
-app.get('/series/:seriesId', async (req, res) => {
+app.get('/series/:id', async (req, res) => {
   try {
     // TODO get manga from ddb
     res.status(200).json({
@@ -92,7 +92,7 @@ app.get('/series/:seriesId', async (req, res) => {
   }
 });
 
-app.post('/series/:seriesId', async (req, res) => {
+app.post('/series/:id', async (req, res) => {
   try {
     // TODO send message to sqs
     res.status(202).json({

@@ -15,5 +15,5 @@ Resources:
         - AttributeName: 'EntrySlug'
           KeyType: 'RANGE'
       ProvisionedThroughput:
-        ReadCapacityUnits: 10
-        WriteCapacityUnits: 10
+        ReadCapacityUnits: ${self:custom.${self:provider.stage}.MangaTableRCU}
+        WriteCapacityUnits: ${self:custom.${self:provider.stage}.MangaTableWCU}

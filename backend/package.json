@@ -13,7 +13,6 @@
   },
   "devDependencies": {
     "serverless": "^3.22.0",
-    "serverless-iam-roles-per-function": "^3.2.0",
-    "serverless-plugin-reducer": "^4.0.1"
+    "serverless-iam-roles-per-function": "^3.2.0"
   }
 }

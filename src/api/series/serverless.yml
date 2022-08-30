@@ -32,13 +32,17 @@ package:
 functions:
   Series:
     handler: index.handler
+    environment:
+      region: ${self:provider.region}
+      mangaTable: ${self:custom.${self:provider.stage}.Stack}-mangaTable-${self:provider.stage}
+      scraperQueueUrl: https://sqs.${aws:region}.amazonaws.com/${aws:accountId}/${self:custom.${self:provider.stage}.Stack}-scraperQueue-${self:provider.stage}
     iam:
       role:
         statements:
           - Effect: Allow
             Action:
               - dynamodb:GetItem
-              - dynamodb:Query
+              - dynamodb:PutItem
             Resource:
               - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.${self:provider.stage}.Stack}-mangaTable-${self:provider.stage}
           - Effect: Allow
@@ -60,6 +64,10 @@ functions:
           method: get
           cors: true
       - http:
+          path: /series/{seriesId}
+          method: post
+          cors: true
+      - http:
           path: /series/{seriesId}/chapters
           method: get
           cors: true
@@ -67,6 +75,19 @@ functions:
           path: /series/{seriesId}/chapters
           method: post
           cors: true
+
+resources:
+  Outputs:
+    ApiRootSeries:
+      Value:
+        Ref: ApiGatewayResourceSeries
+      Export:
+        Name: ${self:custom.${self:provider.stage}.Stack}-ApiRootSeries-${self:provider.stage}
+    ApiRootSeriesSeriesIdVar:
+      Value:
+        Ref: ApiGatewayResourceSeriesSeriesIdVar
+      Export:
+        Name: ${self:custom.${self:provider.stage}.Stack}-ApiRootSeriesSeriesIdVar-${self:provider.stage}
 
 plugins:
   - serverless-iam-roles-per-function

@@ -37,12 +37,77 @@ const providerMap = new Map([
   ['realm', 'https://realmscans.com/series/list-mode/'],
 ]);
 
-app.get('/', (req, res) => {
-  res.json({
-    status: 200,
-    statusText: 'OK',
-    data: Array.from(providerMap.keys()),
-  });
+app.get('/series', async (req, res) => {
+  try {
+    // TODO get manga list from ddb
+    res.status(200).json({
+      'status': 200,
+      'statusText': 'OK',
+      'data': req.query,
+    });
+  } catch (error) {
+    res.status(503).json({
+      'status': 503,
+      'statusText': error.name,
+      'message': error.messsage,
+      'stack': logLevel === 'info' ? '' : error.stack,
+    });
+  }
+});
+
+app.post('/series', async (req, res) => {
+  try {
+    // TODO send message to sqs queue
+    res.status(202).json({
+      'status': 202,
+      'statusText': 'Queued',
+      'data': req.query,
+    });
+  } catch (error) {
+    logger.info(`${error.name}: ${error.message}`);
+    res.status(503).json({
+      'status': 503,
+      'statusText': error.name,
+      'message': error.messsage,
+      'stack': logLevel === 'info' ? '' : error.stack,
+    });
+  }
+});
+
+app.get('/series/:seriesId', async (req, res) => {
+  try {
+    // TODO get manga from ddb
+    res.status(200).json({
+      'status': 200,
+      'statusText': 'OK',
+      'data': { query: req.query, params: req.params },
+    });
+  } catch (error) {
+    res.status(503).json({
+      'status': 503,
+      'statusText': error.name,
+      'message': error.messsage,
+      'stack': logLevel === 'info' ? '' : error.stack,
+    });
+  }
+});
+
+app.post('/series/:seriesId', async (req, res) => {
+  try {
+    // TODO get manga from ddb
+    res.status(202).json({
+      'status': 202,
+      'statusText': 'Queued',
+      'data': { query: req.query, params: req.params },
+    });
+  } catch (error) {
+    res.status(503).json({
+      'status': 503,
+      'statusText': error.name,
+      'message': error.messsage,
+      'stack': logLevel === 'info' ? '' : error.stack,
+    });
+  }
 });
 
 exports.handler = serverless(app);

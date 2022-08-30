@@ -44,8 +44,8 @@ functions:
     timeout: 20
     environment:
       region: ${self:provider.region}
-      scraperQueueUrl: !Ref ScraperQueue
-      mangaTable: !Ref MangaTable
+      mangaTable: ${self:custom.${self:provider.stage}.Stack}-mangaTable-${self:provider.stage}
+      scraperQueueUrl: https://sqs.${aws:region}.amazonaws.com/${aws:accountId}/${self:custom.${self:provider.stage}.Stack}-scraperQueue-${self:provider.stage}
     iam:
       role:
         statements:

@@ -22,7 +22,8 @@ exports.handler = async function (event, context) {
         'luminous',
         'manhwax',
         'omega',
-        'realm']
+        'realm',
+      ]
     }),
   };
 };

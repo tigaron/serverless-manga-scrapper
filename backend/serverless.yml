@@ -21,7 +21,7 @@ provider:
   stage: ${opt:stage, 'dev'}
   logRetentionInDays: 14
   environment:
-    logLevel: ${self:custom.${self.provider.stage}.LogLevel}
+    logLevel: ${self:custom.${self:provider.stage}.LogLevel}
 
 package:
   individually: true
@@ -39,11 +39,11 @@ functions:
   Scraper:
     handler: src/scraper/index.handler
     layers:
-      - arn:aws:lambda:ap-southeast-1:764866452798:layer:chrome-aws-lambda:31
+      - arn:aws:lambda:${aws:region}:764866452798:layer:chrome-aws-lambda:31
     memorySize: 2048
     timeout: 20
     environment:
-      region: ${self:provider.region}
+      region: ${aws:region}
       mangaTable: ${self:custom.${self:provider.stage}.Stack}-mangaTable-${self:provider.stage}
       scraperQueueUrl: https://sqs.${aws:region}.amazonaws.com/${aws:accountId}/${self:custom.${self:provider.stage}.Stack}-scraperQueue-${self:provider.stage}
     iam:

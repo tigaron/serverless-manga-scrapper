@@ -94,7 +94,7 @@ app.get('/series/:seriesId', async (req, res) => {
 
 app.post('/series/:seriesId', async (req, res) => {
   try {
-    // TODO get manga from ddb
+    // TODO send message to sqs
     res.status(202).json({
       'status': 202,
       'statusText': 'Queued',

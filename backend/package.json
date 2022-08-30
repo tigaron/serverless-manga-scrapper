@@ -6,6 +6,11 @@
   "author": "tigaron",
   "license": "MIT",
   "private": true,
+  "scripts": {
+    "build": "make buildAll",
+    "deploy": "make deployAll STAGE='dev'",
+    "start": "make buildAll && make deployAll STAGE='dev'"
+  },
   "devDependencies": {
     "serverless": "^3.22.0",
     "serverless-iam-roles-per-function": "^3.2.0",

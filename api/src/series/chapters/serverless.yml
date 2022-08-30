@@ -1,0 +1,66 @@
+service: mangaScraper-api-series-chapters
+
+frameworkVersion: '3'
+
+custom:
+  prod:
+    Stack: mangaScraper
+    LogLevel: info
+  dev:
+    Stack: mangaScraper
+    LogLevel: debug
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  memorySize: 128
+  timeout: 10
+  region: ap-southeast-1
+  stage: ${opt:stage, 'dev'}
+  apiGateway:
+    restApiId:
+      Fn::ImportValue: ${self:custom.${self:provider.stage}.Stack}-restApiId-${self:provider.stage}
+    restApiResources:
+      /series/{seriesId}:
+        Fn::ImportValue: ${self:custom.${self:provider.stage}.Stack}-ApiRootSeriesSeriesIdVar-${self:provider.stage}
+  logRetentionInDays: 14
+  environment:
+    logLevel: ${self:custom.${self:provider.stage}.LogLevel}
+
+package:
+  individually: true
+
+functions:
+  SeriesChapters:
+    handler: index.handler
+    environment:
+      region: ${aws:region}
+      mangaTable: ${self:custom.${self:provider.stage}.Stack}-mangaTable-${self:provider.stage}
+      scraperQueueUrl: https://sqs.${aws:region}.amazonaws.com/${aws:accountId}/${self:custom.${self:provider.stage}.Stack}-scraperQueue-${self:provider.stage}
+    iam:
+      role:
+        statements:
+          - Effect: Allow
+            Action:
+              - dynamodb:PutItem
+              - dynamodb:Query
+            Resource:
+              - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.${self:provider.stage}.Stack}-mangaTable-${self:provider.stage}
+          - Effect: Allow
+            Action:
+              - sqs:SendMessage
+            Resource:
+              - arn:aws:sqs:${aws:region}:${aws:accountId}:${self:custom.${self:provider.stage}.Stack}-scraperQueue-${self:provider.stage}
+    events:
+      - http:
+          path: /series/{seriesId}/chapters
+          method: get
+          cors: true
+      - http:
+          path: /series/{seriesId}/chapters
+          method: post
+          cors: true
+
+plugins:
+  - serverless-iam-roles-per-function
+  - serverless-plugin-reducer

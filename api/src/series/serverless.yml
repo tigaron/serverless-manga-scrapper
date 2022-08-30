@@ -24,7 +24,7 @@ provider:
       Fn::ImportValue: ${self:custom.${self:provider.stage}.Stack}-rootResourceId-${self:provider.stage}
   logRetentionInDays: 14
   environment:
-    logLevel: ${self:custom.${self.provider.stage}.LogLevel}
+    logLevel: ${self:custom.${self:provider.stage}.LogLevel}
 
 package:
   individually: true
@@ -33,7 +33,7 @@ functions:
   Series:
     handler: index.handler
     environment:
-      region: ${self:provider.region}
+      region: ${aws:region}
       mangaTable: ${self:custom.${self:provider.stage}.Stack}-mangaTable-${self:provider.stage}
       scraperQueueUrl: https://sqs.${aws:region}.amazonaws.com/${aws:accountId}/${self:custom.${self:provider.stage}.Stack}-scraperQueue-${self:provider.stage}
     iam:
@@ -41,8 +41,9 @@ functions:
         statements:
           - Effect: Allow
             Action:
-              - dynamodb:GetItem
               - dynamodb:PutItem
+              - dynamodb:GetItem
+              - dynamodb:Query
             Resource:
               - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.${self:provider.stage}.Stack}-mangaTable-${self:provider.stage}
           - Effect: Allow
@@ -65,14 +66,6 @@ functions:
           cors: true
       - http:
           path: /series/{seriesId}
-          method: post
-          cors: true
-      - http:
-          path: /series/{seriesId}/chapters
-          method: get
-          cors: true
-      - http:
-          path: /series/{seriesId}/chapters
           method: post
           cors: true
 

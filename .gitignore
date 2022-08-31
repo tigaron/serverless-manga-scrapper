@@ -7,3 +7,5 @@ server
 
 .env
 .serverless
+
+*.rest

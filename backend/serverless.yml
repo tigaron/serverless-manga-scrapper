@@ -48,6 +48,7 @@ functions:
       region: ${aws:region}
       mangaTable: ${self:custom.${self:provider.stage}.Stack}-mangaTable-${self:provider.stage}
       scraperQueueUrl: https://sqs.${aws:region}.amazonaws.com/${aws:accountId}/${self:custom.${self:provider.stage}.Stack}-scraperQueue-${self:provider.stage}
+    iamRoleStatementsName: ${self:service}-${self:provider.stage}
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -90,3 +91,5 @@ resources:
 
 plugins:
   - serverless-iam-roles-per-function
+  - serverless-plugin-common-excludes
+  - serverless-plugin-reducer

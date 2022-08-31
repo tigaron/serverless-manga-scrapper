@@ -13,6 +13,7 @@ custom:
     LogLevel: debug
 
 package:
+  excludeDevDependencies: false
   individually: true
 
 provider:
@@ -42,3 +43,5 @@ functions:
 
 plugins:
   - serverless-iam-roles-per-function
+  - serverless-plugin-common-excludes
+  - serverless-plugin-reducer

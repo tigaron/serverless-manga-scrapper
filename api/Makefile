@@ -55,6 +55,8 @@ _createEndpoint:
 	@sed -i "s/__PATH__/${ESCAPED_SERVICE}/" ./src/${SERVICE}/serverless.yml
 	@yarn add --dev --cwd ./src/${SERVICE} serverless
 	@yarn add --dev --cwd ./src/${SERVICE} serverless-iam-roles-per-function
+	@yarn add --dev --cwd ./src/${SERVICE} serverless-plugin-common-excludes
+	@yarn add --dev --cwd ./src/${SERVICE} serverless-plugin-reducer
 	@yarn add --cwd ./src/${SERVICE} cors
 	@yarn add --cwd ./src/${SERVICE} express
 	@yarn add --cwd ./src/${SERVICE} helmet

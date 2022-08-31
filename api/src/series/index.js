@@ -40,7 +40,7 @@ const providerMap = new Map([
   ['realm', 'https://realmscans.com/series/list-mode/'],
 ]);
 
-function errorHandler(err, req, res) {
+function errorHandler(err, req, res, next) {
   logger.error(err.message);
   const statusCode = res.statusCode !== 200 ? res.statusCode : 500;
   res.status(statusCode).json({
@@ -93,28 +93,14 @@ app.post('/series', async (req, res, next) => {
       'provider': provider,
     };
     const commandParams = {
-      'MessageAttributes': {
-        'urlToScrape': {
-          'DataType': 'String',
-          'StringValue': scraperData.urlToScrape,
-        },
-        'requestType': {
-          'DataType': 'String',
-          'StringValue': scraperData.requestType,
-        },
-        'provider': {
-          'DataType': 'String',
-          'StringValue': scraperData.provider,
-        },
-      },
       'MessageBody': JSON.stringify(scraperData),
-      'MessageDeduplicationId': scraperData.urlToScrape,
-      'MessageGroupId': scraperData.requestType,
       'QueueUrl': scraperQueueUrl,
     }
     const client = new SQSClient({ region: region });
     const command = new SendMessageCommand(commandParams);
-    await client.send(command);
+    const response = await client.send(command);
+    logger.debug(response);
+    // TODO status --> get message id --> PutItemCommand
     res.status(202).json({
       'status': 202,
       'statusText': 'Queued',
@@ -178,28 +164,14 @@ app.post('/series/:id', async (req, res, next) => {
       'provider': provider,
     };
     const sqsCommandParams = {
-      'MessageAttributes': {
-        'urlToScrape': {
-          'DataType': 'String',
-          'StringValue': scraperData.urlToScrape,
-        },
-        'requestType': {
-          'DataType': 'String',
-          'StringValue': scraperData.requestType,
-        },
-        'provider': {
-          'DataType': 'String',
-          'StringValue': scraperData.provider,
-        },
-      },
       'MessageBody': JSON.stringify(scraperData),
-      'MessageDeduplicationId': scraperData.urlToScrape,
-      'MessageGroupId': scraperData.requestType,
       'QueueUrl': scraperQueueUrl,
     }
     const sqsClient = new SQSClient({ region: region });
     const sqsCommand = new SendMessageCommand(sqsCommandParams);
-    await sqsClient.send(sqsCommand);
+    const sqsResponse = await sqsClient.send(sqsCommand);
+    logger.debug(sqsResponse);
+    // TODO status --> get message id --> PutItemCommand
     res.status(202).json({
       'status': 202,
       'statusText': 'Queued',

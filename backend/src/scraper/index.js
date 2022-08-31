@@ -14,6 +14,7 @@ log4js.configure({
 const logger = log4js.getLogger('logger');
 
 async function crawler (urlString) {
+  logger.debug(`In crawler: ${urlString}`);
   const browser = await chromium.puppeteer.launch({
     args: chromium.args,
     defaultViewport: chromium.defaultViewport,
@@ -39,11 +40,13 @@ async function crawler (urlString) {
 }
 
 function loadHTML (htmlString) {
+  logger.debug(`In loadHTML`);
   if (htmlString.constructor === Error) throw htmlString;
   return cheerio.load(htmlString);
 }
 
 function parseMangaList ($, mangaProvider) {
+  logger.debug(`In parseMangaList`);
   const MangaList = new Set();
   $('a.series', 'div.soralist').each((index, element) => {
     const MangaTitle = $(element).text().trim();
@@ -63,6 +66,7 @@ function parseMangaList ($, mangaProvider) {
 }
 
 function parseManga ($, mangaProvider) {
+  logger.debug(`In parseManga`);
   const MangaTitle = $('h1.entry-title').text().trim();
   let MangaSynopsis = $('p', 'div.entry-content').text();
   if (!MangaSynopsis) MangaSynopsis = $('div.entry-content').contents().text();
@@ -85,6 +89,7 @@ function parseManga ($, mangaProvider) {
 }
 
 function parseChapterList ($, mangaProvider) {
+  logger.debug(`In parseChapterList`);
   const MangaSlug = $('link[rel="canonical"]').attr('href').split('/').slice(-2).shift().replace(/[\d]*[-]?/, '');
   const ChapterList = new Set();
   $('a', 'div.eplister').each((index, element) => {
@@ -110,6 +115,7 @@ function parseChapterList ($, mangaProvider) {
 }
 
 function parseChapter ($, mangaProvider) {
+  logger.debug(`In parseChapter`);
   const ChapterTitle = $('h1.entry-title').text().trim();
   const ChapterShortUrl = $('link[rel="shortlink"]').attr('href');
   let ChapterCanonicalUrl = $('link[rel="canonical"]').attr('href');
@@ -174,16 +180,28 @@ async function scraper (urlString, requestType, mangaProvider) {
     logger.debug(`Scraper success: ${requestType} - ${urlString}`);
     return result;
   } catch (error) {
-    logger.warn(`Scraper fail: ${requestType} - ${urlString}`);
-    return error;
+    logger.error(`Scraper fail: ${requestType} - ${urlString}`);
+    throw error;
   }
 }
 
 exports.handler = async function (event, context) {
   if (event.Records) {
     return Promise.all(event.Records.map(async function (message) {
-      let body = JSON.parse(message.body);
-      logger.debug(message)
+      try {
+        const body = JSON.parse(message.body);
+        logger.debug(message)
+        /* 
+        const scraperData = {
+          'urlToScrape': providerMap.get(provider),
+          'requestType': 'MangaList',
+          'provider': provider,
+        };
+        */
+        // const scraperResponse = await scraper();
+      } catch (error) {
+        logger.error(error)
+      }
       // TODO process queue
       // TODO update table
       // TODO delete message

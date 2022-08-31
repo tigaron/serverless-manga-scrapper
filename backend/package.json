@@ -12,8 +12,19 @@
     "start": "make buildAll && make deployAll STAGE='dev'",
     "del": "make removeAll"
   },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.160.0",
+    "@aws-sdk/util-dynamodb": "^3.160.0",
+    "cheerio": "^1.0.0-rc.12",
+    "log4js": "^6.6.1",
+    "puppeteer-core": "^15.5.0"
+  },
   "devDependencies": {
+    "@sparticuz/chrome-aws-lambda": "^15.5.0",
+    "puppeteer": "^15.5.0",
     "serverless": "^3.22.0",
-    "serverless-iam-roles-per-function": "^3.2.0"
+    "serverless-iam-roles-per-function": "^3.2.0",
+    "serverless-plugin-common-excludes": "^4.0.0",
+    "serverless-plugin-reducer": "^4.0.1"
   }
 }

@@ -189,14 +189,14 @@ exports.handler = async function (event, context) {
   if (event.Records) {
     return Promise.all(event.Records.map(async function (message) {
       try {
-        logger.debug(`SQS message: ${message}`);
+        logger.debug(`SQS message: `, message);
         const { urlToScrape, requestType, provider } = JSON.parse(message.body);
         const scraperResponse = await scraper(urlToScrape, requestType, provider);
         if (scraperResponse instanceof Error) throw scraperResponse;
         // TODO put/update manga data
         const ddbStatusCommandParams = {
           'TableName': mangaTable,
-          'Key': { '_type': marshall('request-status'), '_id': marshall(message.MessageId) },
+          'Key': { '_type': marshall('request-status'), '_id': marshall(message.messageId) },
           'ExpressionAttributeNames': { '#S': 'Status', '#D': 'Data' },
           'ExpressionAttributeValues': { ':s': marshall('completed'), ':d': marshall(scraperResponse) },
           'UpdateExpression': 'SET #S = :s, #D = :d',
@@ -210,7 +210,7 @@ exports.handler = async function (event, context) {
         logger.error(error);
         const ddbStatusCommandParams = {
           'TableName': mangaTable,
-          'Key': { '_type': marshall('request-status'), '_id': marshall(message.MessageId) },
+          'Key': { '_type': marshall('request-status'), '_id': marshall(message.messageId) },
           'ExpressionAttributeNames': { '#S': 'Status', '#M': 'Message' },
           'ExpressionAttributeValues': { ':s': marshall('failed'), ':m': marshall(error.message) },
           'UpdateExpression': 'SET #S = :s, #M = :m',
@@ -219,6 +219,7 @@ exports.handler = async function (event, context) {
         const ddbStatusCommand = new UpdateItemCommand(ddbStatusCommandParams);
         const ddbStatusResponse = await ddbStatusClient.send(ddbStatusCommand);
         logger.debug(`DynamoDB response: ${ddbStatusResponse}`);
+        // TODO dead letter queue ?
       }
     }));
   }

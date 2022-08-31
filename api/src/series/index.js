@@ -56,7 +56,7 @@ app.get('/series', async (req, res, next) => {
     if (!provider) {
       res.status(400);
       throw new Error('Missing query parameter: "provider"');
-    };
+    }
     const paginatorConfig = {
       'client': new DynamoDBClient({ region: region }),
       'pageSize': limit ? limit : 10,
@@ -87,7 +87,7 @@ app.post('/series', async (req, res, next) => {
     if (!provider) {
       res.status(400);
       throw new Error('Missing query parameter: "provider"');
-    };
+    }
     const scraperData = {
       'urlToScrape': providerMap.get(provider),
       'requestType': 'MangaList',
@@ -96,7 +96,7 @@ app.post('/series', async (req, res, next) => {
     const sqsCommandParams = {
       'MessageBody': JSON.stringify(scraperData),
       'QueueUrl': scraperQueueUrl,
-    }
+    };
     const sqsClient = new SQSClient({ region: region });
     const sqsCommand = new SendMessageCommand(sqsCommandParams);
     const sqsResponse = await sqsClient.send(sqsCommand);
@@ -106,7 +106,7 @@ app.post('/series', async (req, res, next) => {
       '_id': sqsResponse.MessageId,
       'Request': JSON.stringify(scraperData),
       'Status': 'pending',
-    }
+    };
     const ddbCommandParams = {
       'TableName': mangaTable,
       'Item': marshall(Item),
@@ -131,7 +131,7 @@ app.get('/series/:id', async (req, res, next) => {
     if (!provider) {
       res.status(400);
       throw new Error('Missing query parameter: "provider"');
-    };
+    }
     const { id } = req.params;
     const ddbCommandParams = {
       'TableName': mangaTable,
@@ -141,14 +141,14 @@ app.get('/series/:id', async (req, res, next) => {
     const ddbCommand = new GetItemCommand(ddbCommandParams);
     const ddbResponse = await ddbClient.send(ddbCommand);
     logger.debug(`DynamoDB response: ${ddbResponse}`);
-    if (Object.keys(response.Item).length === 0) {
+    if (Object.keys(ddbResponse.Item).length === 0) {
       res.status(404);
       throw new Error(`Not found: "${id}"`);
     }
     res.status(200).json({
       'status': 200,
       'statusText': 'OK',
-      'data': unmarshall(response.Item),
+      'data': unmarshall(ddbResponse.Item),
     });
   } catch (error) {
     next(error);
@@ -161,7 +161,7 @@ app.post('/series/:id', async (req, res, next) => {
     if (!provider) {
       res.status(400);
       throw new Error('Missing query parameter: "provider"');
-    };
+    }
     const { id } = req.params;
     const ddbCommandParams = {
       'TableName': mangaTable,
@@ -183,7 +183,7 @@ app.post('/series/:id', async (req, res, next) => {
     const sqsCommandParams = {
       'MessageBody': JSON.stringify(scraperData),
       'QueueUrl': scraperQueueUrl,
-    }
+    };
     const sqsClient = new SQSClient({ region: region });
     const sqsCommand = new SendMessageCommand(sqsCommandParams);
     const sqsResponse = await sqsClient.send(sqsCommand);
@@ -193,7 +193,7 @@ app.post('/series/:id', async (req, res, next) => {
       '_id': sqsResponse.MessageId,
       'Request': JSON.stringify(scraperData),
       'Status': 'pending',
-    }
+    };
     const ddbCommandParams2 = {
       'TableName': mangaTable,
       'Item': marshall(Item),

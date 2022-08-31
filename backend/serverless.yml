@@ -44,6 +44,10 @@ functions:
     handler: src/scraper/index.handler
     layers:
       - arn:aws:lambda:${aws:region}:764866452798:layer:chrome-aws-lambda:31
+    package:
+      patterns:
+        - 'node_modules/@sparticuz/chrome-aws-lambda'
+        - '!node_modules/@sparticuz/chrome-aws-lambda/bin'
     memorySize: 2048
     timeout: 20
     environment:

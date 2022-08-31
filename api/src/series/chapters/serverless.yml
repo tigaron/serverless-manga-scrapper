@@ -5,6 +5,8 @@ service: mangaScraper-api-series-chapters
 frameworkVersion: '3'
 
 custom:
+  reducer:
+    ignoreMissing: true
   prod:
     Stack: mangaScraper
     LogLevel: info
@@ -46,6 +48,7 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:PutItem
+          - dynamodb:GetItem
           - dynamodb:Query
         Resource:
           - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.${self:provider.stage}.Stack}-mangaTable-${self:provider.stage}
@@ -63,8 +66,16 @@ functions:
           path: /series/{id}/chapters
           method: post
           cors: true
+      - http:
+          path: /series/{id}/chapters/{slug}
+          method: get
+          cors: true
+      - http:
+          path: /series/{id}/chapters/{slug}
+          method: post
+          cors: true
 
 plugins:
   - serverless-iam-roles-per-function
   - serverless-plugin-common-excludes
-  - serverless-plugin-include-dependencies
+  - serverless-plugin-reducer

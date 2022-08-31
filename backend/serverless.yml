@@ -5,6 +5,8 @@ service: mangaScraper
 frameworkVersion: '3'
 
 custom:
+  reducer:
+    ignoreMissing: true
   prod:
     Stack: mangaScraper
     LogLevel: info

@@ -5,6 +5,8 @@ service: mangaScraper-api-__SERVICE__
 frameworkVersion: '3'
 
 custom:
+  reducer:
+    ignoreMissing: true
   prod:
     Stack: mangaScraper
     LogLevel: info
@@ -13,7 +15,6 @@ custom:
     LogLevel: debug
 
 package:
-  excludeDevDependencies: false
   individually: true
 
 provider:

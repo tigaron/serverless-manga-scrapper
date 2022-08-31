@@ -5,6 +5,8 @@ service: mangaScraper-api-series
 frameworkVersion: '3'
 
 custom:
+  reducer:
+    ignoreMissing: true
   prod:
     Stack: mangaScraper
     LogLevel: info
@@ -86,4 +88,4 @@ resources:
 plugins:
   - serverless-iam-roles-per-function
   - serverless-plugin-common-excludes
-  - serverless-plugin-include-dependencies
+  - serverless-plugin-reducer

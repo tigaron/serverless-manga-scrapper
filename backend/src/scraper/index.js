@@ -1,5 +1,5 @@
-const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { UpdateItemCommand } = require('@aws-sdk/client-dynamodb');
+const { DynamoDBClient, UpdateItemCommand, PutItemCommand } = require('@aws-sdk/client-dynamodb');
+const { marshall } = require('@aws-sdk/util-dynamodb');
 const chromium = require('@sparticuz/chrome-aws-lambda');
 const cheerio = require('cheerio');
 const log4js = require('log4js');
@@ -41,7 +41,6 @@ async function crawler (urlString) {
 
 function loadHTML (htmlString) {
   logger.debug(`In loadHTML`);
-  if (htmlString.constructor === Error) throw htmlString;
   return cheerio.load(htmlString);
 }
 
@@ -161,6 +160,7 @@ function parseChapter ($, mangaProvider) {
 async function scraper (urlString, requestType, mangaProvider) {
   try {
     const htmlString = await crawler(urlString);
+    if (htmlString instanceof Error) throw htmlString;
     const $ = loadHTML(htmlString);
     let result;
     switch (requestType) {
@@ -189,22 +189,37 @@ exports.handler = async function (event, context) {
   if (event.Records) {
     return Promise.all(event.Records.map(async function (message) {
       try {
-        const body = JSON.parse(message.body);
-        logger.debug(message)
-        /* 
-        const scraperData = {
-          'urlToScrape': providerMap.get(provider),
-          'requestType': 'MangaList',
-          'provider': provider,
+        logger.debug(`SQS message: ${message}`);
+        const { urlToScrape, requestType, provider } = JSON.parse(message.body);
+        const scraperResponse = await scraper(urlToScrape, requestType, provider);
+        if (scraperResponse instanceof Error) throw scraperResponse;
+        // TODO put/update manga data
+        const ddbStatusCommandParams = {
+          'TableName': mangaTable,
+          'Key': { '_type': marshall('request-status'), '_id': marshall(message.MessageId) },
+          'ExpressionAttributeNames': { '#S': 'Status', '#D': 'Data' },
+          'ExpressionAttributeValues': { ':s': marshall('completed'), ':d': marshall(scraperResponse) },
+          'UpdateExpression': 'SET #S = :s, #D = :d',
         };
-        */
-        // const scraperResponse = await scraper();
+        const ddbStatusClient = new DynamoDBClient({ region: region });
+        const ddbStatusCommand = new UpdateItemCommand(ddbStatusCommandParams);
+        const ddbStatusResponse = await ddbStatusClient.send(ddbStatusCommand);
+        logger.debug(`DynamoDB response: ${ddbStatusResponse}`);
+        // TODO delete message
       } catch (error) {
-        logger.error(error)
+        logger.error(error);
+        const ddbStatusCommandParams = {
+          'TableName': mangaTable,
+          'Key': { '_type': marshall('request-status'), '_id': marshall(message.MessageId) },
+          'ExpressionAttributeNames': { '#S': 'Status', '#M': 'Message' },
+          'ExpressionAttributeValues': { ':s': marshall('failed'), ':m': marshall(error.message) },
+          'UpdateExpression': 'SET #S = :s, #M = :m',
+        };
+        const ddbStatusClient = new DynamoDBClient({ region: region });
+        const ddbStatusCommand = new UpdateItemCommand(ddbStatusCommandParams);
+        const ddbStatusResponse = await ddbStatusClient.send(ddbStatusCommand);
+        logger.debug(`DynamoDB response: ${ddbStatusResponse}`);
       }
-      // TODO process queue
-      // TODO update table
-      // TODO delete message
     }));
   }
 };

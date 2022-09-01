@@ -9,3 +9,5 @@ server
 .serverless
 
 *.rest
+
+*chrome-aws-lambda*

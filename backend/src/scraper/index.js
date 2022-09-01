@@ -14,28 +14,35 @@ log4js.configure({
 const logger = log4js.getLogger('logger');
 
 async function crawler (urlString) {
-  logger.debug(`In crawler: ${urlString}`);
-  const browser = await chromium.puppeteer.launch({
-    args: chromium.args,
-    defaultViewport: chromium.defaultViewport,
-    executablePath: await chromium.executablePath,
-    headless: true,
-  });
+  let browser = null;
   try {
-    const page = await browser.newPage();
+    logger.debug(`In crawler`);
+    browser = await chromium.puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath,
+      headless: true,
+      ignoreHTTPSErrors: true,
+    });
+    logger.debug(`Launched browser instance`);
+    let page = await browser.newPage();
     await page.setUserAgent('Mozilla/5.0 (Windows NT 5.1; rv:5.0) Gecko/20100101 Firefox/5.0');
     await page.setRequestInterception(true);
-    page.on('close', (request) => {
-      if (request.resourceType() !== 'document') request.abort();
-      else request.continue();
+    page.on('request', (interceptedRequest) => {
+      if (interceptedRequest.resourceType() !== 'document') interceptedRequest.abort();
+      else interceptedRequest.continue();
     });
+    logger.debug(`Configured browser page`);
     const response = await page.goto(urlString, { waitUntil: 'domcontentloaded' });
     if (!response.ok()) throw new Error(`Failed to crawl '${urlString}'`, { cause: response.status() });
-    return await page.content();
+    const result = await page.content();
+    logger.debug(result);
+    return result;
   } catch (error) {
+    logger.error(error);
     throw error;
   } finally {
-    await browser.close();
+    if (browser) await browser.close();
   }
 }
 
@@ -157,30 +164,39 @@ function parseChapter ($, mangaProvider) {
   return Chapter;
 }
 
+function getScrapedData ($, mangaProvider, requestType) {
+  const result = {
+    'MangaList': parseMangaList,
+    'Manga': parseManga,
+    'ChapterList': parseChapterList,
+    'Chapter': parseChapter,
+  };
+  return result[requestType]($, mangaProvider);
+}
+
+function mapToObject(map) {
+	return Object.fromEntries(
+		Array.from(map.entries(), function ([key, value]) {
+			return value instanceof Map
+				? [key, mapToObject(value)]
+				: value instanceof Set
+				? [key, Array.from(value)]
+				: [key, value];
+		})
+	);
+}
+
 async function scraper (urlString, requestType, mangaProvider) {
   try {
+    logger.debug(`In scraper: ${requestType} - ${urlString}`);
     const htmlString = await crawler(urlString);
     if (htmlString instanceof Error) throw htmlString;
     const $ = loadHTML(htmlString);
-    let result;
-    switch (requestType) {
-      case 'MangaList':
-        result = parseMangaList($, mangaProvider);
-        break;
-      case 'Manga':
-        result = parseManga($, mangaProvider);
-        break;
-      case 'ChapterList':
-        result = parseChapterList($, mangaProvider);
-        break;
-      case 'Chapter':
-        result = parseChapter($, mangaProvider);
-        break;
-    }
-    logger.debug(`Scraper success: ${requestType} - ${urlString}`);
+    const result = getScrapedData($, mangaProvider, requestType);
+    logger.debug(`Scraper success: `, result);
     return result;
   } catch (error) {
-    logger.error(`Scraper fail: ${requestType} - ${urlString}`);
+    logger.error(`Scraper fail: `, error);
     throw error;
   }
 }
@@ -204,7 +220,7 @@ exports.handler = async function (event, context) {
         const ddbStatusClient = new DynamoDBClient({ region: region });
         const ddbStatusCommand = new UpdateItemCommand(ddbStatusCommandParams);
         const ddbStatusResponse = await ddbStatusClient.send(ddbStatusCommand);
-        logger.debug(`DynamoDB response: ${ddbStatusResponse}`);
+        logger.debug(`DynamoDB response: `, ddbStatusResponse);
         // TODO delete message
       } catch (error) {
         logger.error(error);
@@ -218,7 +234,7 @@ exports.handler = async function (event, context) {
         const ddbStatusClient = new DynamoDBClient({ region: region });
         const ddbStatusCommand = new UpdateItemCommand(ddbStatusCommandParams);
         const ddbStatusResponse = await ddbStatusClient.send(ddbStatusCommand);
-        logger.debug(`DynamoDB response: ${ddbStatusResponse}`);
+        logger.debug(`DynamoDB response: `, ddbStatusResponse);
         // TODO dead letter queue ?
       }
     }));

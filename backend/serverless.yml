@@ -30,6 +30,13 @@ provider:
 package:
   individually: true
 
+layers:
+  chrome:
+    name: chrome-aws-lambda
+    description: '@sparticuz/chrome-aws-lambda'
+    package:
+      artifact: resources/layer/chrome-aws-lambda.zip
+
 functions:
   Root:
     handler: src/_root/index.handler
@@ -43,11 +50,12 @@ functions:
   Scraper:
     handler: src/scraper/index.handler
     layers:
-      - arn:aws:lambda:${aws:region}:764866452798:layer:chrome-aws-lambda:31
+      - !Ref ChromeLambdaLayer
     package:
       patterns:
-        - 'node_modules/@sparticuz/chrome-aws-lambda'
-        - '!node_modules/@sparticuz/chrome-aws-lambda/bin'
+        - '!node_modules\@sparticuz'
+        - '!node_modules\puppeteer'
+        - 'node_modules\puppeteer-core'
     memorySize: 2048
     timeout: 20
     environment:

@@ -6,4 +6,4 @@ Resources:
       MaximumMessageSize: 262144
       MessageRetentionPeriod: 345600
       QueueName: ${self:custom.${self:provider.stage}.Stack}-scraperQueue-${self:provider.stage}
-      VisibilityTimeout: 30
+      VisibilityTimeout: 300

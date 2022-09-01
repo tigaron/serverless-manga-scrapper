@@ -41,7 +41,7 @@ const providerMap = new Map([
 ]);
 
 function errorHandler(err, req, res, next) {
-  logger.error(err.message);
+  logger.error(err);
   const statusCode = res.statusCode !== 200 ? res.statusCode : 500;
   res.status(statusCode).json({
     'status': statusCode,
@@ -114,7 +114,7 @@ app.post('/series', async (req, res, next) => {
     const ddbClient = new DynamoDBClient({ region: region });
     const ddbCommand = new PutItemCommand(ddbCommandParams);
     const ddbResponse = await ddbClient.send(ddbCommand);
-    logger.debug(`DynamoDB response: ${ddbResponse}`);
+    logger.debug(`DynamoDB response: `, ddbResponse);
     res.status(202).json({
       'status': 202,
       'statusText': 'Queued',
@@ -140,7 +140,7 @@ app.get('/series/:id', async (req, res, next) => {
     const ddbClient = new DynamoDBClient({ region: region });
     const ddbCommand = new GetItemCommand(ddbCommandParams);
     const ddbResponse = await ddbClient.send(ddbCommand);
-    logger.debug(`DynamoDB response: ${ddbResponse}`);
+    logger.debug(`DynamoDB response: `, ddbResponse);
     if (Object.keys(ddbResponse.Item).length === 0) {
       res.status(404);
       throw new Error(`Not found: "${id}"`);
@@ -170,7 +170,7 @@ app.post('/series/:id', async (req, res, next) => {
     const ddbClient = new DynamoDBClient({ region: region });
     const ddbCommand = new GetItemCommand(ddbCommandParams);
     const ddbResponse = await ddbClient.send(ddbCommand);
-    logger.debug(`DynamoDB response: ${ddbResponse}`);
+    logger.debug(`DynamoDB response: `, ddbResponse);
     if (!ddbResponse.Item?.MangaUrl) {
       res.status(404);
       throw new Error(`Not found: "${id}"`);
@@ -187,7 +187,7 @@ app.post('/series/:id', async (req, res, next) => {
     const sqsClient = new SQSClient({ region: region });
     const sqsCommand = new SendMessageCommand(sqsCommandParams);
     const sqsResponse = await sqsClient.send(sqsCommand);
-    logger.debug(`SQS response: ${sqsResponse}`);
+    logger.debug(`SQS response: `, sqsResponse);
     const Item = {
       '_type': 'request-status',
       '_id': sqsResponse.MessageId,
@@ -201,7 +201,7 @@ app.post('/series/:id', async (req, res, next) => {
     const ddbClient2 = new DynamoDBClient({ region: region });
     const ddbCommand2 = new PutItemCommand(ddbCommandParams2);
     const ddbResponse2 = await ddbClient2.send(ddbCommand2);
-    logger.debug(`DynamoDB response: ${ddbResponse2}`);
+    logger.debug(`DynamoDB response: `, ddbResponse2);
     res.status(202).json({
       'status': 202,
       'statusText': 'Queued',

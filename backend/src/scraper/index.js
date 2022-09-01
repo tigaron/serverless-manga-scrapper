@@ -1,5 +1,5 @@
-const { DynamoDBClient, UpdateItemCommand, PutItemCommand } = require('@aws-sdk/client-dynamodb');
-const { marshall } = require('@aws-sdk/util-dynamodb');
+const { DynamoDBClient, UpdateItemCommand, PutItemCommand, GetItemCommand } = require('@aws-sdk/client-dynamodb');
+const { marshall, unmarshall } = require('@aws-sdk/util-dynamodb');
 const chromium = require('@sparticuz/chrome-aws-lambda');
 const cheerio = require('cheerio');
 const log4js = require('log4js');
@@ -174,18 +174,6 @@ function getScrapedData ($, mangaProvider, requestType) {
   return result[requestType]($, mangaProvider);
 }
 
-function mapToObject(map) {
-	return Object.fromEntries(
-		Array.from(map.entries(), function ([key, value]) {
-			return value instanceof Map
-				? [key, mapToObject(value)]
-				: value instanceof Set
-				? [key, Array.from(value)]
-				: [key, value];
-		})
-	);
-}
-
 async function scraper (urlString, requestType, mangaProvider) {
   try {
     logger.debug(`In scraper: ${requestType} - ${urlString}`);
@@ -201,6 +189,179 @@ async function scraper (urlString, requestType, mangaProvider) {
   }
 }
 
+async function getItem (type, id) {
+  try {
+    logger.debug(`In getItem`);
+    const commandParams = {
+      'TableName': mangaTable,
+      'Key': { '_type': marshall(type), '_id': marshall(id) },
+    };
+    logger.debug(commandParams);
+    const client = new DynamoDBClient({ region: region });
+    const command = new GetItemCommand(commandParams);
+    const response = await client.send(command);
+    logger.debug(`DynamoDB response: `, response);
+    if (response.Item) return unmarshall(response.Item);
+    else throw new Error(`DynamoDB failed transaction`);
+  } catch (error) {
+    logger.error(error);
+    throw error;
+  }
+}
+
+async function putItem (item) {
+  try {
+    logger.debug(`In putItem`);
+    const commandParams = {
+      'TableName': mangaTable,
+      'Item': marshall(item),
+    };
+    logger.debug(commandParams);
+    const client = new DynamoDBClient({ region: region });
+    const command = new PutItemCommand(commandParams);
+    const response = await client.send(command);
+    logger.debug(`DynamoDB response: `, response);
+  } catch (error) {
+    logger.error(error);
+    throw error;
+  }
+}
+
+async function updateStatus (type, id, status, data) {
+  try {
+    logger.debug(`In updateStatus`);
+    const commandParams = {
+      'TableName': mangaTable,
+      'Key': { '_type': marshall(type), '_id': marshall(id) },
+      'ExpressionAttributeNames': { '#S': 'Status', '#D': 'Data' },
+      'ExpressionAttributeValues': { ':s': marshall(status), ':d': marshall(data) },
+      'UpdateExpression': 'SET #S = :s, #D = :d',
+    };
+    logger.debug(commandParams);
+    const client = new DynamoDBClient({ region: region });
+    const command = new UpdateItemCommand(commandParams);
+    const response = await client.send(command);
+    logger.debug(`DynamoDB response: `, response);
+  } catch (error) {
+    logger.error(error);
+    throw error;
+  }
+}
+
+function mapToObject(map) {
+  return Object.fromEntries(
+    Array.from(map.entries(), function ([key, value]) {
+      return value instanceof Map
+        ? [key, mapToObject(value)]
+        : value instanceof Set
+          ? [key, Array.from(value)]
+          : [key, value];
+    })
+  );
+}
+
+async function uploadListData (data) {
+  try {
+    logger.debug(`In uploadListData`);
+    const accepted = new Set();
+    const rejected = new Set();
+    for await (const element of data) {
+      const data = await getItem(element.get('_type'), element.get('_id'));
+      if (data) {
+        rejected.add(`Already exist: "${element.get('_id')}"`);
+        continue;
+      } else {
+        await putItem(mapToObject(element));
+        accepted.add(element.get('_id'));
+      }
+    }
+    const result = { 'Accepted': Array.from(accepted), 'Rejected': Array.from(rejected) };
+    logger.debug(`Result: `, result);
+    return result;
+  } catch (error) {
+    logger.error(error);
+    throw error;
+  }
+}
+
+async function uploadMangaData (data) {
+  try {
+    logger.debug(`In uploadMangaData`);
+    const commandParams = {
+      'TableName': mangaTable,
+      'Key': { '_type': marshall(data.get('_type')), '_id': marshall(data.get('_id')) },
+      'ExpressionAttributeNames': {
+        '#MT': 'MangaTitle',
+        '#MS': 'MangaSynopsis',
+        '#MC': 'MangaCover',
+        '#SU': 'MangaShortUrl',
+        '#CU': 'MangaCanonicalUrl',
+        '#SD': 'ScrapeDate',
+      },
+      'ExpressionAttributeValues': {
+        ':mt': marshall(data.get('MangaTitle')),
+        ':ms': marshall(data.get('MangaSynopsis')),
+        ':mc': marshall(data.get('MangaCover')),
+        ':su': marshall(data.get('MangaShortUrl')),
+        ':cu': marshall(data.get('MangaCanonicalUrl')),
+        ':sd': marshall(data.get('ScrapeDate')),
+      },
+      'UpdateExpression': 'SET #MT = :mt, #MS = :ms, #MC = :mc, #SU = :su, #CU = :cu, #SD = :sd',
+    };
+    logger.debug(commandParams);
+    const client = new DynamoDBClient({ region: region });
+    const command = new UpdateItemCommand(commandParams);
+    const response = await client.send(command);
+    logger.debug(`DynamoDB response: `, response);
+    const result = '';
+    logger.debug(`Result: `, result);
+    return result;
+  } catch (error) {
+    logger.error(error);
+    throw error;
+  }
+}
+
+async function uploadChapterData (data) {
+  try {
+    logger.debug(`In uploadChapterData`);
+    const commandParams = {
+      'TableName': mangaTable,
+      'Key': { '_type': marshall(data.get('_type')), '_id': marshall(data.get('_id')) },
+      'ExpressionAttributeNames': {
+        '#CT': 'ChapterTitle',
+        '#CS': 'ChapterShortUrl',
+        '#CU': 'ChapterCanonicalUrl',
+        '#PS': 'ChapterPrevSlug',
+        '#NS': 'ChapterNextSlug',
+        '#CC': 'ChapterContent',
+        '#SD': 'ScrapeDate',
+      },
+      'ExpressionAttributeValues': {
+        ':ct': marshall(data.get('ChapterTitle')),
+        ':cs': marshall(data.get('ChapterShortUrl')),
+        ':cu': marshall(data.get('ChapterCanonicalUrl')),
+        ':ps': marshall(data.get('ChapterPrevSlug')),
+        ':ns': marshall(data.get('ChapterNextSlug')),
+        ':cc': { L: marshall(Array.from(data.get('ChapterContent'))) },
+        ':sd': marshall(data.get('ScrapeDate')),
+      },
+      'UpdateExpression': 'SET #CT = :ct, #CS = :cs, #CU = :cu, #PS = :ps, #NS = :ns, #CC = :cc, #SD = :sd',
+    };
+    logger.debug(commandParams);
+    const client = new DynamoDBClient({ region: region });
+    const command = new UpdateItemCommand(commandParams);
+    const response = await client.send(command);
+    logger.debug(`DynamoDB response: `, response);
+    const result = '';
+    logger.debug(`Result: `, result);
+    return result;
+  } catch (error) {
+    logger.error(error);
+    throw error;
+  }
+}
+
 exports.handler = async function (event, context) {
   if (event.Records) {
     return Promise.all(event.Records.map(async function (message) {
@@ -209,33 +370,19 @@ exports.handler = async function (event, context) {
         const { urlToScrape, requestType, provider } = JSON.parse(message.body);
         const scraperResponse = await scraper(urlToScrape, requestType, provider);
         if (scraperResponse instanceof Error) throw scraperResponse;
-        // TODO put/update manga data
-        const ddbStatusCommandParams = {
-          'TableName': mangaTable,
-          'Key': { '_type': marshall('request-status'), '_id': marshall(message.messageId) },
-          'ExpressionAttributeNames': { '#S': 'Status', '#D': 'Data' },
-          'ExpressionAttributeValues': { ':s': marshall('completed'), ':d': marshall(scraperResponse) },
-          'UpdateExpression': 'SET #S = :s, #D = :d',
+        const uploadType = {
+          'MangaList': uploadListData,
+          'Manga': uploadMangaData,
+          'ChapterList': uploadListData,
+          'Chapter': uploadChapterData,
         };
-        const ddbStatusClient = new DynamoDBClient({ region: region });
-        const ddbStatusCommand = new UpdateItemCommand(ddbStatusCommandParams);
-        const ddbStatusResponse = await ddbStatusClient.send(ddbStatusCommand);
-        logger.debug(`DynamoDB response: `, ddbStatusResponse);
+        const result = uploadType[requestType](scraperResponse);
+        await updateStatus('request-status', message.messageId, 'completed', result);
         // TODO delete message
       } catch (error) {
         logger.error(error);
-        const ddbStatusCommandParams = {
-          'TableName': mangaTable,
-          'Key': { '_type': marshall('request-status'), '_id': marshall(message.messageId) },
-          'ExpressionAttributeNames': { '#S': 'Status', '#M': 'Message' },
-          'ExpressionAttributeValues': { ':s': marshall('failed'), ':m': marshall(error.message) },
-          'UpdateExpression': 'SET #S = :s, #M = :m',
-        };
-        const ddbStatusClient = new DynamoDBClient({ region: region });
-        const ddbStatusCommand = new UpdateItemCommand(ddbStatusCommandParams);
-        const ddbStatusResponse = await ddbStatusClient.send(ddbStatusCommand);
-        logger.debug(`DynamoDB response: `, ddbStatusResponse);
-        // TODO dead letter queue ?
+        await updateStatus('request-status', message.messageId, 'failed', error.message);
+        // TODO dead letter queue
       }
     }));
   }

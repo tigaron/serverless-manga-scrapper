@@ -10,4 +10,5 @@ server
 
 *.rest
 
-*chrome-aws-lambda*
+chrome-aws-lambda
+!chrome-aws-lambda.zip

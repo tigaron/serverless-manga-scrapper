@@ -46,7 +46,6 @@ function errorHandler(err, req, res, next) {
   res.status(statusCode).json({
     'status': statusCode,
     'statusText': err.message,
-    'stack': logLevel === 'info' ? undefined : err.stack,
   });
 }
 
@@ -97,7 +96,7 @@ app.get('/series', async (req, res, next) => {
     }
     const paginatorConfig = {
       'client': new DynamoDBClient({ region: region }),
-      'pageSize': limit ? limit : 10,
+      'pageSize': limit ? parseInt(limit, 10) : 10,
     };
     const commandParams = {
       'TableName': mangaTable,
@@ -106,14 +105,32 @@ app.get('/series', async (req, res, next) => {
       'KeyConditionExpression': '#T = :t',
     };
     const paginator = paginateQuery(paginatorConfig, commandParams);
-    const series = page ? await paginator[page-1] : await paginator[0];
-    logger.debug(paginator);
-    logger.debug(series);
-    res.status(200).json({
-      'status': 200,
-      'statusText': 'OK',
-      'data': series,
-    });
+    const pageToGet = page ? parseInt(page - 1, 10) : 0;
+    const series = [];
+    let count;
+    let prev;
+    let next;
+    let index = 0;
+    for await (const value of paginator) {
+      if (index === pageToGet) {
+        logger.debug(`Page data: `, value);
+        for (const item of value.Items) {
+          series.push(unmarshall(item));
+        }
+        count = value.Count;
+        prev = pageToGet ? `/series?provider=${provider}&page=${pageToGet}&limit=${limit ? parseInt(limit, 10) : 10}` : undefined;
+        next = value.LastEvaluatedKey ? `/series?provider=${provider}&page=${pageToGet + 1}&limit=${limit ? parseInt(limit, 10) : 10}` : undefined;
+        break;
+      } else {
+        index++;
+        continue;
+      }
+    }
+    if (page && series.length === 0) {
+      res.status(404);
+      throw new Error(`Not found: "${req.originalUrl}"`);
+    }
+    res.status(200).json({ 'status': 200, 'statusText': 'OK', 'count': count, 'prev': prev, 'next': next, 'data': series });
   } catch (error) {
     next(error);
   }
@@ -146,11 +163,7 @@ app.post('/series', async (req, res, next) => {
       'Status': 'pending',
     };
     await putItem(Item);
-    res.status(202).json({
-      'status': 202,
-      'statusText': 'Queued',
-      'data': Item,
-    });
+    res.status(202).json({ 'status': 202, 'statusText': 'Queued', 'data': Item });
   } catch (error) {
     next(error);
   }
@@ -167,13 +180,9 @@ app.get('/series/:id', async (req, res, next) => {
     const ddbResponse = await getItem(`series_${provider}`, id);
     if (!ddbResponse) {
       res.status(404);
-      throw new Error(`Not found: "${id}"`);
+      throw new Error(`Not found: "${id}", In: "${provider}"`);
     }
-    res.status(200).json({
-      'status': 200,
-      'statusText': 'OK',
-      'data': ddbResponse,
-    });
+    res.status(200).json({ 'status': 200, 'statusText': 'OK', 'data': ddbResponse });
   } catch (error) {
     next(error);
   }
@@ -190,11 +199,11 @@ app.post('/series/:id', async (req, res, next) => {
     const { MangaUrl, MangaCover } = await getItem(`series_${provider}`, id);
     if (MangaCover) {
       res.status(409);
-      throw new Error(`Already scraped: "${id}"`);
+      throw new Error(`Already scraped: "${id}", In: "${provider}"`);
     }
     if (!MangaUrl) {
       res.status(404);
-      throw new Error(`Not found: "${id}"`);
+      throw new Error(`Not found: "${id}", In: "${provider}"`);
     }
     const scraperData = {
       'urlToScrape': MangaUrl,
@@ -216,11 +225,7 @@ app.post('/series/:id', async (req, res, next) => {
       'Status': 'pending',
     };
     await putItem(Item);
-    res.status(202).json({
-      'status': 202,
-      'statusText': 'Queued',
-      'data': Item,
-    });
+    res.status(202).json({ 'status': 202, 'statusText': 'Queued', 'data': Item });
   } catch (error) {
     next(error);
   }

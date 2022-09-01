@@ -1,5 +1,6 @@
 const { DynamoDBClient, UpdateItemCommand, PutItemCommand, GetItemCommand } = require('@aws-sdk/client-dynamodb');
 const { marshall, unmarshall } = require('@aws-sdk/util-dynamodb');
+const { SQSClient, SendMessageCommand } = require('@aws-sdk/client-sqs');
 const chromium = require('@sparticuz/chrome-aws-lambda');
 const cheerio = require('cheerio');
 const log4js = require('log4js');
@@ -282,7 +283,10 @@ async function uploadListData (data) {
       }
     };
     logger.debug(`Result: `, result);
-    return result;
+    return {
+      'accepted': accepted.size() ? accepted : undefined,
+      'result': result,
+    };
   } catch (error) {
     logger.error(error);
     throw error;
@@ -320,7 +324,7 @@ async function uploadMangaData (data) {
     logger.debug(`DynamoDB response: `, response);
     const result = response.$metadata.httpStatusCode === 200 ? { 'S': 'accepted' } : { 'S': 'rejected' };
     logger.debug(`Result: `, result);
-    return result;
+    return { 'result': result };
   } catch (error) {
     logger.error(error);
     throw error;
@@ -360,7 +364,7 @@ async function uploadChapterData (data) {
     logger.debug(`DynamoDB response: `, response);
     const result = response.$metadata.httpStatusCode === 200 ? { 'S': 'accepted' } : { 'S': 'rejected' };
     logger.debug(`Result: `, result);
-    return result;
+    return { 'result': result };
   } catch (error) {
     logger.error(error);
     throw error;
@@ -381,13 +385,39 @@ exports.handler = async function (event, context) {
           'ChapterList': uploadListData,
           'Chapter': uploadChapterData,
         };
-        const result = await uploadType[requestType](scraperResponse);
+        const { accepted, result } = await uploadType[requestType](scraperResponse);
         await updateStatus('request-status', message.messageId, 'completed', result);
-        // TODO delete message
+        if (accepted) {
+          const followUpRequestType = {
+            'MangaList': 'Manga',
+            'ChapterList': 'Chapter',
+          }
+          for await (const element of accepted) {
+            const followUpRequestData = {
+              'urlToScrape': element,
+              'requestType': followUpRequestType[requestType],
+              'provider': provider,
+            };
+            const sqsCommandParams = {
+              'MessageBody': JSON.stringify(followUpRequestData),
+              'QueueUrl': scraperQueueUrl,
+            };
+            const sqsClient = new SQSClient({ region: region });
+            const sqsCommand = new SendMessageCommand(sqsCommandParams);
+            const sqsResponse = await sqsClient.send(sqsCommand);
+            logger.debug(`SQS response: ${sqsResponse}`);
+            const followUpItem = {
+              '_type': 'request-status',
+              '_id': sqsResponse.MessageId,
+              'Request': JSON.stringify(followUpRequestData),
+              'Status': 'pending',
+            };
+            await putItem(followUpItem);
+          }
+        }
       } catch (error) {
         logger.error(error);
         await updateStatus('request-status', message.messageId, 'failed', error.message);
-        // TODO dead letter queue
       }
     }));
   }

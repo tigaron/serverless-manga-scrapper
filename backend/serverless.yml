@@ -71,9 +71,9 @@ functions:
           - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.${self:provider.stage}.Stack}-mangaTable-${self:provider.stage}
       - Effect: Allow
         Action:
+          - sqs:SendMessage
           - sqs:ReceiveMessage
           - sqs:DeleteMessage
-          - sqs:GetQueueAttributes
         Resource:
           - arn:aws:sqs:${aws:region}:${aws:accountId}:table/${self:custom.${self:provider.stage}.Stack}-scraperQueue-${self:provider.stage}
     events:
@@ -82,7 +82,7 @@ functions:
             Fn::GetAtt:
               - ScraperQueue
               - Arn
-          batchSize: 1
+          batchSize: 10
 
 resources:
   - ${file(resources/apigateway/RestApi.yml)}

@@ -37,39 +37,217 @@ const providerMap = new Map([
   ['realm', 'https://realmscans.com/series/list-mode/'],
 ]);
 
-app.get('/series/:seriesId/chapters', async (req, res) => {
+function errorHandler(err, req, res, next) {
+  logger.error(err);
+  const statusCode = res.statusCode !== 200 ? res.statusCode : 500;
+  res.status(statusCode).json({
+    'status': statusCode,
+    'statusText': err.message,
+  });
+}
+
+async function getItem (type, id) {
   try {
-    // TODO get manga chapters from ddb
-    res.status(200).json({
-      'status': 200,
-      'statusText': 'OK',
-      'data': { query: req.query, params: req.params },
-    });
+    logger.debug(`In getItem`);
+    const commandParams = {
+      'TableName': mangaTable,
+      'Key': { '_type': marshall(type), '_id': marshall(id) },
+    };
+    logger.debug(`DynamoDB command params: `, commandParams);
+    const client = new DynamoDBClient({ region: region });
+    const command = new GetItemCommand(commandParams);
+    const response = await client.send(command);
+    logger.debug(`DynamoDB response: `, response);
+    if (response.Item) return unmarshall(response.Item);
+    else return false;
   } catch (error) {
-    res.status(503).json({
-      'status': 503,
-      'statusText': error.name,
-      'message': error.messsage,
-      'stack': logLevel === 'info' ? '' : error.stack,
-    });
+    logger.error(error);
+    throw error;
+  }
+}
+
+async function putItem (item) {
+  try {
+    logger.debug(`In putItem`);
+    const commandParams = {
+      'TableName': mangaTable,
+      'Item': marshall(item),
+    };
+    logger.debug(`DynamoDB command params: `, commandParams);
+    const client = new DynamoDBClient({ region: region });
+    const command = new PutItemCommand(commandParams);
+    const response = await client.send(command);
+    logger.debug(`DynamoDB response: `, response);
+  } catch (error) {
+    logger.error(error);
+    throw error;
+  }
+}
+
+app.get('/series/:id/chapters', async (req, res, next) => {
+  try {
+    const { provider, limit, page } = req.query;
+    if (!provider) {
+      res.status(400);
+      throw new Error('Missing query parameter: "provider"');
+    }
+    if (!providerMap.has(provider)) {
+      res.status(404);
+      throw new Error(`Unknown provider: "${provider}"`);
+    }
+    const { id } = req.params;
+    const paginatorConfig = {
+      'client': new DynamoDBClient({ region: region }),
+      'pageSize': limit ? parseInt(limit, 10) : 10,
+    };
+    const commandParams = {
+      'TableName': mangaTable,
+      'ExpressionAttributeNames': { '#T': '_type' },
+      'ExpressionAttributeValues': { ':t': marshall(`chapter_${provider}_${id}`) },
+      'KeyConditionExpression': '#T = :t',
+    };
+    const paginator = paginateQuery(paginatorConfig, commandParams);
+    const pageToGet = page ? parseInt(page - 1, 10) : 0;
+    const chapters = [];
+    let count;
+    let prev;
+    let next;
+    let index = 0;
+    for await (const value of paginator) {
+      if (index === pageToGet) {
+        logger.debug(`Page data: `, value);
+        for (const item of value.Items) {
+          chapters.push(unmarshall(item));
+        }
+        count = value.Count;
+        prev = pageToGet ? `/series/${id}/chapters?provider=${provider}&page=${pageToGet}&limit=${limit ? parseInt(limit, 10) : 10}` : undefined;
+        next = value.LastEvaluatedKey ? `/series/${id}/chapters?provider=${provider}&page=${pageToGet + 1}&limit=${limit ? parseInt(limit, 10) : 10}` : undefined;
+        break;
+      } else {
+        index++;
+        continue;
+      }
+    }
+    if (page && chapters.length === 0) {
+      res.status(404);
+      throw new Error(`Not found: "${req.originalUrl}"`);
+    }
+    if (chapters.length === 0) {
+      res.status(404);
+      throw new Error(`Not found: "${id}"`);
+    }
+    res.status(200).json({ 'status': 200, 'statusText': 'OK', 'count': count, 'prev': prev, 'next': next, 'data': chapters });
+  } catch (error) {
+    next(error);
   }
 });
 
-app.post('/series/:seriesId/chapters', async (req, res) => {
+app.post('/series/:id/chapters', async (req, res, next) => {
   try {
-    // TODO send message to sqs
-    res.status(202).json({
-      'status': 202,
-      'statusText': 'Queued',
-      'data': { query: req.query, params: req.params },
-    });
+    const { provider } = req.query;
+    if (!provider) {
+      res.status(400);
+      throw new Error('Missing query parameter: "provider"');
+    }
+    if (!providerMap.has(provider)) {
+      res.status(404);
+      throw new Error(`Unknown provider: "${provider}"`);
+    }
+    const { id } = req.params;
+    const { MangaUrl } = await getItem(`series_${provider}`, id);
+    if (!MangaUrl) {
+      res.status(404);
+      throw new Error(`Not found: "${id}", In: "${provider}"`);
+    }
+    const scraperData = {
+      'urlToScrape': MangaUrl,
+      'requestType': 'ChapterList',
+      'provider': provider,
+    };
+    const sqsCommandParams = {
+      'MessageBody': JSON.stringify(scraperData),
+      'QueueUrl': scraperQueueUrl,
+    };
+    const sqsClient = new SQSClient({ region: region });
+    const sqsCommand = new SendMessageCommand(sqsCommandParams);
+    const sqsResponse = await sqsClient.send(sqsCommand);
+    logger.debug(`SQS response: ${sqsResponse}`);
+    const Item = {
+      '_type': 'request-status',
+      '_id': sqsResponse.MessageId,
+      'Request': JSON.stringify(scraperData),
+      'Status': 'pending',
+    };
+    await putItem(Item);
+    res.status(202).json({ 'status': 202, 'statusText': 'Queued', 'data': Item });
   } catch (error) {
-    res.status(503).json({
-      'status': 503,
-      'statusText': error.name,
-      'message': error.messsage,
-      'stack': logLevel === 'info' ? '' : error.stack,
-    });
+    next(error);
+  }
+});
+
+app.get('/series/:id/chapter/:slug', async (req, res, next) => {
+  try {
+    const { provider } = req.query;
+    if (!provider) {
+      res.status(400);
+      throw new Error('Missing query parameter: "provider"');
+    }
+    if (!providerMap.has(provider)) {
+      res.status(404);
+      throw new Error(`Unknown provider: "${provider}"`);
+    }
+    const { id, slug } = req.params;
+    const ddbResponse = await getItem(`chapter_${provider}_${id}`, slug);
+    if (!ddbResponse) {
+      res.status(404);
+      throw new Error(`Not found: "${slug}", In: "${provider} - ${id}"`);
+    }
+    res.status(200).json({ 'status': 200, 'statusText': 'OK', 'data': ddbResponse });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/series/:id/chapter/:slug', async (req, res, next) => {
+  try {
+    const { provider } = req.query;
+    if (!provider) {
+      res.status(400);
+      throw new Error('Missing query parameter: "provider"');
+    }
+    if (!providerMap.has(provider)) {
+      res.status(404);
+      throw new Error(`Unknown provider: "${provider}"`);
+    }
+    const { id, slug } = req.params;
+    const { ChapterUrl } = await getItem(`chapter_${provider}_${id}`, slug);
+    if (!ChapterUrl) {
+      res.status(404);
+      throw new Error(`Not found: "${slug}", In: "${provider} - ${id}"`);
+    }
+    const scraperData = {
+      'urlToScrape': ChapterUrl,
+      'requestType': 'Chapter',
+      'provider': `chapter_${provider}_${id}`,
+    };
+    const sqsCommandParams = {
+      'MessageBody': JSON.stringify(scraperData),
+      'QueueUrl': scraperQueueUrl,
+    };
+    const sqsClient = new SQSClient({ region: region });
+    const sqsCommand = new SendMessageCommand(sqsCommandParams);
+    const sqsResponse = await sqsClient.send(sqsCommand);
+    logger.debug(`SQS response: ${sqsResponse}`);
+    const Item = {
+      '_type': 'request-status',
+      '_id': sqsResponse.MessageId,
+      'Request': JSON.stringify(scraperData),
+      'Status': 'pending',
+    };
+    await putItem(Item);
+    res.status(202).json({ 'status': 202, 'statusText': 'Queued', 'data': Item });
+  } catch (error) {
+    next(error);
   }
 });
 

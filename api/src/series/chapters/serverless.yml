@@ -67,11 +67,11 @@ functions:
           method: post
           cors: true
       - http:
-          path: /series/{id}/chapters/{slug}
+          path: /series/{id}/chapter/{slug}
           method: get
           cors: true
       - http:
-          path: /series/{id}/chapters/{slug}
+          path: /series/{id}/chapter/{slug}
           method: post
           cors: true
 

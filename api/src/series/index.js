@@ -94,6 +94,10 @@ app.get('/series', async (req, res, next) => {
       res.status(400);
       throw new Error('Missing query parameter: "provider"');
     }
+    if (!providerMap.has(provider)) {
+      res.status(404);
+      throw new Error(`Unknown provider: "${provider}"`);
+    }
     const paginatorConfig = {
       'client': new DynamoDBClient({ region: region }),
       'pageSize': limit ? parseInt(limit, 10) : 10,
@@ -143,6 +147,10 @@ app.post('/series', async (req, res, next) => {
       res.status(400);
       throw new Error('Missing query parameter: "provider"');
     }
+    if (!providerMap.has(provider)) {
+      res.status(404);
+      throw new Error(`Unknown provider: "${provider}"`);
+    }
     const scraperData = {
       'urlToScrape': providerMap.get(provider),
       'requestType': 'MangaList',
@@ -176,6 +184,10 @@ app.get('/series/:id', async (req, res, next) => {
       res.status(400);
       throw new Error('Missing query parameter: "provider"');
     }
+    if (!providerMap.has(provider)) {
+      res.status(404);
+      throw new Error(`Unknown provider: "${provider}"`);
+    }
     const { id } = req.params;
     const ddbResponse = await getItem(`series_${provider}`, id);
     if (!ddbResponse) {
@@ -195,6 +207,10 @@ app.post('/series/:id', async (req, res, next) => {
       res.status(400);
       throw new Error('Missing query parameter: "provider"');
     }
+    if (!providerMap.has(provider)) {
+      res.status(404);
+      throw new Error(`Unknown provider: "${provider}"`);
+    }
     const { id } = req.params;
     const { MangaUrl, MangaCover } = await getItem(`series_${provider}`, id);
     if (MangaCover) {
@@ -208,7 +224,7 @@ app.post('/series/:id', async (req, res, next) => {
     const scraperData = {
       'urlToScrape': MangaUrl,
       'requestType': 'Manga',
-      'provider': provider,
+      'provider': `series_${provider}`,
     };
     const sqsCommandParams = {
       'MessageBody': JSON.stringify(scraperData),

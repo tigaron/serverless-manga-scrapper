@@ -72,7 +72,7 @@ function parseMangaList ($, mangaProvider) {
   return MangaList;
 }
 
-function parseManga ($, mangaProvider) {
+function parseManga ($, mangaType) {
   logger.debug(`In parseManga`);
   const MangaTitle = $('h1.entry-title').text().trim();
   let MangaSynopsis = $('p', 'div.entry-content').text();
@@ -83,7 +83,7 @@ function parseManga ($, mangaProvider) {
   const MangaSlug = MangaCanonicalUrl.split('/').slice(-2).shift().replace(/[\d]*[-]?/, '');
   const timestamp = new Date().toUTCString();
   const Manga = new Map([
-    ['_type', `series_${mangaProvider}`],
+    ['_type', mangaType],
     ['_id', MangaSlug],
     ['MangaTitle', MangaTitle],
     ['MangaSynopsis', MangaSynopsis],
@@ -121,7 +121,7 @@ function parseChapterList ($, mangaProvider) {
   return ChapterList;
 }
 
-function parseChapter ($, mangaProvider) {
+function parseChapter ($, chapterType) {
   logger.debug(`In parseChapter`);
   const ChapterTitle = $('h1.entry-title').text().trim();
   const ChapterShortUrl = $('link[rel="shortlink"]').attr('href');
@@ -133,7 +133,7 @@ function parseChapter ($, mangaProvider) {
   const ChapterNextSlug = navScript.match(/'nextUrl':'(.*?)'/)[1].split('/').slice(-2).shift().replace(/[\d]*[-]?/, '').replace(/\\/, '');
   const timestamp = new Date().toUTCString();
   const ChapterContent = new Set();
-  if (mangaProvider === 'realm') {
+  if (chapterType.split('_')[1] === 'realm') {
     const realmContent = $('div#readerarea').contents().text();
     $('img[class*="wp-image"]', realmContent).each((index, element) => {
       const img = $(element).attr('src');
@@ -152,7 +152,7 @@ function parseChapter ($, mangaProvider) {
     });
   }
   const Chapter = new Map([
-    ['_type', mangaProvider],
+    ['_type', chapterType],
     ['_id', ChapterSlug],
     ['ChapterTitle', ChapterTitle],
     ['ChapterShortUrl', ChapterShortUrl],
@@ -266,6 +266,7 @@ async function uploadListData (data) {
     logger.debug(`In uploadListData`);
     const accepted = new Set();
     const rejected = new Set();
+    const followup = new Set();
     for await (const element of data) {
       const data = await getItem(element.get('_type'), element.get('_id'));
       if (data) {
@@ -274,6 +275,7 @@ async function uploadListData (data) {
       } else {
         await putItem(mapToObject(element));
         accepted.add(element.get('_id'));
+        followup.add({ '_type': element.get('_type'), '_id': element.get('_id') });
       }
     }
     const result = {
@@ -284,7 +286,7 @@ async function uploadListData (data) {
     };
     logger.debug(`Result: `, result);
     return {
-      'accepted': accepted.size() ? accepted : undefined,
+      'followup': followup.size() ? followup : undefined,
       'result': result,
     };
   } catch (error) {
@@ -385,18 +387,23 @@ exports.handler = async function (event, context) {
           'ChapterList': uploadListData,
           'Chapter': uploadChapterData,
         };
-        const { accepted, result } = await uploadType[requestType](scraperResponse);
+        const { followup, result } = await uploadType[requestType](scraperResponse);
         await updateStatus('request-status', message.messageId, 'completed', result);
-        if (accepted) {
+        if (followup) {
           const followUpRequestType = {
             'MangaList': 'Manga',
             'ChapterList': 'Chapter',
           }
-          for await (const element of accepted) {
+          const followUpRequestUrl = {
+            'MangaList': 'MangaUrl',
+            'ChapterList': 'ChapterUrl',
+          }
+          for await (const element of followup) {
+            const followUpData = await getItem(element['_type'], element['_id']);
             const followUpRequestData = {
-              'urlToScrape': element,
+              'urlToScrape': followUpData[followUpRequestUrl[requestType]],
               'requestType': followUpRequestType[requestType],
-              'provider': provider,
+              'provider': element['_type'],
             };
             const sqsCommandParams = {
               'MessageBody': JSON.stringify(followUpRequestData),

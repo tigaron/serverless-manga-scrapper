@@ -809,13 +809,6 @@
   resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-4.6.0.tgz#3c7c9c46e678feefe7a2e5bb609d3dbd665ffb3f"
   integrity sha512-t09vSN3MdfsyCHoFcTRCH/iUtG7OJ0CsjzB8cjAmKc/va/kIgeDI/TxsigdncE/4be734m0cvIYwNaV4i2XqAw==
 
-"@sparticuz/chrome-aws-lambda@^17.0.0":
-  version "17.0.0"
-  resolved "https://registry.yarnpkg.com/@sparticuz/chrome-aws-lambda/-/chrome-aws-lambda-17.0.0.tgz#deb50e2dc820e54960b384dd2435973312b03471"
-  integrity sha512-YGtuOWWSWNSVoo7Ycng7X4bxgZHmrG2Y7sULuo8V+lzIxkH6uXeJ98vTAvwQZ5C7WZOWkKJLtbM3fWaN8vs+5Q==
-  dependencies:
-    tar-fs "^2.1.1"
-
 "@szmarczak/http-timer@^4.0.5":
   version "4.0.6"
   resolved "https://registry.yarnpkg.com/@szmarczak/http-timer/-/http-timer-4.0.6.tgz#b4a914bb62e7c272d4e5989fe4440f812ab1d807"
@@ -3183,23 +3176,6 @@ puppeteer-core@^17.0.0:
     unbzip2-stream "1.4.3"
     ws "8.8.1"
 
-puppeteer@^17.0.0:
-  version "17.0.0"
-  resolved "https://registry.yarnpkg.com/puppeteer/-/puppeteer-17.0.0.tgz#85fea801a7b8b8c9e2913b1491e98c867be49a6b"
-  integrity sha512-T2rdzlPxnPezF218kywFP3O+0YI5/8Kl8riNUicGb+KuMyDTrqRjhSOSDp6coQ1T4QYPBARTFp4EMBepMOzAQA==
-  dependencies:
-    cross-fetch "3.1.5"
-    debug "4.3.4"
-    devtools-protocol "0.0.1019158"
-    extract-zip "2.0.1"
-    https-proxy-agent "5.0.1"
-    progress "2.0.3"
-    proxy-from-env "1.1.0"
-    rimraf "3.0.2"
-    tar-fs "2.1.1"
-    unbzip2-stream "1.4.3"
-    ws "8.8.1"
-
 qs@6.9.3:
   version "6.9.3"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.9.3.tgz#bfadcd296c2d549f1dffa560619132c977f5008e"
@@ -3688,7 +3664,7 @@ supports-color@^8.1.1:
   dependencies:
     has-flag "^4.0.0"
 
-tar-fs@2.1.1, tar-fs@^2.1.1:
+tar-fs@2.1.1:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/tar-fs/-/tar-fs-2.1.1.tgz#489a15ab85f1f0befabb370b7de4f9eb5cbe8784"
   integrity sha512-V0r2Y9scmbDRLCNex/+hYzvp/zyYjvFbHPNgVTKfQvVrb6guiE/fxP+XblDNR011utopbkex2nM4dHNV6GDsng==

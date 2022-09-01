@@ -50,6 +50,44 @@ function errorHandler(err, req, res, next) {
   });
 }
 
+async function getItem (type, id) {
+  try {
+    logger.debug(`In getItem`);
+    const commandParams = {
+      'TableName': mangaTable,
+      'Key': { '_type': marshall(type), '_id': marshall(id) },
+    };
+    logger.debug(`DynamoDB command params: `, commandParams);
+    const client = new DynamoDBClient({ region: region });
+    const command = new GetItemCommand(commandParams);
+    const response = await client.send(command);
+    logger.debug(`DynamoDB response: `, response);
+    if (response.Item) return unmarshall(response.Item);
+    else return false;
+  } catch (error) {
+    logger.error(error);
+    throw error;
+  }
+}
+
+async function putItem (item) {
+  try {
+    logger.debug(`In putItem`);
+    const commandParams = {
+      'TableName': mangaTable,
+      'Item': marshall(item),
+    };
+    logger.debug(`DynamoDB command params: `, commandParams);
+    const client = new DynamoDBClient({ region: region });
+    const command = new PutItemCommand(commandParams);
+    const response = await client.send(command);
+    logger.debug(`DynamoDB response: `, response);
+  } catch (error) {
+    logger.error(error);
+    throw error;
+  }
+}
+
 app.get('/series', async (req, res, next) => {
   try {
     const { provider, limit, page } = req.query;
@@ -107,14 +145,7 @@ app.post('/series', async (req, res, next) => {
       'Request': JSON.stringify(scraperData),
       'Status': 'pending',
     };
-    const ddbCommandParams = {
-      'TableName': mangaTable,
-      'Item': marshall(Item),
-    };
-    const ddbClient = new DynamoDBClient({ region: region });
-    const ddbCommand = new PutItemCommand(ddbCommandParams);
-    const ddbResponse = await ddbClient.send(ddbCommand);
-    logger.debug(`DynamoDB response: `, ddbResponse);
+    await putItem(Item);
     res.status(202).json({
       'status': 202,
       'statusText': 'Queued',
@@ -133,22 +164,15 @@ app.get('/series/:id', async (req, res, next) => {
       throw new Error('Missing query parameter: "provider"');
     }
     const { id } = req.params;
-    const ddbCommandParams = {
-      'TableName': mangaTable,
-      'Key': { '_type': marshall(`series_${provider}`), '_id': marshall(id) },
-    };
-    const ddbClient = new DynamoDBClient({ region: region });
-    const ddbCommand = new GetItemCommand(ddbCommandParams);
-    const ddbResponse = await ddbClient.send(ddbCommand);
-    logger.debug(`DynamoDB response: `, ddbResponse);
-    if (Object.keys(ddbResponse.Item).length === 0) {
+    const ddbResponse = await getItem(`series_${provider}`, id);
+    if (!ddbResponse) {
       res.status(404);
       throw new Error(`Not found: "${id}"`);
     }
     res.status(200).json({
       'status': 200,
       'statusText': 'OK',
-      'data': unmarshall(ddbResponse.Item),
+      'data': ddbResponse,
     });
   } catch (error) {
     next(error);
@@ -163,20 +187,17 @@ app.post('/series/:id', async (req, res, next) => {
       throw new Error('Missing query parameter: "provider"');
     }
     const { id } = req.params;
-    const ddbCommandParams = {
-      'TableName': mangaTable,
-      'Key': { '_type': marshall(`series_${provider}`), '_id': marshall(id) },
-    };
-    const ddbClient = new DynamoDBClient({ region: region });
-    const ddbCommand = new GetItemCommand(ddbCommandParams);
-    const ddbResponse = await ddbClient.send(ddbCommand);
-    logger.debug(`DynamoDB response: `, ddbResponse);
-    if (!ddbResponse.Item?.MangaUrl) {
+    const { MangaUrl, MangaCover } = await getItem(`series_${provider}`, id);
+    if (MangaCover) {
+      res.status(409);
+      throw new Error(`Already scraped: "${id}"`);
+    }
+    if (!MangaUrl) {
       res.status(404);
       throw new Error(`Not found: "${id}"`);
     }
     const scraperData = {
-      'urlToScrape': unmarshall(ddbResponse.Item.MangaUrl),
+      'urlToScrape': MangaUrl,
       'requestType': 'Manga',
       'provider': provider,
     };
@@ -194,14 +215,7 @@ app.post('/series/:id', async (req, res, next) => {
       'Request': JSON.stringify(scraperData),
       'Status': 'pending',
     };
-    const ddbCommandParams2 = {
-      'TableName': mangaTable,
-      'Item': marshall(Item),
-    };
-    const ddbClient2 = new DynamoDBClient({ region: region });
-    const ddbCommand2 = new PutItemCommand(ddbCommandParams2);
-    const ddbResponse2 = await ddbClient2.send(ddbCommand2);
-    logger.debug(`DynamoDB response: `, ddbResponse2);
+    await putItem(Item);
     res.status(202).json({
       'status': 202,
       'statusText': 'Queued',

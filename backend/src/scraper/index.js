@@ -196,13 +196,13 @@ async function getItem (type, id) {
       'TableName': mangaTable,
       'Key': { '_type': marshall(type), '_id': marshall(id) },
     };
-    logger.debug(commandParams);
+    logger.debug(`DynamoDB command params: `, commandParams);
     const client = new DynamoDBClient({ region: region });
     const command = new GetItemCommand(commandParams);
     const response = await client.send(command);
     logger.debug(`DynamoDB response: `, response);
     if (response.Item) return unmarshall(response.Item);
-    else throw new Error(`DynamoDB failed transaction`);
+    else return false;
   } catch (error) {
     logger.error(error);
     throw error;
@@ -216,7 +216,7 @@ async function putItem (item) {
       'TableName': mangaTable,
       'Item': marshall(item),
     };
-    logger.debug(commandParams);
+    logger.debug(`DynamoDB command params: `, commandParams);
     const client = new DynamoDBClient({ region: region });
     const command = new PutItemCommand(commandParams);
     const response = await client.send(command);
@@ -234,10 +234,10 @@ async function updateStatus (type, id, status, data) {
       'TableName': mangaTable,
       'Key': { '_type': marshall(type), '_id': marshall(id) },
       'ExpressionAttributeNames': { '#S': 'Status', '#D': 'Data' },
-      'ExpressionAttributeValues': { ':s': marshall(status), ':d': marshall(data) },
+      'ExpressionAttributeValues': { ':s': marshall(status), ':d': data },
       'UpdateExpression': 'SET #S = :s, #D = :d',
     };
-    logger.debug(commandParams);
+    logger.debug(`DynamoDB command params: `, commandParams);
     const client = new DynamoDBClient({ region: region });
     const command = new UpdateItemCommand(commandParams);
     const response = await client.send(command);
@@ -275,7 +275,12 @@ async function uploadListData (data) {
         accepted.add(element.get('_id'));
       }
     }
-    const result = { 'Accepted': Array.from(accepted), 'Rejected': Array.from(rejected) };
+    const result = {
+      'M': {
+        'Accepted': { 'L': Array.from(accepted) },
+        'Rejected': { 'L': Array.from(rejected) },
+      }
+    };
     logger.debug(`Result: `, result);
     return result;
   } catch (error) {
@@ -308,12 +313,12 @@ async function uploadMangaData (data) {
       },
       'UpdateExpression': 'SET #MT = :mt, #MS = :ms, #MC = :mc, #SU = :su, #CU = :cu, #SD = :sd',
     };
-    logger.debug(commandParams);
+    logger.debug(`DynamoDB command params: `, commandParams);
     const client = new DynamoDBClient({ region: region });
     const command = new UpdateItemCommand(commandParams);
     const response = await client.send(command);
     logger.debug(`DynamoDB response: `, response);
-    const result = '';
+    const result = response.$metadata.httpStatusCode === 200 ? { 'S': 'accepted' } : { 'S': 'rejected' };
     logger.debug(`Result: `, result);
     return result;
   } catch (error) {
@@ -348,12 +353,12 @@ async function uploadChapterData (data) {
       },
       'UpdateExpression': 'SET #CT = :ct, #CS = :cs, #CU = :cu, #PS = :ps, #NS = :ns, #CC = :cc, #SD = :sd',
     };
-    logger.debug(commandParams);
+    logger.debug(`DynamoDB command params: `, commandParams);
     const client = new DynamoDBClient({ region: region });
     const command = new UpdateItemCommand(commandParams);
     const response = await client.send(command);
     logger.debug(`DynamoDB response: `, response);
-    const result = '';
+    const result = response.$metadata.httpStatusCode === 200 ? { 'S': 'accepted' } : { 'S': 'rejected' };
     logger.debug(`Result: `, result);
     return result;
   } catch (error) {
@@ -376,7 +381,7 @@ exports.handler = async function (event, context) {
           'ChapterList': uploadListData,
           'Chapter': uploadChapterData,
         };
-        const result = uploadType[requestType](scraperResponse);
+        const result = await uploadType[requestType](scraperResponse);
         await updateStatus('request-status', message.messageId, 'completed', result);
         // TODO delete message
       } catch (error) {

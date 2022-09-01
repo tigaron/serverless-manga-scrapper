@@ -20,8 +20,6 @@
     "puppeteer-core": "^17.0.0"
   },
   "devDependencies": {
-    "@sparticuz/chrome-aws-lambda": "^17.0.0",
-    "puppeteer": "^17.0.0",
     "serverless": "^3.22.0",
     "serverless-iam-roles-per-function": "^3.2.0",
     "serverless-plugin-common-excludes": "^4.0.0",

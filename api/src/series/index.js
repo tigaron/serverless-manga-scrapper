@@ -56,16 +56,13 @@ function errorHandler(err, req, res, next) {
 async function getItem (type, id) {
   try {
     logger.debug(`In getItem`);
-    const commandParams = {
-      'TableName': mangaTable,
-      'Key': { '_type': type, '_id': id },
-    };
-    logger.debug(`DynamoDB command params: `, commandParams);
+    const commandParams = { 'TableName': mangaTable, 'Key': { '_type': type, '_id': id } };
+    logger.debug(`getItem command params: `, commandParams);
     const client = new DynamoDBClient({ region: region });
     const ddbDocClient = DynamoDBDocumentClient.from(client, translateConfig);
     const command = new GetCommand(commandParams);
     const response = await ddbDocClient.send(command);
-    logger.debug(`DynamoDB response: `, response);
+    logger.debug(`getItem response: `, response);
     if (response.Item) return response.Item;
     else return false;
   } catch (error) {
@@ -77,16 +74,13 @@ async function getItem (type, id) {
 async function putItem (item) {
   try {
     logger.debug(`In putItem`);
-    const commandParams = {
-      'TableName': mangaTable,
-      'Item': item,
-    };
-    logger.debug(`DynamoDB command params: `, commandParams);
+    const commandParams = { 'TableName': mangaTable, 'Item': item };
+    logger.debug(`putItem command params: `, commandParams);
     const client = new DynamoDBClient({ region: region });
     const ddbDocClient = DynamoDBDocumentClient.from(client, translateConfig);
     const command = new PutCommand(commandParams);
     const response = await ddbDocClient.send(command);
-    logger.debug(`DynamoDB response: `, response);
+    logger.debug(`putItem response: `, response);
   } catch (error) {
     logger.error(error);
     throw error;
@@ -181,7 +175,7 @@ app.post('/series', async (req, res, next) => {
     const Item = {
       '_type': 'request-status',
       '_id': sqsResponse.MessageId,
-      'Request': JSON.stringify(scraperData),
+      'Request': scraperData,
       'Status': 'pending',
     };
     await putItem(Item);
@@ -253,7 +247,7 @@ app.post('/series/:id', async (req, res, next) => {
     const Item = {
       '_type': 'request-status',
       '_id': sqsResponse.MessageId,
-      'Request': JSON.stringify(scraperData),
+      'Request': scraperData,
       'Status': 'pending',
     };
     await putItem(Item);

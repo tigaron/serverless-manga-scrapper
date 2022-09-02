@@ -201,12 +201,12 @@ async function getItem (type, id) {
       'TableName': mangaTable,
       'Key': { '_type': type, '_id': id },
     };
-    logger.debug(`DynamoDB command params: `, commandParams);
+    logger.debug(`getItem command params: `, commandParams);
     const client = new DynamoDBClient({ region: region });
     const ddbDocClient = DynamoDBDocumentClient.from(client, translateConfig);
     const command = new GetCommand(commandParams);
     const response = await ddbDocClient.send(command);
-    logger.debug(`DynamoDB response: `, response);
+    logger.debug(`getItem response: `, response);
     if (response.Item) return response.Item;
     else return false;
   } catch (error) {
@@ -222,12 +222,12 @@ async function putItem (item) {
       'TableName': mangaTable,
       'Item': item,
     };
-    logger.debug(`DynamoDB command params: `, commandParams);
+    logger.debug(`putItem command params: `, commandParams);
     const client = new DynamoDBClient({ region: region });
     const ddbDocClient = DynamoDBDocumentClient.from(client, translateConfig);
     const command = new PutCommand(commandParams);
     const response = await ddbDocClient.send(command);
-    logger.debug(`DynamoDB response: `, response);
+    logger.debug(`putItem response: `, response);
   } catch (error) {
     logger.error(error);
     throw error;
@@ -244,28 +244,16 @@ async function updateStatus (type, id, status, data) {
       'ExpressionAttributeValues': { ':s': status, ':d': data },
       'UpdateExpression': 'SET #S = :s, #D = :d',
     };
-    logger.debug(`DynamoDB command params: `, commandParams);
+    logger.debug(`updateStatus command params: `, commandParams);
     const client = new DynamoDBClient({ region: region });
     const ddbDocClient = DynamoDBDocumentClient.from(client, translateConfig);
     const command = new UpdateCommand(commandParams);
     const response = await ddbDocClient.send(command);
-    logger.debug(`DynamoDB response: `, response);
+    logger.debug(`updateStatus response: `, response);
   } catch (error) {
     logger.error(error);
     throw error;
   }
-}
-
-function mapToObject(map) {
-  return Object.fromEntries(
-    Array.from(map.entries(), function ([key, value]) {
-      return value instanceof Map
-        ? [key, mapToObject(value)]
-        : value instanceof Set
-          ? [key, Array.from(value)]
-          : [key, value];
-    })
-  );
 }
 
 async function uploadListData (data) {
@@ -280,14 +268,14 @@ async function uploadListData (data) {
         rejected.add(`Already exist: "${element.get('_id')}"`);
         continue;
       } else {
-        await putItem(mapToObject(element));
+        await putItem(element);
         accepted.add(element.get('_id'));
         followup.add({ '_type': element.get('_type'), '_id': element.get('_id') });
       }
     }
     const result = {
-        'Accepted': Array.from(accepted),
-        'Rejected': Array.from(rejected),
+        'Accepted': accepted.size ? accepted : undefined,
+        'Rejected': rejected.size ? rejected : undefined,
     };
     logger.debug(`Result: `, result);
     return {
@@ -324,13 +312,13 @@ async function uploadMangaData (data) {
       },
       'UpdateExpression': 'SET #MT = :mt, #MS = :ms, #MC = :mc, #SU = :su, #CU = :cu, #SD = :sd',
     };
-    logger.debug(`DynamoDB command params: `, commandParams);
+    logger.debug(`uploadMangaData command params: `, commandParams);
     const client = new DynamoDBClient({ region: region });
     const ddbDocClient = DynamoDBDocumentClient.from(client, translateConfig);
     const command = new UpdateCommand(commandParams);
     const response = await ddbDocClient.send(command);
-    logger.debug(`DynamoDB response: `, response);
-    const result = response.$metadata.httpStatusCode === 200 ? 'accepted' : 'rejected';
+    logger.debug(`uploadMangaData response: `, response);
+    const result = response.$metadata.httpStatusCode === 200 ? `Accepted: ${data.get('_id')}` : `Rejected: ${data.get('_id')}`;
     logger.debug(`Result: `, result);
     return { 'result': result };
   } catch (error) {
@@ -360,18 +348,18 @@ async function uploadChapterData (data) {
         ':cu': data.get('ChapterCanonicalUrl'),
         ':ps': data.get('ChapterPrevSlug'),
         ':ns': data.get('ChapterNextSlug'),
-        ':cc': Array.from(data.get('ChapterContent')),
+        ':cc': data.get('ChapterContent'),
         ':sd': data.get('ScrapeDate'),
       },
       'UpdateExpression': 'SET #CT = :ct, #CS = :cs, #CU = :cu, #PS = :ps, #NS = :ns, #CC = :cc, #SD = :sd',
     };
-    logger.debug(`DynamoDB command params: `, commandParams);
+    logger.debug(`uploadChapterData command params: `, commandParams);
     const client = new DynamoDBClient({ region: region });
     const ddbDocClient = DynamoDBDocumentClient.from(client, translateConfig);
     const command = new UpdateCommand(commandParams);
     const response = await ddbDocClient.send(command);
-    logger.debug(`DynamoDB response: `, response);
-    const result = response.$metadata.httpStatusCode === 200 ? 'accepted' : 'rejected';
+    logger.debug(`uploadChapterData response: `, response);
+    const result = response.$metadata.httpStatusCode === 200 ? `Accepted: ${data.get('_id')}` : `Rejected: ${data.get('_id')}`;
     logger.debug(`Result: `, result);
     return { 'result': result };
   } catch (error) {
@@ -433,7 +421,7 @@ exports.handler = async function (event, context) {
         }
       } catch (error) {
         logger.error(error);
-        await updateStatus('request-status', message.messageId, 'failed', error.message);
+        await updateStatus('request-status', message.messageId, 'failed', `Error: ${error.message}`);
       }
     }));
   }

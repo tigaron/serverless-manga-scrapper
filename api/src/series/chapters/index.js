@@ -132,8 +132,8 @@ app.get('/series/:id/chapters', async (req, res, next) => {
           chapters.add(item);
         }
         count = value.Count;
-        prev = pageToGet ? `/series/${id}/chapters?provider=${provider}&page=${pageToGet}${pageSize ? '&limit=' + pageSize : undefined}` : undefined;
-        next = value.LastEvaluatedKey ? `/series/${id}/chapters?provider=${provider}&page=${pageToGet + 2}${pageSize ? '&limit=' + pageSize : undefined}` : undefined;
+        prev = pageToGet ? `/series/${id}/chapters/?provider=${provider}&page=${pageToGet}${pageSize ? '&limit=' + pageSize : undefined}` : undefined;
+        next = value.LastEvaluatedKey ? `/series/${id}/chapters/?provider=${provider}&page=${pageToGet + 2}${pageSize ? '&limit=' + pageSize : undefined}` : undefined;
         break;
       } else {
         index++;

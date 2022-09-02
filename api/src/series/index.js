@@ -100,7 +100,7 @@ app.get('/series', async (req, res, next) => {
     }
     const client = new DynamoDBClient({ region: region });
     const ddbDocClient = DynamoDBDocumentClient.from(client, translateConfig);
-    const pageSize = limit && parseInt(limit, 10) > 0 ? parseInt(limit, 10) : 10;
+    const pageSize = limit && parseInt(limit, 10) > 0 ? parseInt(limit, 10) : undefined;
     const paginatorConfig = {
       'client': ddbDocClient,
       'pageSize': pageSize,
@@ -113,7 +113,7 @@ app.get('/series', async (req, res, next) => {
     };
     const paginator = paginateQuery(paginatorConfig, commandParams);
     const pageToGet = page && parseInt(page - 1, 10) >= 0 && limit ? parseInt(page - 1, 10) : 0;
-    const series = [];
+    const series = new Set();
     let count;
     let prev;
     let next;
@@ -122,26 +122,26 @@ app.get('/series', async (req, res, next) => {
       if (index === pageToGet) {
         logger.debug(`Page data: `, value);
         for (const item of value.Items) {
-          series.push(item);
+          series.add(item);
         }
         count = value.Count;
-        prev = pageToGet ? `/series?provider=${provider}&page=${pageToGet}${pageSize ? '&limit=' + pageSize : undefined}` : undefined;
-        next = value.LastEvaluatedKey ? `/series?provider=${provider}&page=${pageToGet + 2}${pageSize ? '&limit=' + pageSize : undefined}` : undefined;
+        prev = pageToGet ? `/series/?provider=${provider}&page=${pageToGet}${pageSize ? '&limit=' + pageSize : undefined}` : undefined;
+        next = value.LastEvaluatedKey ? `/series/?provider=${provider}&page=${pageToGet + 2}${pageSize ? '&limit=' + pageSize : undefined}` : undefined;
         break;
       } else {
         index++;
         continue;
       }
     }
-    if (page && series.length === 0) {
+    if (page && series.size === 0) {
       res.status(404);
       throw new Error(`Not found: "page=${page}"`);
     }
-    if (series.length === 0) {
+    if (series.size === 0) {
       res.status(404);
       throw new Error(`No data available`);
     }
-    res.status(200).json({ 'status': 200, 'statusText': 'OK', 'count': count, 'prev': prev, 'next': next, 'data': series });
+    res.status(200).json({ 'status': 200, 'statusText': 'OK', 'count': count, 'prev': prev, 'next': next, 'data': Array.from(series) });
   } catch (error) {
     next(error);
   }

@@ -107,7 +107,7 @@ function parseChapterList ($, mangaProvider) {
     if (ChapterNumber.includes('\n')) ChapterNumber = ChapterNumber.split('\n').slice(-2).join(' ');
     const ChapterDate = $('span.chapterdate', element).text().trim();
     const liNum = $(element).parents('li').data('num');
-    const ChapterOrder = parseInt(liNum.match(/(\d*)/)[0], 10);
+    const ChapterOrder = Number.isInteger(liNum) ? liNum : parseInt(liNum.match(/(\d*)/)[1], 10);
     const ChapterUrl = $(element).attr('href');
     const ChapterSlug = ChapterUrl.split('/').slice(-2).shift().replace(/[\d]*[-]?/, '');
     const timestamp = new Date().toUTCString();
@@ -137,23 +137,11 @@ function parseChapter ($, chapterType) {
   const ChapterNextSlug = navScript.match(/"nextUrl":"(.*?)"/)[1].split('/').slice(-2).shift().replace(/[\d]*[-]?/, '').replace(/\\/, '');
   const timestamp = new Date().toUTCString();
   const ChapterContent = new Set();
-  if (chapterType.split('_')[1] === 'realm') {
-    const realmContent = $('div#readerarea').contents().text();
-    $('img[class*="wp-image"]', realmContent).each((index, element) => {
-      const img = $(element).attr('src');
-      ChapterContent.add(img);
-    });
-  } else {
-    $('img[class*="wp-image"]', 'div#readerarea').each((index, element) => {
-      const img = $(element).attr('src');
-      ChapterContent.add(img);
-    });
-  }
-  if (!ChapterContent.size) {
-    $('img[class*="size-full"]', 'div#readerarea').each((index, element) => {
-      const img = $(element).attr('src');
-      ChapterContent.add(img);
-    });
+  const scriptImages = navScript.match(/ts_reader.run\((.*?)\)/)[1];
+  const objectImages = JSON.parse(scriptImages);
+  const { images } = objectImages.sources[0];
+  for (const img of images) {
+    ChapterContent.add(img);
   }
   const Chapter = new Map([
     ['_type', chapterType],
@@ -163,7 +151,7 @@ function parseChapter ($, chapterType) {
     ['ChapterCanonicalUrl', ChapterCanonicalUrl],
     ['ChapterPrevSlug', ChapterPrevSlug],
     ['ChapterNextSlug', ChapterNextSlug],
-    ['ChapterContent', ChapterContent],
+    ['ChapterContent', Array.from(ChapterContent)],
     ['ScrapeDate', timestamp],
   ]);
   return Chapter;

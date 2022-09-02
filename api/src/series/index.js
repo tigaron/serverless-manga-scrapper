@@ -112,7 +112,7 @@ app.get('/series', async (req, res, next) => {
       'KeyConditionExpression': '#T = :t',
     };
     const paginator = paginateQuery(paginatorConfig, commandParams);
-    const pageToGet = page && parseInt(page - 1, 10) >= 0 ? parseInt(page - 1, 10) : 0;
+    const pageToGet = page && parseInt(page - 1, 10) >= 0 && limit ? parseInt(page - 1, 10) : 0;
     const series = [];
     let count;
     let prev;

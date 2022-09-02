@@ -119,7 +119,7 @@ app.get('/series/:id/chapters', async (req, res, next) => {
       'KeyConditionExpression': '#T = :t',
     };
     const paginator = paginateQuery(paginatorConfig, commandParams);
-    const pageToGet = page && parseInt(page - 1, 10) >= 0 ? parseInt(page - 1, 10) : 0;
+    const pageToGet = page && parseInt(page - 1, 10) >= 0 && limit ? parseInt(page - 1, 10) : 0;
     const chapters = new Set();
     let count;
     let prev;
@@ -154,7 +154,7 @@ app.get('/series/:id/chapters', async (req, res, next) => {
       'count': count,
       'prev': prev,
       'next': next,
-      'data': !page && !limit ? Array.from(chapters).sort((a, b) => a.ChapterOrder - b.ChapterOrder) : Array.from(chapters),
+      'data': limit && parseInt(limit, 10) > 0 ? Array.from(chapters) : Array.from(chapters).sort((a, b) => a.ChapterOrder - b.ChapterOrder),
     });
   } catch (error) {
     next(error);

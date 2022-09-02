@@ -11,6 +11,7 @@ server
 .pnp.cjs
 
 *.rest
+scraper.sh
 
 chrome-aws-lambda
 !chrome-aws-lambda.zip

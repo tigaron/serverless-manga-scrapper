@@ -107,9 +107,10 @@ app.get('/series/:id/chapters', async (req, res, next) => {
     const { id } = req.params;
     const client = new DynamoDBClient({ region: region });
     const ddbDocClient = DynamoDBDocumentClient.from(client, translateConfig);
+    const pageSize = limit && parseInt(limit, 10) > 0 ? parseInt(limit, 10) : undefined;
     const paginatorConfig = {
       'client': ddbDocClient,
-      'pageSize': limit ? parseInt(limit, 10) : 10,
+      'pageSize': pageSize,
     };
     const commandParams = {
       'TableName': mangaTable,
@@ -118,8 +119,8 @@ app.get('/series/:id/chapters', async (req, res, next) => {
       'KeyConditionExpression': '#T = :t',
     };
     const paginator = paginateQuery(paginatorConfig, commandParams);
-    const pageToGet = page ? parseInt(page - 1, 10) : 0;
-    const chapters = [];
+    const pageToGet = page && parseInt(page - 1, 10) >= 0 ? parseInt(page - 1, 10) : 0;
+    const chapters = new Set();
     let count;
     let prev;
     let next;
@@ -128,26 +129,33 @@ app.get('/series/:id/chapters', async (req, res, next) => {
       if (index === pageToGet) {
         logger.debug(`Page data: `, value);
         for (const item of value.Items) {
-          chapters.push(item);
+          chapters.add(item);
         }
         count = value.Count;
-        prev = pageToGet ? `/series/${id}/chapters?provider=${provider}&page=${pageToGet}&limit=${limit ? parseInt(limit, 10) : 10}` : undefined;
-        next = value.LastEvaluatedKey ? `/series/${id}/chapters?provider=${provider}&page=${pageToGet + 2}&limit=${limit ? parseInt(limit, 10) : 10}` : undefined;
+        prev = pageToGet ? `/series/${id}/chapters?provider=${provider}&page=${pageToGet}${pageSize ? '&limit=' + pageSize : undefined}` : undefined;
+        next = value.LastEvaluatedKey ? `/series/${id}/chapters?provider=${provider}&page=${pageToGet + 2}${pageSize ? '&limit=' + pageSize : undefined}` : undefined;
         break;
       } else {
         index++;
         continue;
       }
     }
-    if (page && chapters.length === 0) {
+    if (page && chapters.size === 0) {
       res.status(404);
       throw new Error(`Not found: "page=${page}"`);
     }
-    if (chapters.length === 0) {
+    if (chapters.size === 0) {
       res.status(404);
       throw new Error(`Not found: "${id}"`);
     }
-    res.status(200).json({ 'status': 200, 'statusText': 'OK', 'count': count, 'prev': prev, 'next': next, 'data': chapters });
+    res.status(200).json({
+      'status': 200,
+      'statusText': 'OK',
+      'count': count,
+      'prev': prev,
+      'next': next,
+      'data': !page && !limit ? Array.from(chapters).sort((a, b) => a.ChapterOrder - b.ChapterOrder) : Array.from(chapters),
+    });
   } catch (error) {
     next(error);
   }

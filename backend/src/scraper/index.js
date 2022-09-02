@@ -41,7 +41,6 @@ async function crawler (urlString) {
     const response = await page.goto(urlString, { waitUntil: 'domcontentloaded' });
     if (!response.ok()) throw new Error(`Failed to crawl '${urlString}'`, { cause: response.status() });
     const result = await page.content();
-    logger.debug(result);
     return result;
   } catch (error) {
     logger.error(error);
@@ -107,7 +106,7 @@ function parseChapterList ($, mangaProvider) {
     let ChapterNumber = $('span.chapternum', element).text().trim();
     if (ChapterNumber.includes('\n')) ChapterNumber = ChapterNumber.split('\n').slice(-2).join(' ');
     const ChapterDate = $('span.chapterdate', element).text().trim();
-    const ChapterOrder = $(element).parents('li').data('num');
+    const ChapterOrder = parseInt($(element).parents('li').data('num').match(/(\d*)/)[0], 10);
     const ChapterUrl = $(element).attr('href');
     const ChapterSlug = ChapterUrl.split('/').slice(-2).shift().replace(/[\d]*[-]?/, '');
     const timestamp = new Date().toUTCString();
@@ -133,8 +132,8 @@ function parseChapter ($, chapterType) {
   if (!ChapterCanonicalUrl) ChapterCanonicalUrl = $('meta[property="og:url"]').attr('content');
   const ChapterSlug = ChapterCanonicalUrl.split('/').slice(-2).shift().replace(/[\d]*[-]?/, '');
   const navScript = $('script:contains("ts_reader.run")').contents().text();
-  const ChapterPrevSlug = navScript.match(/'prevUrl':'(.*?)'/)[1].split('/').slice(-2).shift().replace(/[\d]*[-]?/, '').replace(/\\/, '');
-  const ChapterNextSlug = navScript.match(/'nextUrl':'(.*?)'/)[1].split('/').slice(-2).shift().replace(/[\d]*[-]?/, '').replace(/\\/, '');
+  const ChapterPrevSlug = navScript.match(/"prevUrl":"(.*?)"/)[1].split('/').slice(-2).shift().replace(/[\d]*[-]?/, '').replace(/\\/, '');
+  const ChapterNextSlug = navScript.match(/"nextUrl":"(.*?)"/)[1].split('/').slice(-2).shift().replace(/[\d]*[-]?/, '').replace(/\\/, '');
   const timestamp = new Date().toUTCString();
   const ChapterContent = new Set();
   if (chapterType.split('_')[1] === 'realm') {
@@ -270,7 +269,11 @@ async function uploadListData (data) {
       } else {
         await putItem(element);
         accepted.add(element.get('_id'));
-        followup.add({ '_type': element.get('_type'), '_id': element.get('_id') });
+        followup.add({
+          '_type': element.get('_type'),
+          '_id': element.get('_id'),
+          'ChapterPrevSlug': element.has('ChapterPrevSlug') ? element.get('ChapterPrevSlug') : undefined,
+        });
       }
     }
     const result = {
@@ -368,6 +371,18 @@ async function uploadChapterData (data) {
   }
 }
 
+async function addQueue (data) {
+  try {
+    const sqsClient = new SQSClient({ region: region });
+    const sqsCommand = new SendMessageCommand(data);
+    const sqsResponse = await sqsClient.send(sqsCommand);
+    logger.debug(`SQS response: ${sqsResponse}`);
+  } catch (error) {
+    logger.error(error);
+    throw error;
+  }
+}
+
 exports.handler = async function (event, context) {
   if (event.Records) {
     return Promise.all(event.Records.map(async function (message) {
@@ -406,10 +421,7 @@ exports.handler = async function (event, context) {
               'MessageGroupId': followUpRequestData.requestType,
               'QueueUrl': scraperQueueUrl,
             };
-            const sqsClient = new SQSClient({ region: region });
-            const sqsCommand = new SendMessageCommand(sqsCommandParams);
-            const sqsResponse = await sqsClient.send(sqsCommand);
-            logger.debug(`SQS response: ${sqsResponse}`);
+            const sqsResponse = await addQueue(sqsCommandParams);
             const followUpItem = {
               '_type': 'request-status',
               '_id': sqsResponse.MessageId,
@@ -417,6 +429,30 @@ exports.handler = async function (event, context) {
               'Status': 'pending',
             };
             await putItem(followUpItem);
+            if (element.has('ChapterPrevSlug')) {
+              const { ChapterNextSlug, ChapterUrl } = await getItem(element['_type'], element['ChapterPrevSlug']);
+              if (!ChapterNextSlug) {
+                const followUpNextData = {
+                  'urlToScrape': ChapterUrl,
+                  'requestType': followUpRequestType[requestType],
+                  'provider': element['_type'],
+                };
+                const followUpNextCommandParams = {
+                  'MessageBody': JSON.stringify(followUpNextData),
+                  'MessageDeduplicationId': followUpNextData.urlToScrape,
+                  'MessageGroupId': followUpNextData.requestType,
+                  'QueueUrl': scraperQueueUrl,
+                };
+                const followUpNextResponse = await addQueue(followUpNextCommandParams);
+                const followUpNextItem = {
+                  '_type': 'request-status',
+                  '_id': followUpNextResponse.MessageId,
+                  'Request': JSON.stringify(followUpNextData),
+                  'Status': 'pending',
+                };
+                await putItem(followUpNextItem);
+              }
+            }
           }
         }
       } catch (error) {

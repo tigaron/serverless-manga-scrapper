@@ -51,10 +51,10 @@ functions:
     handler: src/scraper/index.handler
     layers:
       # - !Ref ChromeLambdaLayer
-      - arn:aws:lambda:ap-southeast-1:192643247659:layer:chrome-aws-lambda:3
-    package:
-      patterns:
-        - 'node_modules/puppeteer-core/**'
+      - arn:aws:lambda:ap-southeast-1:192643247659:layer:chrome-aws-lambda:4
+    # package:
+    #   patterns:
+    #     - 'node_modules/puppeteer-core/**'
     memorySize: 2048
     timeout: 20
     environment:

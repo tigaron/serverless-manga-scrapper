@@ -100,9 +100,10 @@ app.get('/series', async (req, res, next) => {
     }
     const client = new DynamoDBClient({ region: region });
     const ddbDocClient = DynamoDBDocumentClient.from(client, translateConfig);
+    const pageSize = limit && parseInt(limit, 10) > 0 ? parseInt(limit, 10) : undefined;
     const paginatorConfig = {
       'client': ddbDocClient,
-      'pageSize': limit ? parseInt(limit, 10) : 10,
+      'pageSize': pageSize,
     };
     const commandParams = {
       'TableName': mangaTable,
@@ -111,7 +112,7 @@ app.get('/series', async (req, res, next) => {
       'KeyConditionExpression': '#T = :t',
     };
     const paginator = paginateQuery(paginatorConfig, commandParams);
-    const pageToGet = page ? parseInt(page - 1, 10) : 0;
+    const pageToGet = page && parseInt(page - 1, 10) >= 0 ? parseInt(page - 1, 10) : 0;
     const series = [];
     let count;
     let prev;
@@ -124,8 +125,8 @@ app.get('/series', async (req, res, next) => {
           series.push(item);
         }
         count = value.Count;
-        prev = pageToGet ? `/series?provider=${provider}&page=${pageToGet}&limit=${limit ? parseInt(limit, 10) : 10}` : undefined;
-        next = value.LastEvaluatedKey ? `/series?provider=${provider}&page=${pageToGet + 2}&limit=${limit ? parseInt(limit, 10) : 10}` : undefined;
+        prev = pageToGet ? `/series?provider=${provider}&page=${pageToGet}${pageSize ? '&limit=' + pageSize : undefined}` : undefined;
+        next = value.LastEvaluatedKey ? `/series?provider=${provider}&page=${pageToGet + 2}${pageSize ? '&limit=' + pageSize : undefined}` : undefined;
         break;
       } else {
         index++;

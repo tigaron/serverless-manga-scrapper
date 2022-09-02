@@ -42,7 +42,7 @@ functions:
     environment:
       region: ${aws:region}
       mangaTable: ${self:custom.${self:provider.stage}.Stack}-mangaTable-${self:provider.stage}
-      scraperQueueUrl: https://sqs.${aws:region}.amazonaws.com/${aws:accountId}/${self:custom.${self:provider.stage}.Stack}-scraperQueue-${self:provider.stage}
+      scraperQueueUrl: https://sqs.${aws:region}.amazonaws.com/${aws:accountId}/${self:custom.${self:provider.stage}.Stack}-ScraperQueue-${self:provider.stage}.fifo
     iamRoleStatementsName: ${self:service}-${self:provider.stage}
     iamRoleStatements:
       - Effect: Allow
@@ -56,7 +56,7 @@ functions:
         Action:
           - sqs:SendMessage
         Resource:
-          - arn:aws:sqs:${aws:region}:${aws:accountId}:${self:custom.${self:provider.stage}.Stack}-scraperQueue-${self:provider.stage}
+          - arn:aws:sqs:${aws:region}:${aws:accountId}:${self:custom.${self:provider.stage}.Stack}-ScraperQueue-${self:provider.stage}.fifo
     events:
       - http:
           path: /series/{id}/chapters

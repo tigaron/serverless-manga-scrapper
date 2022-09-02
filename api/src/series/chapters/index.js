@@ -4,10 +4,17 @@ const log4js = require('log4js');
 const morgan = require('morgan');
 const helmet = require('helmet');
 const cors = require('cors');
+const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
+const { DynamoDBDocumentClient, GetCommand, PutCommand, paginateQuery } = require('@aws-sdk/lib-dynamodb');
+const { SQSClient, SendMessageCommand } = require('@aws-sdk/client-sqs');
 
 const app = express();
 
-const { logLevel } = process.env;
+const marshallOptions = { convertEmptyValues: true, removeUndefinedValues: true, convertClassInstanceToMap: true };
+const unmarshallOptions = { wrapNumbers: false };
+const translateConfig = { marshallOptions, unmarshallOptions };
+
+const { region, logLevel, mangaTable, scraperQueueUrl } = process.env;
 
 log4js.configure({
   appenders: { logger: { type: 'console' } },
@@ -51,14 +58,15 @@ async function getItem (type, id) {
     logger.debug(`In getItem`);
     const commandParams = {
       'TableName': mangaTable,
-      'Key': { '_type': marshall(type), '_id': marshall(id) },
+      'Key': { '_type': type, '_id': id },
     };
     logger.debug(`DynamoDB command params: `, commandParams);
     const client = new DynamoDBClient({ region: region });
-    const command = new GetItemCommand(commandParams);
-    const response = await client.send(command);
+    const ddbDocClient = DynamoDBDocumentClient.from(client, translateConfig);
+    const command = new GetCommand(commandParams);
+    const response = await ddbDocClient.send(command);
     logger.debug(`DynamoDB response: `, response);
-    if (response.Item) return unmarshall(response.Item);
+    if (response.Item) return response.Item;
     else return false;
   } catch (error) {
     logger.error(error);
@@ -71,12 +79,13 @@ async function putItem (item) {
     logger.debug(`In putItem`);
     const commandParams = {
       'TableName': mangaTable,
-      'Item': marshall(item),
+      'Item': item,
     };
     logger.debug(`DynamoDB command params: `, commandParams);
     const client = new DynamoDBClient({ region: region });
-    const command = new PutItemCommand(commandParams);
-    const response = await client.send(command);
+    const ddbDocClient = DynamoDBDocumentClient.from(client, translateConfig);
+    const command = new PutCommand(commandParams);
+    const response = await ddbDocClient.send(command);
     logger.debug(`DynamoDB response: `, response);
   } catch (error) {
     logger.error(error);
@@ -96,14 +105,16 @@ app.get('/series/:id/chapters', async (req, res, next) => {
       throw new Error(`Unknown provider: "${provider}"`);
     }
     const { id } = req.params;
+    const client = new DynamoDBClient({ region: region });
+    const ddbDocClient = DynamoDBDocumentClient.from(client, translateConfig);
     const paginatorConfig = {
-      'client': new DynamoDBClient({ region: region }),
+      'client': ddbDocClient,
       'pageSize': limit ? parseInt(limit, 10) : 10,
     };
     const commandParams = {
       'TableName': mangaTable,
       'ExpressionAttributeNames': { '#T': '_type' },
-      'ExpressionAttributeValues': { ':t': marshall(`chapter_${provider}_${id}`) },
+      'ExpressionAttributeValues': { ':t': `chapter_${provider}_${id}` },
       'KeyConditionExpression': '#T = :t',
     };
     const paginator = paginateQuery(paginatorConfig, commandParams);
@@ -117,11 +128,11 @@ app.get('/series/:id/chapters', async (req, res, next) => {
       if (index === pageToGet) {
         logger.debug(`Page data: `, value);
         for (const item of value.Items) {
-          chapters.push(unmarshall(item));
+          chapters.push(item);
         }
         count = value.Count;
         prev = pageToGet ? `/series/${id}/chapters?provider=${provider}&page=${pageToGet}&limit=${limit ? parseInt(limit, 10) : 10}` : undefined;
-        next = value.LastEvaluatedKey ? `/series/${id}/chapters?provider=${provider}&page=${pageToGet + 1}&limit=${limit ? parseInt(limit, 10) : 10}` : undefined;
+        next = value.LastEvaluatedKey ? `/series/${id}/chapters?provider=${provider}&page=${pageToGet + 2}&limit=${limit ? parseInt(limit, 10) : 10}` : undefined;
         break;
       } else {
         index++;
@@ -130,7 +141,7 @@ app.get('/series/:id/chapters', async (req, res, next) => {
     }
     if (page && chapters.length === 0) {
       res.status(404);
-      throw new Error(`Not found: "${req.originalUrl}"`);
+      throw new Error(`Not found: "page=${page}"`);
     }
     if (chapters.length === 0) {
       res.status(404);
@@ -166,6 +177,8 @@ app.post('/series/:id/chapters', async (req, res, next) => {
     };
     const sqsCommandParams = {
       'MessageBody': JSON.stringify(scraperData),
+      'MessageDeduplicationId': scraperData.urlToScrape,
+      'MessageGroupId': scraperData.requestType,
       'QueueUrl': scraperQueueUrl,
     };
     const sqsClient = new SQSClient({ region: region });
@@ -232,6 +245,8 @@ app.post('/series/:id/chapter/:slug', async (req, res, next) => {
     };
     const sqsCommandParams = {
       'MessageBody': JSON.stringify(scraperData),
+      'MessageDeduplicationId': scraperData.urlToScrape,
+      'MessageGroupId': scraperData.requestType,
       'QueueUrl': scraperQueueUrl,
     };
     const sqsClient = new SQSClient({ region: region });
@@ -250,5 +265,7 @@ app.post('/series/:id/chapter/:slug', async (req, res, next) => {
     next(error);
   }
 });
+
+app.use(errorHandler);
 
 exports.handler = serverless(app);

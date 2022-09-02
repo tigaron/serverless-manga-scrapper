@@ -1,9 +1,13 @@
-const { DynamoDBClient, UpdateItemCommand, PutItemCommand, GetItemCommand } = require('@aws-sdk/client-dynamodb');
-const { marshall, unmarshall } = require('@aws-sdk/util-dynamodb');
+const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
+const { DynamoDBDocumentClient, UpdateCommand, PutCommand, GetCommand } = require('@aws-sdk/lib-dynamodb');
 const { SQSClient, SendMessageCommand } = require('@aws-sdk/client-sqs');
 const chromium = require('@sparticuz/chrome-aws-lambda');
 const cheerio = require('cheerio');
 const log4js = require('log4js');
+
+const marshallOptions = { convertEmptyValues: true, removeUndefinedValues: true, convertClassInstanceToMap: true };
+const unmarshallOptions = { wrapNumbers: false };
+const translateConfig = { marshallOptions, unmarshallOptions };
 
 const { region, logLevel, mangaTable, scraperQueueUrl } = process.env;
 
@@ -195,14 +199,15 @@ async function getItem (type, id) {
     logger.debug(`In getItem`);
     const commandParams = {
       'TableName': mangaTable,
-      'Key': { '_type': marshall(type), '_id': marshall(id) },
+      'Key': { '_type': type, '_id': id },
     };
     logger.debug(`DynamoDB command params: `, commandParams);
     const client = new DynamoDBClient({ region: region });
-    const command = new GetItemCommand(commandParams);
-    const response = await client.send(command);
+    const ddbDocClient = DynamoDBDocumentClient.from(client, translateConfig);
+    const command = new GetCommand(commandParams);
+    const response = await ddbDocClient.send(command);
     logger.debug(`DynamoDB response: `, response);
-    if (response.Item) return unmarshall(response.Item);
+    if (response.Item) return response.Item;
     else return false;
   } catch (error) {
     logger.error(error);
@@ -215,12 +220,13 @@ async function putItem (item) {
     logger.debug(`In putItem`);
     const commandParams = {
       'TableName': mangaTable,
-      'Item': marshall(item),
+      'Item': item,
     };
     logger.debug(`DynamoDB command params: `, commandParams);
     const client = new DynamoDBClient({ region: region });
-    const command = new PutItemCommand(commandParams);
-    const response = await client.send(command);
+    const ddbDocClient = DynamoDBDocumentClient.from(client, translateConfig);
+    const command = new PutCommand(commandParams);
+    const response = await ddbDocClient.send(command);
     logger.debug(`DynamoDB response: `, response);
   } catch (error) {
     logger.error(error);
@@ -233,15 +239,16 @@ async function updateStatus (type, id, status, data) {
     logger.debug(`In updateStatus`);
     const commandParams = {
       'TableName': mangaTable,
-      'Key': { '_type': marshall(type), '_id': marshall(id) },
+      'Key': { '_type': type, '_id': id },
       'ExpressionAttributeNames': { '#S': 'Status', '#D': 'Data' },
-      'ExpressionAttributeValues': { ':s': marshall(status), ':d': data },
+      'ExpressionAttributeValues': { ':s': status, ':d': data },
       'UpdateExpression': 'SET #S = :s, #D = :d',
     };
     logger.debug(`DynamoDB command params: `, commandParams);
     const client = new DynamoDBClient({ region: region });
-    const command = new UpdateItemCommand(commandParams);
-    const response = await client.send(command);
+    const ddbDocClient = DynamoDBDocumentClient.from(client, translateConfig);
+    const command = new UpdateCommand(commandParams);
+    const response = await ddbDocClient.send(command);
     logger.debug(`DynamoDB response: `, response);
   } catch (error) {
     logger.error(error);
@@ -279,14 +286,12 @@ async function uploadListData (data) {
       }
     }
     const result = {
-      'M': {
-        'Accepted': { 'L': Array.from(accepted) },
-        'Rejected': { 'L': Array.from(rejected) },
-      }
+        'Accepted': Array.from(accepted),
+        'Rejected': Array.from(rejected),
     };
     logger.debug(`Result: `, result);
     return {
-      'followup': followup.size() ? followup : undefined,
+      'followup': followup.size ? followup : undefined,
       'result': result,
     };
   } catch (error) {
@@ -300,7 +305,7 @@ async function uploadMangaData (data) {
     logger.debug(`In uploadMangaData`);
     const commandParams = {
       'TableName': mangaTable,
-      'Key': { '_type': marshall(data.get('_type')), '_id': marshall(data.get('_id')) },
+      'Key': { '_type': data.get('_type'), '_id': data.get('_id') },
       'ExpressionAttributeNames': {
         '#MT': 'MangaTitle',
         '#MS': 'MangaSynopsis',
@@ -310,21 +315,22 @@ async function uploadMangaData (data) {
         '#SD': 'ScrapeDate',
       },
       'ExpressionAttributeValues': {
-        ':mt': marshall(data.get('MangaTitle')),
-        ':ms': marshall(data.get('MangaSynopsis')),
-        ':mc': marshall(data.get('MangaCover')),
-        ':su': marshall(data.get('MangaShortUrl')),
-        ':cu': marshall(data.get('MangaCanonicalUrl')),
-        ':sd': marshall(data.get('ScrapeDate')),
+        ':mt': data.get('MangaTitle'),
+        ':ms': data.get('MangaSynopsis'),
+        ':mc': data.get('MangaCover'),
+        ':su': data.get('MangaShortUrl'),
+        ':cu': data.get('MangaCanonicalUrl'),
+        ':sd': data.get('ScrapeDate'),
       },
       'UpdateExpression': 'SET #MT = :mt, #MS = :ms, #MC = :mc, #SU = :su, #CU = :cu, #SD = :sd',
     };
     logger.debug(`DynamoDB command params: `, commandParams);
     const client = new DynamoDBClient({ region: region });
-    const command = new UpdateItemCommand(commandParams);
-    const response = await client.send(command);
+    const ddbDocClient = DynamoDBDocumentClient.from(client, translateConfig);
+    const command = new UpdateCommand(commandParams);
+    const response = await ddbDocClient.send(command);
     logger.debug(`DynamoDB response: `, response);
-    const result = response.$metadata.httpStatusCode === 200 ? { 'S': 'accepted' } : { 'S': 'rejected' };
+    const result = response.$metadata.httpStatusCode === 200 ? 'accepted' : 'rejected';
     logger.debug(`Result: `, result);
     return { 'result': result };
   } catch (error) {
@@ -338,7 +344,7 @@ async function uploadChapterData (data) {
     logger.debug(`In uploadChapterData`);
     const commandParams = {
       'TableName': mangaTable,
-      'Key': { '_type': marshall(data.get('_type')), '_id': marshall(data.get('_id')) },
+      'Key': { '_type': data.get('_type'), '_id': data.get('_id') },
       'ExpressionAttributeNames': {
         '#CT': 'ChapterTitle',
         '#CS': 'ChapterShortUrl',
@@ -349,22 +355,23 @@ async function uploadChapterData (data) {
         '#SD': 'ScrapeDate',
       },
       'ExpressionAttributeValues': {
-        ':ct': marshall(data.get('ChapterTitle')),
-        ':cs': marshall(data.get('ChapterShortUrl')),
-        ':cu': marshall(data.get('ChapterCanonicalUrl')),
-        ':ps': marshall(data.get('ChapterPrevSlug')),
-        ':ns': marshall(data.get('ChapterNextSlug')),
-        ':cc': { L: marshall(Array.from(data.get('ChapterContent'))) },
-        ':sd': marshall(data.get('ScrapeDate')),
+        ':ct': data.get('ChapterTitle'),
+        ':cs': data.get('ChapterShortUrl'),
+        ':cu': data.get('ChapterCanonicalUrl'),
+        ':ps': data.get('ChapterPrevSlug'),
+        ':ns': data.get('ChapterNextSlug'),
+        ':cc': Array.from(data.get('ChapterContent')),
+        ':sd': data.get('ScrapeDate'),
       },
       'UpdateExpression': 'SET #CT = :ct, #CS = :cs, #CU = :cu, #PS = :ps, #NS = :ns, #CC = :cc, #SD = :sd',
     };
     logger.debug(`DynamoDB command params: `, commandParams);
     const client = new DynamoDBClient({ region: region });
-    const command = new UpdateItemCommand(commandParams);
-    const response = await client.send(command);
+    const ddbDocClient = DynamoDBDocumentClient.from(client, translateConfig);
+    const command = new UpdateCommand(commandParams);
+    const response = await ddbDocClient.send(command);
     logger.debug(`DynamoDB response: `, response);
-    const result = response.$metadata.httpStatusCode === 200 ? { 'S': 'accepted' } : { 'S': 'rejected' };
+    const result = response.$metadata.httpStatusCode === 200 ? 'accepted' : 'rejected';
     logger.debug(`Result: `, result);
     return { 'result': result };
   } catch (error) {
@@ -407,6 +414,8 @@ exports.handler = async function (event, context) {
             };
             const sqsCommandParams = {
               'MessageBody': JSON.stringify(followUpRequestData),
+              'MessageDeduplicationId': followUpRequestData.urlToScrape,
+              'MessageGroupId': followUpRequestData.requestType,
               'QueueUrl': scraperQueueUrl,
             };
             const sqsClient = new SQSClient({ region: region });

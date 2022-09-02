@@ -30,12 +30,12 @@ provider:
 package:
   individually: true
 
-layers:
-  chrome:
-    name: chrome-aws-lambda
-    description: '@sparticuz/chrome-aws-lambda'
-    package:
-      artifact: resources/layer/chrome-aws-lambda.zip
+# layers:
+#   chrome:
+#     name: chrome-aws-lambda
+#     description: '@sparticuz/chrome-aws-lambda'
+#     package:
+#       artifact: resources/layer/chrome-aws-lambda.zip
 
 functions:
   Root:
@@ -50,7 +50,8 @@ functions:
   Scraper:
     handler: src/scraper/index.handler
     layers:
-      - !Ref ChromeLambdaLayer
+      # - !Ref ChromeLambdaLayer
+      - arn:aws:lambda:ap-southeast-1:192643247659:layer:chrome-aws-lambda:3
     package:
       patterns:
         - 'node_modules/puppeteer-core/**'
@@ -59,7 +60,7 @@ functions:
     environment:
       region: ${aws:region}
       mangaTable: ${self:custom.${self:provider.stage}.Stack}-mangaTable-${self:provider.stage}
-      scraperQueueUrl: https://sqs.${aws:region}.amazonaws.com/${aws:accountId}/${self:custom.${self:provider.stage}.Stack}-scraperQueue-${self:provider.stage}
+      scraperQueueUrl: https://sqs.${aws:region}.amazonaws.com/${aws:accountId}/${self:custom.${self:provider.stage}.Stack}-ScraperQueue-${self:provider.stage}.fifo
     iamRoleStatementsName: ${self:service}-${self:provider.stage}
     iamRoleStatements:
       - Effect: Allow
@@ -75,14 +76,15 @@ functions:
           - sqs:ReceiveMessage
           - sqs:DeleteMessage
         Resource:
-          - arn:aws:sqs:${aws:region}:${aws:accountId}:table/${self:custom.${self:provider.stage}.Stack}-scraperQueue-${self:provider.stage}
+          - arn:aws:sqs:${aws:region}:${aws:accountId}:${self:custom.${self:provider.stage}.Stack}-ScraperQueue-${self:provider.stage}.fifo
     events:
       - sqs:
           arn:
             Fn::GetAtt:
               - ScraperQueue
               - Arn
-          batchSize: 10
+          batchSize: 1
+    # onError: arn:aws:sqs:${aws:region}:${aws:accountId}:${self:custom.${self:provider.stage}.Stack}-DeadLetterQueue-${self:provider.stage}.fifo
 
 resources:
   - ${file(resources/apigateway/RestApi.yml)}

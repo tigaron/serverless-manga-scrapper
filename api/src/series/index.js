@@ -100,7 +100,7 @@ app.get('/series', async (req, res, next) => {
     }
     const client = new DynamoDBClient({ region: region });
     const ddbDocClient = DynamoDBDocumentClient.from(client, translateConfig);
-    const pageSize = limit && parseInt(limit, 10) > 0 ? parseInt(limit, 10) : undefined;
+    const pageSize = limit && parseInt(limit, 10) > 0 ? parseInt(limit, 10) : 10;
     const paginatorConfig = {
       'client': ddbDocClient,
       'pageSize': pageSize,
@@ -165,14 +165,14 @@ app.post('/series', async (req, res, next) => {
     };
     const sqsCommandParams = {
       'MessageBody': JSON.stringify(scraperData),
-      'MessageDeduplicationId': scraperData.urlToScrape,
+      'MessageDeduplicationId': `${new Date().getMinutes()}-${scraperData.urlToScrape}`,
       'MessageGroupId': scraperData.requestType,
       'QueueUrl': scraperQueueUrl,
     };
     const sqsClient = new SQSClient({ region: region });
     const sqsCommand = new SendMessageCommand(sqsCommandParams);
     const sqsResponse = await sqsClient.send(sqsCommand);
-    logger.debug(`SQS response: ${sqsResponse}`);
+    logger.debug(`SQS response: `, sqsResponse);
     const Item = {
       '_type': 'request-status',
       '_id': sqsResponse.MessageId,
@@ -237,7 +237,7 @@ app.post('/series/:id', async (req, res, next) => {
     };
     const sqsCommandParams = {
       'MessageBody': JSON.stringify(scraperData),
-      'MessageDeduplicationId': scraperData.urlToScrape,
+      'MessageDeduplicationId': `${new Date().getMinutes()}-${scraperData.urlToScrape}`,
       'MessageGroupId': scraperData.requestType,
       'QueueUrl': scraperQueueUrl,
     };

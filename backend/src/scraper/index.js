@@ -106,7 +106,8 @@ function parseChapterList ($, mangaProvider) {
     let ChapterNumber = $('span.chapternum', element).text().trim();
     if (ChapterNumber.includes('\n')) ChapterNumber = ChapterNumber.split('\n').slice(-2).join(' ');
     const ChapterDate = $('span.chapterdate', element).text().trim();
-    const ChapterOrder = parseInt($(element).parents('li').data('num').match(/(\d*)/)[0], 10);
+    const liNum = $(element).parents('li').data('num');
+    const ChapterOrder = parseInt(liNum.match(/(\d*)/)[0], 10);
     const ChapterUrl = $(element).attr('href');
     const ChapterSlug = ChapterUrl.split('/').slice(-2).shift().replace(/[\d]*[-]?/, '');
     const timestamp = new Date().toUTCString();
@@ -255,6 +256,28 @@ async function updateStatus (type, id, status, data) {
   }
 }
 
+async function updateError (type, id, status, error) {
+  try {
+    logger.debug(`In updateStatus`);
+    const commandParams = {
+      'TableName': mangaTable,
+      'Key': { '_type': type, '_id': id },
+      'ExpressionAttributeNames': { '#S': 'Status', '#E': 'Error' },
+      'ExpressionAttributeValues': { ':s': status, ':e': error },
+      'UpdateExpression': 'SET #S = :s, #E = :e',
+    };
+    logger.debug(`updateStatus command params: `, commandParams);
+    const client = new DynamoDBClient({ region: region });
+    const ddbDocClient = DynamoDBDocumentClient.from(client, translateConfig);
+    const command = new UpdateCommand(commandParams);
+    const response = await ddbDocClient.send(command);
+    logger.debug(`updateStatus response: `, response);
+  } catch (error) {
+    logger.error(error);
+    throw error;
+  }
+}
+
 async function uploadListData (data) {
   try {
     logger.debug(`In uploadListData`);
@@ -269,17 +292,18 @@ async function uploadListData (data) {
       } else {
         await putItem(element);
         accepted.add(element.get('_id'));
-        followup.add({
-          '_type': element.get('_type'),
-          '_id': element.get('_id'),
-          'ChapterPrevSlug': element.has('ChapterPrevSlug') ? element.get('ChapterPrevSlug') : undefined,
-        });
+        followup.add(new Map ([
+          ['_type', element.get('_type')],
+          ['_id', element.get('_id')],
+          ['ChapterPrevSlug', element.has('ChapterPrevSlug') ? element.get('ChapterPrevSlug') : undefined],
+        ]));
       }
     }
     const result = {
         'Accepted': accepted.size ? accepted : undefined,
         'Rejected': rejected.size ? rejected : undefined,
     };
+    logger.debug(`Follow-Up: `, followup);
     logger.debug(`Result: `, result);
     return {
       'followup': followup.size ? followup : undefined,
@@ -306,11 +330,11 @@ async function uploadMangaData (data) {
         '#SD': 'ScrapeDate',
       },
       'ExpressionAttributeValues': {
-        ':mt': data.get('MangaTitle'),
-        ':ms': data.get('MangaSynopsis'),
-        ':mc': data.get('MangaCover'),
-        ':su': data.get('MangaShortUrl'),
-        ':cu': data.get('MangaCanonicalUrl'),
+        ':mt': data.get('MangaTitle') ? data.get('MangaTitle') : '',
+        ':ms': data.get('MangaSynopsis') ? data.get('MangaSynopsis') : '',
+        ':mc': data.get('MangaCover') ? data.get('MangaCover') : '',
+        ':su': data.get('MangaShortUrl') ? data.get('MangaShortUrl') : '',
+        ':cu': data.get('MangaCanonicalUrl') ? data.get('MangaCanonicalUrl') : '',
         ':sd': data.get('ScrapeDate'),
       },
       'UpdateExpression': 'SET #MT = :mt, #MS = :ms, #MC = :mc, #SU = :su, #CU = :cu, #SD = :sd',
@@ -346,12 +370,12 @@ async function uploadChapterData (data) {
         '#SD': 'ScrapeDate',
       },
       'ExpressionAttributeValues': {
-        ':ct': data.get('ChapterTitle'),
-        ':cs': data.get('ChapterShortUrl'),
-        ':cu': data.get('ChapterCanonicalUrl'),
-        ':ps': data.get('ChapterPrevSlug'),
-        ':ns': data.get('ChapterNextSlug'),
-        ':cc': data.get('ChapterContent'),
+        ':ct': data.get('ChapterTitle') ? data.get('ChapterTitle') : '',
+        ':cs': data.get('ChapterShortUrl') ? data.get('ChapterShortUrl') : '',
+        ':cu': data.get('ChapterCanonicalUrl') ? data.get('ChapterCanonicalUrl') : '',
+        ':ps': data.get('ChapterPrevSlug') ? data.get('ChapterPrevSlug') : '',
+        ':ns': data.get('ChapterNextSlug') ? data.get('ChapterNextSlug') : '',
+        ':cc': data.get('ChapterContent') ? data.get('ChapterContent') : '',
         ':sd': data.get('ScrapeDate'),
       },
       'UpdateExpression': 'SET #CT = :ct, #CS = :cs, #CU = :cu, #PS = :ps, #NS = :ns, #CC = :cc, #SD = :sd',
@@ -376,7 +400,8 @@ async function addQueue (data) {
     const sqsClient = new SQSClient({ region: region });
     const sqsCommand = new SendMessageCommand(data);
     const sqsResponse = await sqsClient.send(sqsCommand);
-    logger.debug(`SQS response: ${sqsResponse}`);
+    return sqsResponse;
+    logger.debug(`SQS response: `, sqsResponse);
   } catch (error) {
     logger.error(error);
     throw error;
@@ -409,15 +434,15 @@ exports.handler = async function (event, context) {
             'ChapterList': 'ChapterUrl',
           }
           for await (const element of followup) {
-            const followUpData = await getItem(element['_type'], element['_id']);
+            const followUpData = await getItem(element.get('_type'), element.get('_id'));
             const followUpRequestData = {
               'urlToScrape': followUpData[followUpRequestUrl[requestType]],
               'requestType': followUpRequestType[requestType],
-              'provider': element['_type'],
+              'provider': element.get('_type'),
             };
             const sqsCommandParams = {
               'MessageBody': JSON.stringify(followUpRequestData),
-              'MessageDeduplicationId': followUpRequestData.urlToScrape,
+              'MessageDeduplicationId': `${new Date().getMinutes()}-${followUpRequestData.urlToScrape}`,
               'MessageGroupId': followUpRequestData.requestType,
               'QueueUrl': scraperQueueUrl,
             };
@@ -429,17 +454,17 @@ exports.handler = async function (event, context) {
               'Status': 'pending',
             };
             await putItem(followUpItem);
-            if (element.has('ChapterPrevSlug')) {
-              const { ChapterNextSlug, ChapterUrl } = await getItem(element['_type'], element['ChapterPrevSlug']);
+            if (element.get('ChapterPrevSlug')) {
+              const { ChapterNextSlug, ChapterUrl } = await getItem(element.get('_type'), element.get('ChapterPrevSlug'));
               if (!ChapterNextSlug) {
                 const followUpNextData = {
                   'urlToScrape': ChapterUrl,
                   'requestType': followUpRequestType[requestType],
-                  'provider': element['_type'],
+                  'provider': element.get('_type'),
                 };
                 const followUpNextCommandParams = {
                   'MessageBody': JSON.stringify(followUpNextData),
-                  'MessageDeduplicationId': followUpNextData.urlToScrape,
+                  'MessageDeduplicationId': `${new Date().getMinutes()}-${followUpNextData.urlToScrape}`,
                   'MessageGroupId': followUpNextData.requestType,
                   'QueueUrl': scraperQueueUrl,
                 };
@@ -457,7 +482,7 @@ exports.handler = async function (event, context) {
         }
       } catch (error) {
         logger.error(error);
-        await updateStatus('request-status', message.messageId, 'failed', `Error: ${error.message}`);
+        await updateError('request-status', message.messageId, 'failed', error.message);
       }
     }));
   }

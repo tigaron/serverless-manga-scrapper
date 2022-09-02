@@ -185,14 +185,14 @@ app.post('/series/:id/chapters', async (req, res, next) => {
     };
     const sqsCommandParams = {
       'MessageBody': JSON.stringify(scraperData),
-      'MessageDeduplicationId': scraperData.urlToScrape,
+      'MessageDeduplicationId': `${new Date().getMinutes()}-${scraperData.urlToScrape}`,
       'MessageGroupId': scraperData.requestType,
       'QueueUrl': scraperQueueUrl,
     };
     const sqsClient = new SQSClient({ region: region });
     const sqsCommand = new SendMessageCommand(sqsCommandParams);
     const sqsResponse = await sqsClient.send(sqsCommand);
-    logger.debug(`SQS response: ${sqsResponse}`);
+    logger.debug(`SQS response: `, sqsResponse);
     const Item = {
       '_type': 'request-status',
       '_id': sqsResponse.MessageId,
@@ -253,14 +253,14 @@ app.post('/series/:id/chapter/:slug', async (req, res, next) => {
     };
     const sqsCommandParams = {
       'MessageBody': JSON.stringify(scraperData),
-      'MessageDeduplicationId': scraperData.urlToScrape,
+      'MessageDeduplicationId': `${new Date().getMinutes()}-${scraperData.urlToScrape}`,
       'MessageGroupId': scraperData.requestType,
       'QueueUrl': scraperQueueUrl,
     };
     const sqsClient = new SQSClient({ region: region });
     const sqsCommand = new SendMessageCommand(sqsCommandParams);
     const sqsResponse = await sqsClient.send(sqsCommand);
-    logger.debug(`SQS response: ${sqsResponse}`);
+    logger.debug(`SQS response: `, sqsResponse);
     const Item = {
       '_type': 'request-status',
       '_id': sqsResponse.MessageId,

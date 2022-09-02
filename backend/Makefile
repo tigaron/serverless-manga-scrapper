@@ -23,7 +23,7 @@ cleanAll:
 	$(info [*] Who needs all that anyway? Destroying environment for all paths....)
 	@rm -rf node_modules
 	@rm -rf .serverless
-	@find ./src -depth -type d -not -name 'src' -not -path "*/node_modules/*" -not -name 'node_modules' -not -name '.serverless'  > results.txt
+	@find ./src -depth -type d -not -name 'src' -not -path "*/node_modules/*" -not -path "*/.yarn/*" -not -name 'node_modules' -not -name '.yarn' -not -name '.serverless'  > results.txt
 	@while read line; do \
 		echo "Cleaning $$line..."; \
 		rm -rf $$line/node_modules; \
@@ -62,7 +62,7 @@ _removeAll:
 
 _buildAll:
 	yarn install
-	@find ./src -depth -type d -not -name 'src' -not -path "*/node_modules/*" -not -name 'node_modules' -not -name '.serverless'  > results.txt
+	@find ./src -depth -type d -not -name 'src' -not -path "*/node_modules/*" -not -path "*/.yarn/*" -not -name 'node_modules' -not -name '.yarn' -not -name '.serverless'  > results.txt
 	@while read line; do \
 		echo "Building $$line..."; \
 		yarn install --cwd $$line; \

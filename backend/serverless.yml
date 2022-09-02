@@ -15,8 +15,8 @@ custom:
   dev:
     Stack: mangaScraper
     LogLevel: debug
-    MangaTableRCU: 1
-    MangaTableWCU: 1
+    MangaTableRCU: 2
+    MangaTableWCU: 2
 
 provider:
   name: aws
@@ -30,12 +30,12 @@ provider:
 package:
   individually: true
 
-# layers:
-#   chrome:
-#     name: chrome-aws-lambda
-#     description: '@sparticuz/chrome-aws-lambda'
-#     package:
-#       artifact: resources/layer/chrome-aws-lambda.zip
+layers:
+  chrome:
+    name: chrome-aws-lambda-${self:provider.stage}
+    description: '@sparticuz/chrome-aws-lambda'
+    package:
+      artifact: resources/layer/chrome-aws-lambda.zip
 
 functions:
   Root:
@@ -50,11 +50,7 @@ functions:
   Scraper:
     handler: src/scraper/index.handler
     layers:
-      # - !Ref ChromeLambdaLayer
-      - arn:aws:lambda:ap-southeast-1:192643247659:layer:chrome-aws-lambda:4
-    # package:
-    #   patterns:
-    #     - 'node_modules/puppeteer-core/**'
+      - !Ref ChromeLambdaLayer
     memorySize: 2048
     timeout: 20
     environment:
@@ -84,7 +80,6 @@ functions:
               - ScraperQueue
               - Arn
           batchSize: 1
-    # onError: arn:aws:sqs:${aws:region}:${aws:accountId}:${self:custom.${self:provider.stage}.Stack}-DeadLetterQueue-${self:provider.stage}.fifo
 
 resources:
   - ${file(resources/apigateway/RestApi.yml)}

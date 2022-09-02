@@ -4,7 +4,7 @@ Resources:
     Properties:
       QueueName: ${self:custom.${self:provider.stage}.Stack}-DeadLetterQueue-${self:provider.stage}.fifo
       FifoQueue: true
-      ContentBasedDeduplication: true
+      ContentBasedDeduplication: false
       DelaySeconds: 0
       MaximumMessageSize: 262144
       MessageRetentionPeriod: 1209600
@@ -15,7 +15,7 @@ Resources:
     Properties:
       QueueName: ${self:custom.${self:provider.stage}.Stack}-ScraperQueue-${self:provider.stage}.fifo
       FifoQueue: true
-      ContentBasedDeduplication: true
+      ContentBasedDeduplication: false
       DelaySeconds: 0
       MaximumMessageSize: 262144
       MessageRetentionPeriod: 1209600
@@ -25,5 +25,5 @@ Resources:
           Fn::GetAtt:
             - DeadLetterQueue
             - Arn
-        maxReceiveCount: 5
+        maxReceiveCount: 10
       VisibilityTimeout: 170

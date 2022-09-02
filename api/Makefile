@@ -19,7 +19,7 @@ clean: _check_service_definition
 
 cleanAll:
 	$(info [*] Who needs all that anyway? Destroying environment for all paths....)
-	@find ./src -depth -type d -not -name 'src' -not -path "*/node_modules/*" -not -name 'node_modules' -not -name '.serverless'  > results.txt
+	@find ./src -depth -type d -not -name 'src' -not -path "*/node_modules/*" -not -path "*/.yarn/*" -not -name 'node_modules' -not -name '.yarn' -not -name '.serverless'  > results.txt
 	@while read line; do \
 		echo "Cleaning $$line..."; \
 		rm -rf $$line/node_modules; \
@@ -65,7 +65,7 @@ _createEndpoint:
 	@yarn add --cwd ./src/${SERVICE} serverless-http
 
 _removeAll:
-	@find ./src -depth -type d -not -name 'src' -not -path "*/node_modules/*" -not -name 'node_modules' -not -name '.serverless' > results.txt
+	@find ./src -depth -type d -not -name 'src' -not -path "*/node_modules/*" -not -path "*/.yarn/*" -not -name 'node_modules' -not -name '.yarn' -not -name '.serverless' > results.txt
 	@while read line; do \
 		echo "Removing $$line..."; \
 		cd $$line && serverless remove --stage dev; \
@@ -74,7 +74,7 @@ _removeAll:
 	@rm -rf results.txt
 
 _buildAll:
-	@find ./src -depth -type d -not -name 'src' -not -path "*/node_modules/*" -not -name 'node_modules' -not -name '.serverless' > results.txt
+	@find ./src -depth -type d -not -name 'src' -not -path "*/node_modules/*"  -not -name 'node_modules' -not -name '.yarn' -not -name '.serverless' > results.txt
 	@while read line; do \
 		echo "Building $$line..."; \
 		yarn install --cwd $$line; \
@@ -83,7 +83,7 @@ _buildAll:
 	@rm -rf results.txt
 
 _deployAll:
-	@find ./src -type d -not -name 'src' -not -path "*/node_modules/*" -not -name 'node_modules' -not -name '.serverless' > results.txt
+	@find ./src -type d -not -name 'src' -not -path "*/node_modules/*" -not -path "*/.yarn/*" -not -name 'node_modules' -not -name '.yarn' -not -name '.serverless' > results.txt
 	@while read line; do \
 		echo "Deploying $$line..."; \
 		cd $$line && serverless deploy --stage ${STAGE} --verbose; \

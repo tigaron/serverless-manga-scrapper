@@ -282,8 +282,7 @@ async function uploadListData (data) {
         accepted.add(element.get('_id'));
         followup.add(new Map ([
           ['_type', element.get('_type')],
-          ['_id', element.get('_id')],
-          ['ChapterPrevSlug', element.has('ChapterPrevSlug') ? element.get('ChapterPrevSlug') : undefined],
+          ['urlToScrape', element.has('MangaUrl') ? element.get('MangaUrl') : element.get('ChapterUrl') ],
         ]));
       }
     }
@@ -385,11 +384,46 @@ async function uploadChapterData (data) {
 
 async function addQueue (data) {
   try {
+    logger.debug(`In addQueue`);
     const sqsClient = new SQSClient({ region: region });
     const sqsCommand = new SendMessageCommand(data);
     const sqsResponse = await sqsClient.send(sqsCommand);
-    return sqsResponse;
     logger.debug(`SQS response: `, sqsResponse);
+    return sqsResponse;
+  } catch (error) {
+    logger.error(error);
+    throw error;
+  }
+}
+
+async function followUpRequest (followUpData, originRequestType) {
+  try {
+    logger.debug(`In followUpRequest`);
+    const followUpRequestType = {
+      'MangaList': 'Manga',
+      'ChapterList': 'Chapter',
+    }
+    for await (const element of followUpData) {
+      const followUpRequestData = {
+        'urlToScrape': element.get('urlToScrape'),
+        'requestType': followUpRequestType[originRequestType],
+        'provider': element.get('_type'),
+      };
+      const sqsCommandParams = {
+        'MessageBody': JSON.stringify(followUpRequestData),
+        'MessageDeduplicationId': `${new Date().getMinutes()}-${followUpRequestData['urlToScrape']}`,
+        'MessageGroupId': followUpRequestData['requestType'],
+        'QueueUrl': scraperQueueUrl,
+      };
+      const sqsResponse = await addQueue(sqsCommandParams);
+      const followUpStatus = {
+        '_type': 'request-status',
+        '_id': sqsResponse['MessageId'],
+        'Request': followUpRequestData,
+        'Status': 'pending',
+      };
+      await putItem(followUpStatus);
+    }
   } catch (error) {
     logger.error(error);
     throw error;
@@ -412,62 +446,7 @@ exports.handler = async function (event, context) {
         };
         const { followup, result } = await uploadType[requestType](scraperResponse);
         await updateStatus('request-status', message.messageId, 'completed', result);
-        if (followup) {
-          const followUpRequestType = {
-            'MangaList': 'Manga',
-            'ChapterList': 'Chapter',
-          }
-          const followUpRequestUrl = {
-            'MangaList': 'MangaUrl',
-            'ChapterList': 'ChapterUrl',
-          }
-          for await (const element of followup) {
-            const followUpData = await getItem(element.get('_type'), element.get('_id'));
-            const followUpRequestData = {
-              'urlToScrape': followUpData[followUpRequestUrl[requestType]],
-              'requestType': followUpRequestType[requestType],
-              'provider': element.get('_type'),
-            };
-            const sqsCommandParams = {
-              'MessageBody': JSON.stringify(followUpRequestData),
-              'MessageDeduplicationId': `${new Date().getMinutes()}-${followUpRequestData.urlToScrape}`,
-              'MessageGroupId': followUpRequestData.requestType,
-              'QueueUrl': scraperQueueUrl,
-            };
-            const sqsResponse = await addQueue(sqsCommandParams);
-            const followUpItem = {
-              '_type': 'request-status',
-              '_id': sqsResponse.MessageId,
-              'Request': JSON.stringify(followUpRequestData),
-              'Status': 'pending',
-            };
-            await putItem(followUpItem);
-            if (element.get('ChapterPrevSlug')) {
-              const { ChapterNextSlug, ChapterUrl } = await getItem(element.get('_type'), element.get('ChapterPrevSlug'));
-              if (!ChapterNextSlug) {
-                const followUpNextData = {
-                  'urlToScrape': ChapterUrl,
-                  'requestType': followUpRequestType[requestType],
-                  'provider': element.get('_type'),
-                };
-                const followUpNextCommandParams = {
-                  'MessageBody': JSON.stringify(followUpNextData),
-                  'MessageDeduplicationId': `${new Date().getMinutes()}-${followUpNextData.urlToScrape}`,
-                  'MessageGroupId': followUpNextData.requestType,
-                  'QueueUrl': scraperQueueUrl,
-                };
-                const followUpNextResponse = await addQueue(followUpNextCommandParams);
-                const followUpNextItem = {
-                  '_type': 'request-status',
-                  '_id': followUpNextResponse.MessageId,
-                  'Request': JSON.stringify(followUpNextData),
-                  'Status': 'pending',
-                };
-                await putItem(followUpNextItem);
-              }
-            }
-          }
-        }
+        if (followup) await followUpRequest(followup, requestType);
       } catch (error) {
         logger.error(error);
         await updateError('request-status', message.messageId, 'failed', error.message);

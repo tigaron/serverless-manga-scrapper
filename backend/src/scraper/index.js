@@ -1,5 +1,5 @@
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { DynamoDBDocumentClient, UpdateCommand, PutCommand, GetCommand } = require('@aws-sdk/lib-dynamodb');
+const { DynamoDBDocumentClient, UpdateCommand, PutCommand, QueryCommand } = require('@aws-sdk/lib-dynamodb');
 const { SQSClient, SendMessageCommand } = require('@aws-sdk/client-sqs');
 const chromium = require('@sparticuz/chrome-aws-lambda');
 const cheerio = require('cheerio');
@@ -107,7 +107,7 @@ function parseChapterList ($, mangaProvider) {
     if (ChapterNumber.includes('\n')) ChapterNumber = ChapterNumber.split('\n').slice(-2).join(' ');
     const ChapterDate = $('span.chapterdate', element).text().trim();
     const liNum = $(element).parents('li').data('num');
-    const ChapterOrder = Number.isInteger(liNum) ? liNum : parseInt(liNum.match(/(\d*)/)[1], 10);
+    const ChapterOrder = Number.isInteger(liNum) ? liNum : /\d/.test(liNum) ? parseInt(liNum.toString().match(/(\d+)./)[1], 10) : 0;
     const ChapterUrl = $(element).attr('href');
     const ChapterSlug = ChapterUrl.split('/').slice(-2).shift().replace(/[\d]*[-]?/, '');
     const timestamp = new Date().toUTCString();
@@ -171,7 +171,6 @@ async function scraper (urlString, requestType, mangaProvider) {
   try {
     logger.debug(`In scraper: ${requestType} - ${urlString}`);
     const htmlString = await crawler(urlString);
-    if (htmlString instanceof Error) throw htmlString;
     const $ = loadHTML(htmlString);
     const result = getScrapedData($, mangaProvider, requestType);
     logger.debug(`Scraper success: `, result);
@@ -182,33 +181,14 @@ async function scraper (urlString, requestType, mangaProvider) {
   }
 }
 
-async function getItem (type, id) {
-  try {
-    logger.debug(`In getItem`);
-    const commandParams = {
-      'TableName': mangaTable,
-      'Key': { '_type': type, '_id': id },
-    };
-    logger.debug(`getItem command params: `, commandParams);
-    const client = new DynamoDBClient({ region: region });
-    const ddbDocClient = DynamoDBDocumentClient.from(client, translateConfig);
-    const command = new GetCommand(commandParams);
-    const response = await ddbDocClient.send(command);
-    logger.debug(`getItem response: `, response);
-    if (response.Item) return response.Item;
-    else return false;
-  } catch (error) {
-    logger.error(error);
-    throw error;
-  }
-}
-
 async function putItem (item) {
   try {
     logger.debug(`In putItem`);
     const commandParams = {
       'TableName': mangaTable,
       'Item': item,
+      'ExpressionAttributeNames': { '#I': '_id' },
+      'ConditionExpression': 'attribute_not_exists(#I)',
     };
     logger.debug(`putItem command params: `, commandParams);
     const client = new DynamoDBClient({ region: region });
@@ -216,9 +196,11 @@ async function putItem (item) {
     const command = new PutCommand(commandParams);
     const response = await ddbDocClient.send(command);
     logger.debug(`putItem response: `, response);
+    return false;
   } catch (error) {
+    if (error.name === 'ConditionalCheckFailedException') return true;
     logger.error(error);
-    throw error;
+    return error;
   }
 }
 
@@ -273,12 +255,12 @@ async function uploadListData (data) {
     const rejected = new Set();
     const followup = new Set();
     for await (const element of data) {
-      const data = await getItem(element.get('_type'), element.get('_id'));
+      const data = await putItem(element);
       if (data) {
-        rejected.add(`Already exist: "${element.get('_id')}"`);
-        continue;
+        rejected.add(`"${element.get('_id')}" - Already exist.`);
+      } else if (data instanceof Error) {
+        rejected.add(`"${element.get('_id')}" - ${data.name}: ${data.message}`);
       } else {
-        await putItem(element);
         accepted.add(element.get('_id'));
         followup.add(new Map ([
           ['_type', element.get('_type')],
@@ -402,7 +384,7 @@ async function followUpRequest (followUpData, originRequestType) {
     const followUpRequestType = {
       'MangaList': 'Manga',
       'ChapterList': 'Chapter',
-    }
+    };
     for await (const element of followUpData) {
       const followUpRequestData = {
         'urlToScrape': element.get('urlToScrape'),
@@ -411,18 +393,11 @@ async function followUpRequest (followUpData, originRequestType) {
       };
       const sqsCommandParams = {
         'MessageBody': JSON.stringify(followUpRequestData),
-        'MessageDeduplicationId': `${new Date().getMinutes()}-${followUpRequestData['urlToScrape']}`,
+        'MessageDeduplicationId': `${new Date().getMinutes()}-${followUpRequestData['urlToScrape'].split('/').slice(-2).shift().replace(/[\d]*[-]?/, '')}`,
         'MessageGroupId': followUpRequestData['requestType'],
         'QueueUrl': scraperQueueUrl,
       };
-      const sqsResponse = await addQueue(sqsCommandParams);
-      const followUpStatus = {
-        '_type': 'request-status',
-        '_id': sqsResponse['MessageId'],
-        'Request': followUpRequestData,
-        'Status': 'pending',
-      };
-      await putItem(followUpStatus);
+      await addQueue(sqsCommandParams);
     }
   } catch (error) {
     logger.error(error);
@@ -430,27 +405,48 @@ async function followUpRequest (followUpData, originRequestType) {
   }
 }
 
-exports.handler = async function (event, context) {
-  if (event.Records) {
-    return Promise.all(event.Records.map(async function (message) {
-      try {
-        logger.debug(`SQS message: `, message);
-        const { urlToScrape, requestType, provider } = JSON.parse(message.body);
-        const scraperResponse = await scraper(urlToScrape, requestType, provider);
-        if (scraperResponse instanceof Error) throw scraperResponse;
-        const uploadType = {
-          'MangaList': uploadListData,
-          'Manga': uploadMangaData,
-          'ChapterList': uploadListData,
-          'Chapter': uploadChapterData,
-        };
-        const { followup, result } = await uploadType[requestType](scraperResponse);
-        await updateStatus('request-status', message.messageId, 'completed', result);
-        if (followup) await followUpRequest(followup, requestType);
-      } catch (error) {
-        logger.error(error);
-        await updateError('request-status', message.messageId, 'failed', error.message);
-      }
-    }));
+exports.handler = async function (event) {
+  for await (const message of event.Records) {
+    try {
+      logger.debug(`SQS message: `, message);
+      const { urlToScrape, requestType, provider } = JSON.parse(message.body);
+      const scraperResponse = await scraper(urlToScrape, requestType, provider);
+      const uploadType = {
+        'MangaList': uploadListData,
+        'Manga': uploadMangaData,
+        'ChapterList': uploadListData,
+        'Chapter': uploadChapterData,
+      };
+      const { followup, result } = await uploadType[requestType](scraperResponse);
+      if (followup) await followUpRequest(followup, requestType);
+      // TODO update prevElement, add next chapter attribute
+      await updateStatus('request-status', message.messageId, 'completed', result);
+    } catch (error) {
+      logger.error(error);
+      await updateError('request-status', message.messageId, 'failed', error.message);
+    }
   }
+  return {};
 };
+
+/* async function queryChapters (type) {
+  logger.debug(`In queryChapters`);
+  const commandParams = {
+    'TableName': mangaTable,
+    'ExpressionAttributeNames': { '#T': '_type', '#CN': 'ChapterNextSlug' },
+    'ExpressionAttributeValues': { ':t': type },
+    'KeyConditionExpression': '#T = :t',
+    'ConditionExpression': 'attribute_type(#CN, NULL) OR attribute_not_exists(#CN)'
+  };
+  const client = new DynamoDBClient({ region: region });
+  const ddbDocClient = DynamoDBDocumentClient.from(client, translateConfig);
+  const command = new QueryCommand(commandParams);
+  const response = await ddbDocClient.send(command);
+  logger.debug(`queryChapters response: `, response);
+  if (response.Items.length !== 0) return response.Items;
+  else return false;
+}
+async function refreshNextChapter (params) {
+  const result = await queryChapters();
+  // use url result to scrape
+} */

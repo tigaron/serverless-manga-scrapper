@@ -23,7 +23,6 @@ exports.handler = async function (event, context) {
           'asura',
           'flame',
           'luminous',
-          'manhwax',
           'omega',
           'realm',
         ]

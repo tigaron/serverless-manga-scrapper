@@ -17,7 +17,7 @@ custom:
 provider:
   name: aws
   runtime: nodejs16.x
-  memorySize: 128
+  memorySize: 1024
   timeout: 10
   region: ap-southeast-1
   stage: ${opt:stage, 'dev'}

@@ -52,7 +52,7 @@ functions:
     layers:
       - !Ref ChromeLambdaLayer
     memorySize: 2048
-    timeout: 20
+    timeout: 60
     environment:
       region: ${aws:region}
       mangaTable: ${self:custom.${self:provider.stage}.Stack}-mangaTable-${self:provider.stage}
@@ -61,9 +61,9 @@ functions:
     iamRoleStatements:
       - Effect: Allow
         Action:
-          - dynamodb:GetItem
           - dynamodb:PutItem
           - dynamodb:UpdateItem
+          - dynamodb:Query
         Resource:
           - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.${self:provider.stage}.Stack}-mangaTable-${self:provider.stage}
       - Effect: Allow

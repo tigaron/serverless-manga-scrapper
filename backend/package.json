@@ -8,8 +8,8 @@
   "private": true,
   "scripts": {
     "build": "make buildAll",
-    "deploy": "make deployAll STAGE='dev'",
-    "start": "make buildAll && make deployAll STAGE='dev'",
+    "dev": "make deployAll STAGE='dev'",
+    "prod": "make deployAll STAGE='prod'",
     "del": "make removeAll"
   },
   "dependencies": {

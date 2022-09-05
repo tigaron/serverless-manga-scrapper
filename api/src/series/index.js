@@ -5,7 +5,7 @@ const morgan = require('morgan');
 const helmet = require('helmet');
 const cors = require('cors');
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { DynamoDBDocumentClient, GetCommand, PutCommand, paginateQuery } = require('@aws-sdk/lib-dynamodb');
+const { DynamoDBDocumentClient, GetCommand, PutCommand, QueryCommand, paginateQuery } = require('@aws-sdk/lib-dynamodb');
 const { SQSClient, SendMessageCommand } = require('@aws-sdk/client-sqs');
 
 const app = express();
@@ -39,7 +39,6 @@ const providerMap = new Map([
   ['asura', 'https://www.asurascans.com/manga/list-mode/'],
   ['flame', 'https://flamescans.org/series/list-mode/'],
   ['luminous', 'https://luminousscans.com/series/list-mode/'],
-  ['manhwax', 'https://manhwax.com/manga/list-mode/'],
   ['omega', 'https://omegascans.org/manga/list-mode/'],
   ['realm', 'https://realmscans.com/series/list-mode/'],
 ]);
@@ -98,50 +97,63 @@ app.get('/series', async (req, res, next) => {
       res.status(404);
       throw new Error(`Unknown provider: "${provider}"`);
     }
-    const client = new DynamoDBClient({ region: region });
-    const ddbDocClient = DynamoDBDocumentClient.from(client, translateConfig);
-    const pageSize = limit && parseInt(limit, 10) > 0 ? parseInt(limit, 10) : undefined;
-    const paginatorConfig = {
-      'client': ddbDocClient,
-      'pageSize': pageSize,
-    };
-    const commandParams = {
-      'TableName': mangaTable,
-      'ExpressionAttributeNames': { '#T': '_type' },
-      'ExpressionAttributeValues': { ':t': `series_${provider}` },
-      'KeyConditionExpression': '#T = :t',
-    };
-    const paginator = paginateQuery(paginatorConfig, commandParams);
-    const pageToGet = page && parseInt(page - 1, 10) >= 0 && limit ? parseInt(page - 1, 10) : 0;
-    const series = new Set();
+    let series;
     let count;
     let prev;
     let next;
-    let index = 0;
-    for await (const value of paginator) {
-      if (index === pageToGet) {
-        logger.debug(`Page data: `, value);
-        for (const item of value.Items) {
-          series.add(item);
+    if (limit && parseInt(limit, 10) > 0) {
+      const client = new DynamoDBClient({ region: region });
+      const ddbDocClient = DynamoDBDocumentClient.from(client, translateConfig);
+      const pageSize = limit && parseInt(limit, 10) > 0 ? parseInt(limit, 10) : undefined;
+      const paginatorConfig = {
+        'client': ddbDocClient,
+        'pageSize': pageSize,
+      };
+      const commandParams = {
+        'TableName': mangaTable,
+        'ExpressionAttributeNames': { '#T': '_type' },
+        'ExpressionAttributeValues': { ':t': `series_${provider}` },
+        'KeyConditionExpression': '#T = :t',
+      };
+      const paginator = paginateQuery(paginatorConfig, commandParams);
+      const pageToGet = page && parseInt(page - 1, 10) >= 0 && limit ? parseInt(page - 1, 10) : 0;
+      let index = 0;
+      for await (const value of paginator) {
+        if (index === pageToGet) {
+          logger.debug(`Page data: `, value);
+          series = value.Count ? value.Items : null;
+          count = value.Count;
+          prev = pageToGet ? `/series/?provider=${provider}&page=${pageToGet}${pageSize ? '&limit=' + pageSize : undefined}` : undefined;
+          next = value.LastEvaluatedKey ? `/series/?provider=${provider}&page=${pageToGet + 2}${pageSize ? '&limit=' + pageSize : undefined}` : undefined;
+          break;
+        } else {
+          index++;
+          continue;
         }
-        count = value.Count;
-        prev = pageToGet ? `/series/?provider=${provider}&page=${pageToGet}${pageSize ? '&limit=' + pageSize : undefined}` : undefined;
-        next = value.LastEvaluatedKey ? `/series/?provider=${provider}&page=${pageToGet + 2}${pageSize ? '&limit=' + pageSize : undefined}` : undefined;
-        break;
-      } else {
-        index++;
-        continue;
       }
+    } else {
+      const client = new DynamoDBClient({ region: region });
+      const ddbDocClient = DynamoDBDocumentClient.from(client, translateConfig);
+      const commandParams = {
+        'TableName': mangaTable,
+        'ExpressionAttributeNames': { '#T': '_type' },
+        'ExpressionAttributeValues': { ':t': `series_${provider}` },
+        'KeyConditionExpression': '#T = :t',
+      };
+      const command = new QueryCommand(commandParams);
+      const response = await ddbDocClient.send(command);
+      logger.debug(`QueryCommand response: `, response);
+      if (response.Count !== 0) series = response.Items;
     }
-    if (page && series.size === 0) {
+    if (page && !series) {
       res.status(404);
-      throw new Error(`Not found: "page=${page}"`);
+      throw new Error(`Not found: "${req.originalUrl}`);
     }
-    if (series.size === 0) {
+    if (!series) {
       res.status(404);
       throw new Error(`No data available`);
     }
-    res.status(200).json({ 'status': 200, 'statusText': 'OK', 'count': count, 'prev': prev, 'next': next, 'data': Array.from(series) });
+    res.status(200).json({ 'status': 200, 'statusText': 'OK', 'count': count, 'prev': prev, 'next': next, 'data': series });
   } catch (error) {
     next(error);
   }
@@ -165,8 +177,8 @@ app.post('/series', async (req, res, next) => {
     };
     const sqsCommandParams = {
       'MessageBody': JSON.stringify(scraperData),
-      'MessageDeduplicationId': `${new Date().getMinutes()}-${scraperData.urlToScrape}`,
-      'MessageGroupId': scraperData.requestType,
+      'MessageDeduplicationId': `${new Date().getMinutes()}-${scraperData['urlToScrape'].split('/').slice(-2).shift().replace(/[\d]*[-]?/, '')}`,
+      'MessageGroupId': scraperData['requestType'],
       'QueueUrl': scraperQueueUrl,
     };
     const sqsClient = new SQSClient({ region: region });
@@ -237,8 +249,8 @@ app.post('/series/:id', async (req, res, next) => {
     };
     const sqsCommandParams = {
       'MessageBody': JSON.stringify(scraperData),
-      'MessageDeduplicationId': `${new Date().getMinutes()}-${scraperData.urlToScrape}`,
-      'MessageGroupId': scraperData.requestType,
+      'MessageDeduplicationId': `${new Date().getMinutes()}-${scraperData['urlToScrape'].split('/').slice(-2).shift().replace(/[\d]*[-]?/, '')}`,
+      'MessageGroupId': scraperData['requestType'],
       'QueueUrl': scraperQueueUrl,
     };
     const sqsClient = new SQSClient({ region: region });

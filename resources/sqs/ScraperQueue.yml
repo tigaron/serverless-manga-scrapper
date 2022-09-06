@@ -1,0 +1,27 @@
+Resources:
+  DeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ${self:custom.stack}-DeadLetterQueue-${sls:stage}.fifo
+      FifoQueue: true
+      ContentBasedDeduplication: false
+      DelaySeconds: 0
+      MaximumMessageSize: 262144
+      MessageRetentionPeriod: 1209600
+      ReceiveMessageWaitTimeSeconds: 20
+      VisibilityTimeout: 170
+  ScraperQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ${self:custom.stack}-ScraperQueue-${sls:stage}.fifo
+      FifoQueue: true
+      ContentBasedDeduplication: false
+      DelaySeconds: 0
+      MaximumMessageSize: 262144
+      MessageRetentionPeriod: 1209600
+      ReceiveMessageWaitTimeSeconds: 20
+      RedrivePolicy:
+        deadLetterTargetArn:
+          Fn::GetAtt: [ DeadLetterQueue, Arn ]
+        maxReceiveCount: 3
+      VisibilityTimeout: 170

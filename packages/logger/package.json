@@ -1,0 +1,9 @@
+{
+  "name": "logger",
+  "packageManager": "yarn@3.2.3",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "log4js": "^6.6.1"
+  }
+}

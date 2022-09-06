@@ -1,0 +1,18 @@
+{
+  "name": "series",
+  "packageManager": "yarn@3.2.3",
+  "scripts": {
+    "dev": "serverless deploy --stage dev --verbose",
+    "fun": "serverless deploy function --function Series --stage dev --verbose",
+    "inv": "serverless invoke --function Series",
+    "loc": "serverless invoke local --function Series",
+    "off": "serverless offline start"
+  },
+  "devDependencies": {
+    "serverless": "^3.22.0",
+    "serverless-offline": "^10.0.0"
+  },
+  "dependencies": {
+    "log4js": "^6.6.1"
+  }
+}

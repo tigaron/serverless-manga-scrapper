@@ -1,0 +1,58 @@
+org: tigaron
+app: manga-scraper
+service: MangaScraper-Root
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  region: ap-southeast-1
+  stage: ${opt:stage, 'dev'}
+  environment:
+    logLevel: ${self:custom.${sls:stage}.LogLevel}
+
+package:
+  individually: true
+
+functions:
+  Root:
+    handler: index.handler
+    name: ${self:service}-${sls:stage}
+    description: Root endpoint to show list of webtoon's provider
+    memorySize: 128
+    timeout: 5
+    events:
+      - http:
+          path: /
+          method: get
+
+resources:
+  - ${file(../../resources/apigateway/RestApi.yml)}
+  - Outputs:
+      AGRestApiId:
+        Value:
+          Ref: ApiGatewayRestApi
+        Export:
+          Name: ${self:custom.stack}-RestApiId-${sls:stage}
+      AGRootResourceId:
+        Value:
+          Fn::GetAtt:
+            - ApiGatewayRestApi
+            - RootResourceId
+        Export:
+          Name: ${self:custom.stack}-RootResourceId-${sls:stage}
+
+plugins:
+  - serverless-offline
+
+custom:
+  stack: MangaScraper
+  prod:
+    LogLevel: info
+  dev:
+    LogLevel: debug
+  enterprise:
+    collectLambdaLogs: false
+    disableAwsSpans: true
+    disableHttpSpans: true

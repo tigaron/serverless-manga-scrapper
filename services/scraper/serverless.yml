@@ -1,0 +1,97 @@
+org: tigaron
+app: manga-scraper
+service: MangaScraper-Scraper
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  region: ap-southeast-1
+  stage: ${opt:stage, 'dev'}
+  logRetentionInDays: 14
+  iam:
+    role:
+      name: IAM-${self:service}-${sls:stage}
+      path: /${self:service}-${sls:stage}/
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+          Resource:
+            - Fn::GetAtt: [ SeriesTable, Arn ]
+            - Fn::GetAtt: [ ChapterTable, Arn ]
+            - Fn::GetAtt: [ StatusTable, Arn ]
+        - Effect: Allow
+          Action:
+            - sqs:SendMessage
+          Resource:
+            Fn::GetAtt: [ ScraperQueue, Arn ]
+  environment:
+    region: ${aws:region}
+    logLevel: ${self:custom.${sls:stage}.LogLevel}
+    scraperQueueUrl:
+      Fn::ImportValue: ${self:custom.stack}-ScraperQueueUrl-${sls:stage}
+    seriesTable: ${self:custom.stack}-SeriesTable-${sls:stage}
+    chapterTable: ${self:custom.stack}-ChapterTable-${sls:stage}
+    statusTable: ${self:custom.stack}-StatusTable-${sls:stage}
+
+package:
+  individually: true
+  patterns:
+    - '!*.test.js'
+
+layers:
+  Chrome:
+    name: ${self:custom.stack}-Chrome-${self:provider.stage}
+    description: '@sparticuz/chrome-aws-lambda'
+    package:
+      artifact: ../../resources/lambda/chrome-aws-lambda.zip
+
+functions:
+  Scraper:
+    handler: index.handler
+    layers:
+      - !Ref ChromeLambdaLayer
+    name: ${self:service}-${sls:stage}
+    description: Scraper service to update webtoons and chapters database
+    memorySize: 2048
+    timeout: 60
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt: [ ScraperQueue, Arn ]
+          batchSize: 1
+
+resources:
+  - ${file(../../resources/sqs/ScraperQueue.yml)}
+  - ${file(../../resources/dynamodb/SeriesTable.yml)}
+  - ${file(../../resources/dynamodb/ChapterTable.yml)}
+  - ${file(../../resources/dynamodb/StatusTable.yml)}
+  - Outputs:
+      ScraperQueueUrl:
+        Value:
+          Ref: ScraperQueue
+        Export:
+          Name: ${self:custom.stack}-ScraperQueueUrl-${sls:stage}
+
+plugins:
+  - serverless-plugin-monorepo
+  - serverless-plugin-common-excludes
+  - serverless-offline
+
+custom:
+  stack: MangaScraper
+  prod:
+    LogLevel: info
+    TableRCU: 10
+    TableWCU: 10
+  dev:
+    LogLevel: debug
+    TableRCU: 1
+    TableWCU: 1
+  enterprise:
+    collectLambdaLogs: false
+    disableAwsSpans: true
+    disableHttpSpans: true

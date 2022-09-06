@@ -1,0 +1,69 @@
+org: tigaron
+app: manga-scraper
+service: MangaScraper-Api-Series
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  region: ap-southeast-1
+  stage: ${opt:stage, 'dev'}
+  logRetentionInDays: 14
+  apiGateway:
+    restApiId:
+      Fn::ImportValue: ${self:custom.stack}-RestApiId-${sls:stage}
+    restApiRootResourceId:
+      Fn::ImportValue: ${self:custom.stack}-RootResourceId-${sls:stage}
+  environment:
+    region: ${aws:region}
+    logLevel: ${self:custom.${sls:stage}.LogLevel}
+    seriesTable: ${self:custom.stack}-SeriesTable-${sls:stage}
+    scraperQueueUrl: https://sqs.${aws:region}.amazonaws.com/${aws:accountId}/${self:custom.stack}-ScraperQueue-${sls:stage}.fifo
+
+package:
+  individually: true
+
+functions:
+  Root:
+    handler: index.handler
+    name: ${self:service}-${sls:stage}
+    description: Series endpoint to show information of webtoon's series
+    memorySize: 1024
+    timeout: 10
+    events:
+      - http:
+          path: /series
+          method: get
+      - http:
+          path: /series
+          method: post
+      - http:
+          path: /series/{id}
+          method: get
+      - http:
+          path: /series/{id}
+          method: post
+
+resources:
+  Outputs:
+    AGResourceSeries:
+      Value:
+        Ref: ApiGatewayResourceSeries
+      Export:
+        Name: ${self:custom.stack}-ResourceSeriesId-${sls:stage}
+    AGResourceSeriesIdVar:
+      Value:
+        Ref: ApiGatewayResourceSeriesIdVar
+      Export:
+        Name: ${self:custom.stack}-ResourceSeriesIdVar-${sls:stage}
+
+plugins:
+  - serverless-offline
+
+custom:
+  stack: MangaScraper
+  prod:
+    LogLevel: info
+  dev:
+    LogLevel: debug

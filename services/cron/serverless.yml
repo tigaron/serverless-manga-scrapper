@@ -1,0 +1,31 @@
+org: tigaron
+app: manga-scraper
+service: MangaScraper-Cron
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  region: ap-southeast-1
+  stage: ${opt:stage, 'dev'}
+  logRetentionInDays: 14
+  environment:
+    logLevel: ${self:custom.${sls:stage}.LogLevel}
+
+functions:
+  Cron:
+    handler: index.handler
+    name: ${self:service}-${sls:stage}
+    description: Cron service to update database entries
+    memorySize: 512
+    timeout: 10
+    events:
+      - schedule: cron(0/2 * ? * MON-FRI *)
+
+custom:
+  stack: MangaScraper
+  prod:
+    LogLevel: info
+  dev:
+    LogLevel: debug

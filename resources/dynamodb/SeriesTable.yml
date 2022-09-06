@@ -1,0 +1,18 @@
+Resources:
+  SeriesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ${self:custom.stack}-SeriesTable-${sls:stage}
+      AttributeDefinitions:
+        - AttributeName: '_type'
+          AttributeType: 'S'
+        - AttributeName: '_id'
+          AttributeType: 'S'
+      KeySchema:
+        - AttributeName: '_type'
+          KeyType: 'HASH'
+        - AttributeName: '_id'
+          KeyType: 'RANGE'
+      ProvisionedThroughput:
+        ReadCapacityUnits: ${self:custom.${sls:stage}.TableRCU}
+        WriteCapacityUnits: ${self:custom.${sls:stage}.TableWCU}

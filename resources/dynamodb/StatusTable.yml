@@ -1,0 +1,14 @@
+Resources:
+  StatusTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ${self:custom.stack}-StatusTable-${sls:stage}
+      AttributeDefinitions:
+        - AttributeName: '_id'
+          AttributeType: 'S'
+      KeySchema:
+        - AttributeName: '_id'
+          KeyType: 'HASH'
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1

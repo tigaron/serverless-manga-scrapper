@@ -1,0 +1,14 @@
+{
+  "name": "cron",
+  "packageManager": "yarn@3.2.3",
+  "scripts": {
+    "local": "serverless invoke local --function Cron --verbose"
+  },
+  "dependencies": {
+    "got": "^12.4.1",
+    "log4js": "^6.6.1"
+  },
+  "devDependencies": {
+    "serverless": "^3.22.0"
+  }
+}

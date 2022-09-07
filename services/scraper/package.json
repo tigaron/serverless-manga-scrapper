@@ -6,6 +6,7 @@
     "fun": "serverless deploy function --function Scraper --stage dev --verbose",
     "inv": "serverless invoke --function Scraper",
     "loc": "serverless invoke local --function Scraper",
+    "del": "serverless remove --stage dev --verbose",
     "off": "serverless offline start"
   },
   "devDependencies": {

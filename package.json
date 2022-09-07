@@ -10,6 +10,8 @@
   },
   "devDependencies": {
     "serverless": "^3.22.0",
-    "serverless-offline": "^10.0.0"
+    "serverless-offline": "^10.0.0",
+    "serverless-plugin-common-excludes": "^4.0.0",
+    "serverless-plugin-monorepo": "^0.11.0"
   }
 }

@@ -44,6 +44,8 @@ resources:
           Name: ${self:custom.stack}-RootResourceId-${sls:stage}
 
 plugins:
+  - serverless-plugin-monorepo
+  - serverless-plugin-common-excludes
   - serverless-offline
 
 custom:

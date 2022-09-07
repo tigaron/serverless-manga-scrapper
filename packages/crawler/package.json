@@ -1,0 +1,14 @@
+{
+  "name": "crawler",
+  "packageManager": "yarn@3.2.3",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "logger": "1.0.0",
+    "puppeteer-core": "17.0.0"
+  },
+  "devDependencies": {
+    "@sparticuz/chrome-aws-lambda": "17.0.0",
+    "puppeteer": "17.0.0"
+  }
+}

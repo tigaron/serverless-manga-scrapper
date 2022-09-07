@@ -1,5 +1,4 @@
 const scraper = require('./scraper');
-const cheerio = require('cheerio');
 
 // scraper('https://omegascans.org/manga/dorm-room-sisters/', 'Manga', 'omega');
 // scraper('https://realmscans.com/series/infinite-level-up-in-murim/', 'Manga', 'realm');

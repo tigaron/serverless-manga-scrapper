@@ -24,7 +24,7 @@ async function putItem (table, item) {
     return false;
   } catch (error) {
     if (error.name === 'ConditionalCheckFailedException') return true;
-    logger.error(`putItem failed: `, error.message);
+    logger.error(`putItem failed: `, error.message, item.get('_id'));
     return error;
   }
 }
@@ -127,7 +127,7 @@ async function updateSeries (data) {
     const status = response.$metadata.httpStatusCode === 200 ? `Accepted: ${data.get('_id')}` : `Rejected: ${data.get('_id')}`;
     return { 'status': status };
   } catch (error) {
-    logger.error(`updateSeries failed: `, error.message);
+    logger.error(`updateSeries failed: `, error.message, item.get('_id'));
     throw error;
   }
 }
@@ -160,7 +160,7 @@ async function updateChapter (data) {
     const status = response.$metadata.httpStatusCode === 200 ? `Accepted: ${data.get('_id')}` : `Rejected: ${data.get('_id')}`;
     return { 'status': status };
   } catch (error) {
-    logger.error(`updateChapter failed: `, error.message);
+    logger.error(`updateChapter failed: `, error.message, item.get('_id'));
     throw error;
   }
 }

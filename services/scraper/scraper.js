@@ -1,13 +1,12 @@
 const cheerio = require('cheerio');
 const logger = require('logger');
-const crawler = require('./crawler');
+const crawler = require('crawler');
 
 function loadHTML (html) {
   logger.debug(`In loadHTML`);
   return cheerio.load(html);
 }
 
-//  TODO memoization?
 function getSlug (url) {
   return url.split('/').slice(-2, -1).toString().replace(/[\d]*[-]?/, '');
 }
@@ -16,11 +15,11 @@ function parseMangaList ($, provider) {
   logger.debug(`In parseMangaList`);
   const MangaList = new Set();
   try {
-    $('a.series', 'div.soralist').each((index, element) => {
+    $('a', 'div.listupd').each((index, element) => {
       MangaList.add(new Map([
         ['_type', provider],
         ['_id', getSlug($(element).attr('href'))],
-        ['MangaTitle', $(element).text().trim()],
+        ['MangaTitle', $(element).attr('title')],
         ['MangaUrl', $(element).attr('href')],
         ['ScrapeDate', new Date().toUTCString()],
       ]));
@@ -58,14 +57,14 @@ function parseManga ($, provider) {
   return Manga;
 }
 
-function parseChapterList ($, manga) {
+function parseChapterList ($, provider) {
   logger.debug(`In parseChapterList`);
   const ChapterList = new Set();
   try {
     $('a', 'div.eplister').each((index, element) => {
       const liNum = $(element).parents('li').data('num');
       const Chapter = new Map([
-        ['_type', `${manga}_${getSlug($('meta[property="og:url"]').attr('content'))}`],
+        ['_type', `${provider}_${getSlug($('meta[property="og:url"]').attr('content'))}`],
         ['_id', getSlug($(element).attr('href'))],
         ['ChapterOrder', /\d/.test(liNum) ? parseInt(liNum.toString().match(/(\d+)/)[1], 10) : 0],
         ['ChapterNumber', $('span.chapternum', element).text().trim().replace(/\n/, ' ')],

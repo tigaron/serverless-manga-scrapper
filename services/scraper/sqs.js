@@ -6,7 +6,6 @@ const { region, scraperQueueUrl } = process.env;
 
 const sqsClient = new SQSClient({ region });
 
-//  TODO memoization?
 function getSlug (url) {
   return url.split('/').slice(-2, -1).toString().replace(/[\d]*[-]?/, '');
 }

@@ -10,18 +10,54 @@ provider:
   region: ap-southeast-1
   stage: ${opt:stage, 'dev'}
   logRetentionInDays: 14
+  iam:
+    role:
+      name: IAM-${self:service}-${sls:stage}
+      path: /${self:service}-${sls:stage}/
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+          Resource:
+            - Fn::GetAtt: [ SeriesTable, Arn ]
+            - Fn::GetAtt: [ ChapterTable, Arn ]
+            - Fn::GetAtt: [ StatusTable, Arn ]
   environment:
+    region: ${aws:region}
     logLevel: ${self:custom.${sls:stage}.LogLevel}
+    seriesTable: ${self:custom.stack}-SeriesTable-${sls:stage}
+    chapterTable: ${self:custom.stack}-ChapterTable-${sls:stage}
+    statusTable: ${self:custom.stack}-StatusTable-${sls:stage}
+
+package:
+  individually: true
+  patterns:
+    - '!*.test.js'
+
+layers:
+  Chrome:
+    name: ${self:custom.stack}-Chrome-${self:provider.stage}
+    description: '@sparticuz/chrome-aws-lambda'
+    package:
+      artifact: ../../resources/lambda/chrome-aws-lambda.zip
 
 functions:
   Cron:
     handler: index.handler
+    layers:
+      - !Ref ChromeLambdaLayer
     name: ${self:service}-${sls:stage}
     description: Cron service to update database entries
-    memorySize: 512
-    timeout: 10
+    memorySize: 2048
+    timeout: 900
     events:
-      - schedule: cron(0/2 * ? * MON-FRI *)
+      - schedule: cron(15 10 * * ? *)
+
+plugins:
+  - serverless-plugin-monorepo
+  - serverless-plugin-common-excludes
+  - serverless-offline
 
 custom:
   stack: MangaScraper
@@ -29,3 +65,7 @@ custom:
     LogLevel: info
   dev:
     LogLevel: debug
+  enterprise:
+    collectLambdaLogs: false
+    disableAwsSpans: true
+    disableHttpSpans: true

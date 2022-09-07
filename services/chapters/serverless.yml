@@ -1,0 +1,98 @@
+org: tigaron
+app: manga-scraper
+service: MangaScraper-Api-Chapters
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  region: ap-southeast-1
+  stage: ${opt:stage, 'dev'}
+  logRetentionInDays: 14
+  iam:
+    role:
+      name: IAM-${self:service}-${sls:stage}
+      path: /${self:service}-${sls:stage}/
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+          Resource:
+            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.stack}-StatusTable-${sls:stage}
+        - Effect: Allow
+          Action:
+            - dynamodb:GetItem
+          Resource:
+            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.stack}-SeriesTable-${sls:stage}
+        - Effect: Allow
+          Action:
+            - dynamodb:GetItem
+            - dynamodb:Query
+          Resource:
+            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.stack}-ChapterTable-${sls:stage}
+        - Effect: Allow
+          Action:
+            - sqs:SendMessage
+          Resource:
+            - arn:aws:sqs:${aws:region}:${aws:accountId}:${self:custom.stack}-ScraperQueue-${sls:stage}.fifo
+  apiGateway:
+    restApiId:
+      Fn::ImportValue: ${self:custom.stack}-RestApiId-${sls:stage}
+    restApiRootResourceId:
+      Fn::ImportValue: ${self:custom.stack}-RootResourceId-${sls:stage}
+    restApiResources:
+      /series/{id}:
+        Fn::ImportValue: ${self:custom.stack}-ResourceSeriesIdVar-${sls:stage}
+  environment:
+    region: ${aws:region}
+    logLevel: ${self:custom.${sls:stage}.LogLevel}
+    chapterTable: ${self:custom.stack}-ChapterTable-${sls:stage}
+    seriesTable: ${self:custom.stack}-SeriesTable-${sls:stage}
+    statusTable: ${self:custom.stack}-StatusTable-${sls:stage}
+    scraperQueueUrl:
+      Fn::ImportValue: ${self:custom.stack}-ScraperQueueUrl-${sls:stage}
+
+package:
+  individually: true
+  patterns:
+    - '!*.test.js'
+
+functions:
+  Chapters:
+    handler: index.handler
+    name: ${self:service}-${sls:stage}
+    description: Endpoint for webtoon's chapters
+    memorySize: 1024
+    timeout: 10
+    events:
+      - http:
+          path: /series/{id}/chapters
+          method: get
+          cors: true
+      - http:
+          path: /series/{id}/chapters
+          method: post
+          cors: true
+      - http:
+          path: /series/{id}/chapter/{slug}
+          method: get
+          cors: true
+      - http:
+          path: /series/{id}/chapter/{slug}
+          method: post
+          cors: true
+
+plugins:
+  - serverless-plugin-monorepo
+  - serverless-plugin-common-excludes
+  - serverless-offline
+
+custom:
+  stack: MangaScraper
+  prod:
+    LogLevel: info
+  dev:
+    LogLevel: debug
+  enterprise:
+    collectLambdaLogs: false

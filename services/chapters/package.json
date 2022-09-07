@@ -1,0 +1,27 @@
+{
+  "name": "chapters",
+  "packageManager": "yarn@3.2.3",
+  "scripts": {
+    "dev": "serverless deploy --stage dev --verbose",
+    "fun": "serverless deploy function --function Chapters --stage dev --verbose",
+    "inv": "serverless invoke --function Chapters",
+    "loc": "serverless invoke local --function Chapters",
+    "del": "serverless remove --stage dev --verbose",
+    "off": "serverless offline start"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.165.0",
+    "@aws-sdk/client-sqs": "^3.165.0",
+    "@aws-sdk/lib-dynamodb": "^3.165.0",
+    "express": "^4.18.1",
+    "logger": "1.0.0",
+    "morgan": "^1.10.0",
+    "serverless-http": "^3.0.2"
+  },
+  "devDependencies": {
+    "serverless": "^3.22.0",
+    "serverless-offline": "^10.0.0",
+    "serverless-plugin-common-excludes": "^4.0.0",
+    "serverless-plugin-monorepo": "^0.11.0"
+  }
+}

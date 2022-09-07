@@ -2,7 +2,7 @@ const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const { DynamoDBDocumentClient, PutCommand, GetCommand, QueryCommand, paginateQuery } = require('@aws-sdk/lib-dynamodb');
 const logger = require('logger');
 
-const { region, seriesTable, statusTable } = process.env;
+const { region, seriesTable, chapterTable, statusTable } = process.env;
 
 const marshallOptions = { convertEmptyValues: true, removeUndefinedValues: true, convertClassInstanceToMap: true };
 const unmarshallOptions = { wrapNumbers: false };
@@ -11,17 +11,17 @@ const translateConfig = { marshallOptions, unmarshallOptions };
 const ddbClient = new DynamoDBClient({ region });
 const ddbDocClient = DynamoDBDocumentClient.from(ddbClient, translateConfig);
 
-async function paginatedSeries (pageSize, pageToGet, provider ) {
+async function paginatedChapters (pageSize, pageToGet, provider, id ) {
   try {
-    logger.debug(`In paginatedSeries`);
+    logger.debug(`In paginatedChapters`);
     const paginatorConfig = {
       'client': ddbDocClient,
       'pageSize': pageSize,
     };
     const commandParams = {
-      'TableName': seriesTable,
+      'TableName': chapterTable,
       'ExpressionAttributeNames': { '#T': '_type' },
-      'ExpressionAttributeValues': { ':t': provider },
+      'ExpressionAttributeValues': { ':t': `${provider}_${id}` },
       'KeyConditionExpression': '#T = :t',
     };
     const paginator = paginateQuery(paginatorConfig, commandParams);
@@ -31,10 +31,10 @@ async function paginatedSeries (pageSize, pageToGet, provider ) {
       if (index === pageToGet) {
         if (Count) {
           const prev = pageToGet
-            ? `/series/?provider=${provider}&page=${pageToGet}&limit=${pageSize}`
+            ? `/series/${id}/chapters/?provider=${provider}&page=${pageToGet}&limit=${pageSize}`
             : undefined;
           const next = LastEvaluatedKey
-            ? `/series/?provider=${provider}&page=${pageToGet + 2}&limit=${pageSize}`
+            ? `/series/${id}/chapters/?provider=${provider}&page=${pageToGet + 2}&limit=${pageSize}`
             : undefined;
             result.set('count', Count);
             result.set('prev', prev);
@@ -49,18 +49,18 @@ async function paginatedSeries (pageSize, pageToGet, provider ) {
     }
     return result;
   } catch (error) {
-    logger.error(`paginatedSeries failed: `, error.message);
+    logger.error(`paginatedChapters failed: `, error.message);
     throw error;
   }
 }
 
-async function querySeries (provider) {
+async function queryChapters (provider) {
   try {
-    logger.debug(`In querySeries`);
+    logger.debug(`In queryChapters`);
     const commandParams = {
-      'TableName': seriesTable,
+      'TableName': chapterTable,
       'ExpressionAttributeNames': { '#T': '_type' },
-      'ExpressionAttributeValues': { ':t': provider },
+      'ExpressionAttributeValues': { ':t': `${provider}_${id}` },
       'KeyConditionExpression': '#T = :t',
     };
     const { Count, Items } = await ddbDocClient.send(new QueryCommand(commandParams));
@@ -71,7 +71,7 @@ async function querySeries (provider) {
     }
     return result;
   } catch (error) {
-    logger.error(`querySeries failed: `, error.message);
+    logger.error(`queryChapters failed: `, error.message);
     throw error;
   }
 }
@@ -109,9 +109,25 @@ async function getSeries (provider, id) {
   }
 }
 
+async function getChapter (provider, id, slug) {
+  try {
+    logger.debug(`In getChapter`);
+    const commandParams = {
+      'TableName': chapterTable,
+      'Key': { '_type': `${provider}_${id}`, '_id': slug },
+    };
+    const { Item } = await ddbDocClient.send(new GetCommand(commandParams));
+    return Item;
+  } catch (error) {
+    logger.error(`getChapter failed: `, error.message);
+    throw error;
+  }
+}
+
 module.exports = {
-  paginatedSeries,
-  querySeries,
+  paginatedChapters,
+  queryChapters,
   addStatus,
   getSeries,
+  getChapter,
 };

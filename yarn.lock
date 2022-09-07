@@ -2108,6 +2108,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"chapters@workspace:services/chapters":
+  version: 0.0.0-use.local
+  resolution: "chapters@workspace:services/chapters"
+  dependencies:
+    "@aws-sdk/client-dynamodb": ^3.165.0
+    "@aws-sdk/client-sqs": ^3.165.0
+    "@aws-sdk/lib-dynamodb": ^3.165.0
+    express: ^4.18.1
+    logger: 1.0.0
+    morgan: ^1.10.0
+    serverless: ^3.22.0
+    serverless-http: ^3.0.2
+    serverless-offline: ^10.0.0
+    serverless-plugin-common-excludes: ^4.0.0
+    serverless-plugin-monorepo: ^0.11.0
+  languageName: unknown
+  linkType: soft
+
 "chardet@npm:^0.7.0":
   version: 0.7.0
   resolution: "chardet@npm:0.7.0"
@@ -5981,6 +5999,23 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"search@workspace:services/search":
+  version: 0.0.0-use.local
+  resolution: "search@workspace:services/search"
+  dependencies:
+    "@aws-sdk/client-dynamodb": ^3.165.0
+    "@aws-sdk/lib-dynamodb": ^3.165.0
+    express: ^4.18.1
+    logger: 1.0.0
+    morgan: ^1.10.0
+    serverless: ^3.22.0
+    serverless-http: ^3.0.2
+    serverless-offline: ^10.0.0
+    serverless-plugin-common-excludes: ^4.0.0
+    serverless-plugin-monorepo: ^0.11.0
+  languageName: unknown
+  linkType: soft
+
 "seek-bzip@npm:^1.0.5":
   version: 1.0.6
   resolution: "seek-bzip@npm:1.0.6"
@@ -6372,6 +6407,23 @@ __metadata:
   checksum: fb58f5e46b6923ae67b87ad5ef1c5ab6d427a17db0bead84570c2df3cd50b4ceb880ebdba2d60726588272890bae842a744e1ecce5bd2a2a582fccd5068309eb
   languageName: node
   linkType: hard
+
+"status@workspace:services/status":
+  version: 0.0.0-use.local
+  resolution: "status@workspace:services/status"
+  dependencies:
+    "@aws-sdk/client-dynamodb": ^3.165.0
+    "@aws-sdk/lib-dynamodb": ^3.165.0
+    express: ^4.18.1
+    logger: 1.0.0
+    morgan: ^1.10.0
+    serverless: ^3.22.0
+    serverless-http: ^3.0.2
+    serverless-offline: ^10.0.0
+    serverless-plugin-common-excludes: ^4.0.0
+    serverless-plugin-monorepo: ^0.11.0
+  languageName: unknown
+  linkType: soft
 
 "statuses@npm:2.0.1":
   version: 2.0.1

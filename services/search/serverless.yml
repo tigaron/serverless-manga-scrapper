@@ -1,0 +1,63 @@
+org: tigaron
+app: manga-scraper
+service: MangaScraper-Api-Search
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  region: ap-southeast-1
+  stage: ${opt:stage, 'dev'}
+  logRetentionInDays: 14
+  iam:
+    role:
+      name: IAM-${self:service}-${sls:stage}
+      path: /${self:service}-${sls:stage}/
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+          Resource:
+            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.stack}-SeriesTable-${sls:stage}
+  apiGateway:
+    restApiId:
+      Fn::ImportValue: ${self:custom.stack}-RestApiId-${sls:stage}
+    restApiRootResourceId:
+      Fn::ImportValue: ${self:custom.stack}-RootResourceId-${sls:stage}
+  environment:
+    region: ${aws:region}
+    logLevel: ${self:custom.${sls:stage}.LogLevel}
+    seriesTable: ${self:custom.stack}-SeriesTable-${sls:stage}
+
+package:
+  individually: true
+  patterns:
+    - '!*.test.js'
+
+functions:
+  Search:
+    handler: index.handler
+    name: ${self:service}-${sls:stage}
+    description: Endpoint to search for webtoon's series
+    memorySize: 1024
+    timeout: 10
+    events:
+      - http:
+          path: /search/{id}
+          method: get
+
+plugins:
+  - serverless-plugin-monorepo
+  - serverless-plugin-common-excludes
+  - serverless-offline
+
+custom:
+  stack: MangaScraper
+  prod:
+    LogLevel: info
+  dev:
+    LogLevel: debug
+  enterprise:
+    collectLambdaLogs: false

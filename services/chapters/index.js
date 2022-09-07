@@ -37,7 +37,7 @@ function errorHandler(err, req, res, next) {
   });
 }
 
-app.get('/series', async function (req, res, next) {
+app.get('/series/:id/chapters', async function (req, res, next) {
   try {
     const { provider, page, limit } = req.query;
     if (!provider) {
@@ -48,15 +48,16 @@ app.get('/series', async function (req, res, next) {
       res.status(404);
       throw new Error(`Unknown provider: "${provider}"`);
     }
+    const { id } = req.params;
     let result = null;
     if (limit && parseInt(limit, 10) > 0) {
       const pageSize = parseInt(limit, 10);
       const pageToGet = page && parseInt(page, 10) - 1 > 0 ? parseInt(page, 10) - 1 : 0;
-      result = await dynamodb.paginatedSeries(pageSize, pageToGet, provider);
+      result = await dynamodb.paginatedChapters(pageSize, pageToGet, provider, id);
     } else {
-      result = await dynamodb.querySeries(provider);
+      result = await dynamodb.queryChapters(provider, id);
     }
-    logger.debug(`GET series result: `, result);
+    logger.debug(`GET chapters result: `, result);
     if (!result.size()) {
       res.status(404);
       throw new Error(`Not found: "${req.originalUrl}`);
@@ -71,63 +72,7 @@ app.get('/series', async function (req, res, next) {
   }
 });
 
-app.post('/series', async function (req, res, next) {
-  try {
-    const { provider } = req.query;
-    if (!provider) {
-      res.status(400);
-      throw new Error('Missing query parameter: "provider"');
-    }
-    if (!providerMap.has(provider)) {
-      res.status(404);
-      throw new Error(`Unknown provider: "${provider}"`);
-    }
-    const postRequest = {
-      'urlToScrape': providerMap.get(provider),
-      'requestType': 'MangaList',
-      'provider': provider,
-    };
-    const messageId = await addQueue(postRequest);
-    await dynamodb.addStatus(messageId, postRequest);
-    res.status(202).json({
-      'status': 202,
-      'statusText': 'Queued',
-      'requestId': messageId,
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-app.get('/series/:id', async function (req, res, next) {
-  try {
-    const { provider } = req.query;
-    if (!provider) {
-      res.status(400);
-      throw new Error('Missing query parameter: "provider"');
-    }
-    if (!providerMap.has(provider)) {
-      res.status(404);
-      throw new Error(`Unknown provider: "${provider}"`);
-    }
-    const { id } = req.params;
-    const series = await dynamodb.getSeries(provider, id);
-    logger.debug(`GET series by id result: `, series);
-    if (!series) {
-      res.status(404);
-      throw new Error(`Not found: "${req.originalUrl}`);
-    }
-    res.status(200).json({
-      'status': 200,
-      'statusText': 'OK',
-      'data': series,
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-app.post('/series/:id', async function (req, res, next) {
+app.post('/series/:id/chapters', async function (req, res, next) {
   try {
     const { provider } = req.query;
     if (!provider) {
@@ -146,8 +91,70 @@ app.post('/series/:id', async function (req, res, next) {
     }
     const postRequest = {
       'urlToScrape': MangaUrl,
-      'requestType': 'Manga',
+      'requestType': 'ChapterList',
       'provider': provider,
+    };
+    const messageId = await addQueue(postRequest);
+    await dynamodb.addStatus(messageId, postRequest);
+    res.status(202).json({
+      'status': 202,
+      'statusText': 'Queued',
+      'requestId': messageId,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get('/series/:id/chapters/:slug', async function (req, res, next) {
+  try {
+    const { provider } = req.query;
+    if (!provider) {
+      res.status(400);
+      throw new Error('Missing query parameter: "provider"');
+    }
+    if (!providerMap.has(provider)) {
+      res.status(404);
+      throw new Error(`Unknown provider: "${provider}"`);
+    }
+    const { id, slug } = req.params;
+    const chapter = await dynamodb.getChapter(provider, id, slug);
+    logger.debug(`GET chapter result: `, chapter);
+    if (!chapter) {
+      res.status(404);
+      throw new Error(`Not found: "${req.originalUrl}`);
+    }
+    res.status(200).json({
+      'status': 200,
+      'statusText': 'OK',
+      'data': chapter,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/series/:id/chapters/:slug', async function (req, res, next) {
+  try {
+    const { provider } = req.query;
+    if (!provider) {
+      res.status(400);
+      throw new Error('Missing query parameter: "provider"');
+    }
+    if (!providerMap.has(provider)) {
+      res.status(404);
+      throw new Error(`Unknown provider: "${provider}"`);
+    }
+    const { id, slug } = req.params;
+    const { _type, ChapterUrl } = await dynamodb.getChapter(provider, id, slug);
+    if (!ChapterUrl) {
+      res.status(404);
+      throw new Error(`Not found: "${req.originalUrl}`);
+    }
+    const postRequest = {
+      'urlToScrape': ChapterUrl,
+      'requestType': 'Chapter',
+      'provider': _type,
     };
     const messageId = await addQueue(postRequest);
     await dynamodb.addStatus(messageId, postRequest);

@@ -15,11 +15,11 @@ function parseMangaList ($, provider) {
   logger.debug(`In parseMangaList`);
   const MangaList = new Set();
   try {
-    $('a', 'div.listupd').each((index, element) => {
+    $('a.series', 'div.soralist').each((index, element) => {
       MangaList.add(new Map([
         ['_type', provider],
         ['_id', getSlug($(element).attr('href'))],
-        ['MangaTitle', $(element).attr('title')],
+        ['MangaTitle', $(element).text().trim()],
         ['MangaUrl', $(element).attr('href')],
         ['ScrapeDate', new Date().toUTCString()],
       ]));

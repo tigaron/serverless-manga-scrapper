@@ -9,7 +9,7 @@ const putType = {
   'Chapter': dynamodb.updateChapter,
 };
 
-/* const providerUpdates = new Map([
+const providerUpdates = new Map([
   ['alpha', 'https://alpha-scans.org/manga/?order=update'],
   ['asura', 'https://www.asurascans.com/manga/?order=update'],
   ['flame', 'https://flamescans.org/series/?order=update'],
@@ -25,14 +25,6 @@ const providerMap = new Map([
   ['luminous', 'https://luminousscans.com/'],
   ['omega', 'https://omegascans.org/'],
   ['realm', 'https://realmscans.com/'],
-]); */
-
-const providerUpdates = new Map([
-  ['asura', 'https://www.asurascans.com/manga/?order=update'],
-]);
-
-const providerMap = new Map([
-  ['asura', 'https://www.asurascans.com/'],
 ]);
 
 exports.handler = async () => {

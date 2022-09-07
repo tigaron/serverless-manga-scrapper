@@ -20,9 +20,9 @@ provider:
             - dynamodb:PutItem
             - dynamodb:UpdateItem
           Resource:
-            - Fn::GetAtt: [ SeriesTable, Arn ]
-            - Fn::GetAtt: [ ChapterTable, Arn ]
-            - Fn::GetAtt: [ StatusTable, Arn ]
+            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.stack}-SeriesTable-${sls:stage}
+            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.stack}-ChapterTable-${sls:stage}
+            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.stack}-StatusTable-${sls:stage}
   environment:
     region: ${aws:region}
     logLevel: ${self:custom.${sls:stage}.LogLevel}

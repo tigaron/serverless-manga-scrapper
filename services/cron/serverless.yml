@@ -35,18 +35,11 @@ package:
   patterns:
     - '!*.test.js'
 
-layers:
-  Chrome:
-    name: ${self:custom.stack}-Chrome-${self:provider.stage}
-    description: '@sparticuz/chrome-aws-lambda'
-    package:
-      artifact: ../../resources/lambda/chrome-aws-lambda.zip
-
 functions:
   Cron:
     handler: index.handler
     layers:
-      - !Ref ChromeLambdaLayer
+      - arn:aws:lambda:${aws:region}:${aws:accountId}:layer:${self:custom.stack}-Chrome-${self:provider.stage}:1
     name: ${self:service}-${sls:stage}
     description: Cron service to update database entries
     memorySize: 2048

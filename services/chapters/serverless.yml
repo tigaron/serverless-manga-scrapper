@@ -50,8 +50,7 @@ provider:
     chapterTable: ${self:custom.stack}-ChapterTable-${sls:stage}
     seriesTable: ${self:custom.stack}-SeriesTable-${sls:stage}
     statusTable: ${self:custom.stack}-StatusTable-${sls:stage}
-    scraperQueueUrl:
-      Fn::ImportValue: ${self:custom.stack}-ScraperQueueUrl-${sls:stage}
+    scraperQueueUrl: https://sqs.${aws:region}.amazonaws.com/${aws:accountId}/${self:custom.stack}-ScraperQueue-${sls:stage}.fifo
 
 package:
   individually: true

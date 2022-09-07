@@ -20,19 +20,18 @@ provider:
             - dynamodb:PutItem
             - dynamodb:UpdateItem
           Resource:
-            - Fn::GetAtt: [ SeriesTable, Arn ]
-            - Fn::GetAtt: [ ChapterTable, Arn ]
-            - Fn::GetAtt: [ StatusTable, Arn ]
+            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.stack}-SeriesTable-${sls:stage}
+            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.stack}-ChapterTable-${sls:stage}
+            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.stack}-StatusTable-${sls:stage}
         - Effect: Allow
           Action:
             - sqs:SendMessage
           Resource:
-            Fn::GetAtt: [ ScraperQueue, Arn ]
+            - arn:aws:sqs:${aws:region}:${aws:accountId}:${self:custom.stack}-ScraperQueue-${sls:stage}.fifo
   environment:
     region: ${aws:region}
     logLevel: ${self:custom.${sls:stage}.LogLevel}
-    scraperQueueUrl:
-      Fn::ImportValue: ${self:custom.stack}-ScraperQueueUrl-${sls:stage}
+    scraperQueueUrl: https://sqs.${aws:region}.amazonaws.com/${aws:accountId}/${self:custom.stack}-ScraperQueue-${sls:stage}.fifo
     seriesTable: ${self:custom.stack}-SeriesTable-${sls:stage}
     chapterTable: ${self:custom.stack}-ChapterTable-${sls:stage}
     statusTable: ${self:custom.stack}-StatusTable-${sls:stage}
@@ -69,12 +68,6 @@ resources:
   - ${file(../../resources/dynamodb/SeriesTable.yml)}
   - ${file(../../resources/dynamodb/ChapterTable.yml)}
   - ${file(../../resources/dynamodb/StatusTable.yml)}
-  - Outputs:
-      ScraperQueueUrl:
-        Value:
-          Ref: ScraperQueue
-        Export:
-          Name: ${self:custom.stack}-ScraperQueueUrl-${sls:stage}
 
 plugins:
   - serverless-plugin-monorepo

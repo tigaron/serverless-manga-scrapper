@@ -3,6 +3,7 @@
   "packageManager": "yarn@3.2.3",
   "scripts": {
     "dev": "serverless deploy --stage dev --verbose",
+    "prod": "serverless deploy --stage prod --verbose",
     "fun": "serverless deploy function --function Root --stage dev --verbose",
     "inv": "serverless invoke --function Root",
     "loc": "serverless invoke local --function Root",

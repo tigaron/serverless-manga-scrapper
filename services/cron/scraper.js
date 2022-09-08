@@ -46,7 +46,7 @@ function parseSeriesChapter ($, provider) {
     Manga.set('_type', provider);
     Manga.set('_id', getSlug($('meta[property="og:url"]').attr('content')));
     Manga.set('MangaTitle', $('h1.entry-title').text().trim());
-    Manga.set('MangaSynopsis', Array.from(MangaSynopsis));
+    Manga.set('MangaSynopsis', Array.from(MangaSynopsis).join('<br>'));
     Manga.set('MangaCover', $('img', 'div.thumb').attr('src'));
     Manga.set('MangaShortUrl', $('link[rel="shortlink"]').attr('href'));
     Manga.set('ScrapeDate', new Date().toUTCString());

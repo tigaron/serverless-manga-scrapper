@@ -1,4 +1,5 @@
 const { SQSClient, SendMessageCommand } = require('@aws-sdk/client-sqs');
+const { v5: uuidv5 } = require('uuid');
 const logger = require('logger');
 
 const { region, scraperQueueUrl } = process.env;
@@ -14,7 +15,7 @@ async function addQueue (postRequest) {
     logger.debug(`In addQueue`);
     const commandParams = {
       'MessageBody': JSON.stringify(postRequest),
-      'MessageDeduplicationId': `${new Date().getHours()}-${getSlug(postRequest['urlToScrape'])}`,
+      'MessageDeduplicationId': uuidv5(postRequest['urlToScrape'], uuidv5.URL),
       'MessageGroupId': postRequest['requestType'],
       'QueueUrl': scraperQueueUrl,
     };

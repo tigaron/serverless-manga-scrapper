@@ -8,3 +8,4 @@ node_modules
 !.yarn/cache
 *.rest
 .serverless
+scrape.sh

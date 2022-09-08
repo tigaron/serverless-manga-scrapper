@@ -39,7 +39,7 @@ functions:
   Cron:
     handler: index.handler
     layers:
-      - arn:aws:lambda:${aws:region}:${aws:accountId}:layer:${self:custom.stack}-Chrome-${self:provider.stage}:1
+      - arn:aws:lambda:${aws:region}:${aws:accountId}:layer:${self:custom.stack}-Chrome-${self:provider.stage}:2
     name: ${self:service}-${sls:stage}
     description: Cron service to update database entries
     memorySize: 2048

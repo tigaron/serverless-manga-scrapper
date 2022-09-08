@@ -51,7 +51,7 @@ async function putChapterCollection (data) {
     logger.debug(`In putChapterCollection`);
     const followup = new Set();
     for await (const element of data) {
-      const response = await putItem(seriesTable, element);
+      const response = await putItem(chapterTable, element);
       if (response) continue;
       if (response instanceof Error) continue;
       followup.add(new Map ([

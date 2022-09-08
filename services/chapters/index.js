@@ -58,7 +58,7 @@ app.get('/series/:id/chapters', async function (req, res, next) {
       result = await dynamodb.queryChapters(provider, id);
     }
     logger.debug(`GET chapters result: `, result);
-    if (!result.size()) {
+    if (!result.size) {
       res.status(404);
       throw new Error(`Not found: "${req.originalUrl}`);
     }
@@ -84,13 +84,13 @@ app.post('/series/:id/chapters', async function (req, res, next) {
       throw new Error(`Unknown provider: "${provider}"`);
     }
     const { id } = req.params;
-    const { MangaUrl } = await dynamodb.getSeries(provider, id);
-    if (!MangaUrl) {
+    const series = await dynamodb.getSeries(provider, id);
+    if (!series) {
       res.status(404);
       throw new Error(`Not found: "${req.originalUrl}`);
     }
     const postRequest = {
-      'urlToScrape': MangaUrl,
+      'urlToScrape': series['MangaUrl'],
       'requestType': 'ChapterList',
       'provider': provider,
     };
@@ -106,7 +106,7 @@ app.post('/series/:id/chapters', async function (req, res, next) {
   }
 });
 
-app.get('/series/:id/chapters/:slug', async function (req, res, next) {
+app.get('/series/:id/chapter/:slug', async function (req, res, next) {
   try {
     const { provider } = req.query;
     if (!provider) {
@@ -134,7 +134,7 @@ app.get('/series/:id/chapters/:slug', async function (req, res, next) {
   }
 });
 
-app.post('/series/:id/chapters/:slug', async function (req, res, next) {
+app.post('/series/:id/chapter/:slug', async function (req, res, next) {
   try {
     const { provider } = req.query;
     if (!provider) {
@@ -146,15 +146,15 @@ app.post('/series/:id/chapters/:slug', async function (req, res, next) {
       throw new Error(`Unknown provider: "${provider}"`);
     }
     const { id, slug } = req.params;
-    const { _type, ChapterUrl } = await dynamodb.getChapter(provider, id, slug);
-    if (!ChapterUrl) {
+    const chapter = await dynamodb.getChapter(provider, id, slug);
+    if (!chapter) {
       res.status(404);
       throw new Error(`Not found: "${req.originalUrl}`);
     }
     const postRequest = {
-      'urlToScrape': ChapterUrl,
+      'urlToScrape': chapter['ChapterUrl'],
       'requestType': 'Chapter',
-      'provider': _type,
+      'provider': chapter['_type'],
     };
     const messageId = await addQueue(postRequest);
     await dynamodb.addStatus(messageId, postRequest);

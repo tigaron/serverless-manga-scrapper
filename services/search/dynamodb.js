@@ -11,15 +11,19 @@ const translateConfig = { marshallOptions, unmarshallOptions };
 const ddbClient = new DynamoDBClient({ region });
 const ddbDocClient = DynamoDBDocumentClient.from(ddbClient, translateConfig);
 
-async function queryTable (provider, id) {
+async function queryTable (EAV, FE) {
   try {
     logger.debug(`In queryTable`);
     const commandParams = {
       'TableName': seriesTable,
-      'ExpressionAttributeNames': { '#T': '_type', '#I': '_id', '#MS': 'MangaSynopsis' },
-      'ExpressionAttributeValues': { ':t': provider, ':i': id },
+      'ExpressionAttributeNames': {
+        '#T': '_type',
+        '#MT': 'MangaTitle',
+        '#MS': 'MangaSynopsis',
+      },
+      'ExpressionAttributeValues': EAV,
       'KeyConditionExpression': '#T = :t',
-      'FilterExpression': 'contains (#I, :i) OR contains (#MS, :i)',
+      'FilterExpression': FE,
     };
     const { Count, Items } = await ddbDocClient.send(new QueryCommand(commandParams));
     const result = new Map();
@@ -34,14 +38,17 @@ async function queryTable (provider, id) {
   }
 }
 
-async function scanTable (id) {
+async function scanTable (EAV, FE) {
   try {
     logger.debug(`In scanTable`);
     const commandParams = {
       'TableName': seriesTable,
-      'ExpressionAttributeNames': { '#I': '_id', '#MS': 'MangaSynopsis' },
-      'ExpressionAttributeValues': { ':i': id },
-      'FilterExpression': 'contains (#I, :i) OR contains (#MS, :i)',
+      'ExpressionAttributeNames': {
+        '#MT': 'MangaTitle',
+        '#MS': 'MangaSynopsis'
+      },
+      'ExpressionAttributeValues': EAV,
+      'FilterExpression': FE,
     };
     const { Count, Items } = await ddbDocClient.send(new ScanCommand(commandParams));
     const result = new Map();

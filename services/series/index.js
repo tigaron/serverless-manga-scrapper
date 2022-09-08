@@ -57,7 +57,7 @@ app.get('/series', async function (req, res, next) {
       result = await dynamodb.querySeries(provider);
     }
     logger.debug(`GET series result: `, result);
-    if (!result.size()) {
+    if (!result.size) {
       res.status(404);
       throw new Error(`Not found: "${req.originalUrl}`);
     }
@@ -139,13 +139,13 @@ app.post('/series/:id', async function (req, res, next) {
       throw new Error(`Unknown provider: "${provider}"`);
     }
     const { id } = req.params;
-    const { MangaUrl } = await dynamodb.getSeries(provider, id);
-    if (!MangaUrl) {
+    const series = await dynamodb.getSeries(provider, id);
+    if (!series) {
       res.status(404);
       throw new Error(`Not found: "${req.originalUrl}`);
     }
     const postRequest = {
-      'urlToScrape': MangaUrl,
+      'urlToScrape': series['MangaUrl'],
       'requestType': 'Manga',
       'provider': provider,
     };

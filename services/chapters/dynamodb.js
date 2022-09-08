@@ -11,7 +11,7 @@ const translateConfig = { marshallOptions, unmarshallOptions };
 const ddbClient = new DynamoDBClient({ region });
 const ddbDocClient = DynamoDBDocumentClient.from(ddbClient, translateConfig);
 
-async function paginatedChapters (pageSize, pageToGet, provider, id ) {
+async function paginatedChapters (pageSize, pageToGet, provider, id) {
   try {
     logger.debug(`In paginatedChapters`);
     const paginatorConfig = {
@@ -54,7 +54,7 @@ async function paginatedChapters (pageSize, pageToGet, provider, id ) {
   }
 }
 
-async function queryChapters (provider) {
+async function queryChapters (provider, id) {
   try {
     logger.debug(`In queryChapters`);
     const commandParams = {

@@ -33,6 +33,10 @@ async function addQueues (data, request) {
         entries.clear();
       }
     }
+    if (entries.size) {
+      const commandParams = { 'Entries': Array.from(entries), 'QueueUrl': scraperQueueUrl }
+      await sqsClient.send(new SendMessageBatchCommand(commandParams));
+    }
   } catch (error) {
     logger.error(`addQueues failed: `, error.message);
     throw error;

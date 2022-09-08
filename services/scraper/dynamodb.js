@@ -72,7 +72,7 @@ async function putChapterCollection (data) {
     const rejected = new Set();
     const followup = new Set();
     for await (const element of data) {
-      const response = await putItem(seriesTable, element);
+      const response = await putItem(chapterTable, element);
       if (response) {
         rejected.add(`"${element.get('_id')}" - Already exist.`);
         continue;

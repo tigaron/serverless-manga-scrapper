@@ -56,7 +56,7 @@ functions:
     name: ${self:service}-${sls:stage}
     description: Scraper service to update webtoons and chapters database
     memorySize: 2048
-    timeout: 60
+    timeout: 900
     events:
       - sqs:
           arn:

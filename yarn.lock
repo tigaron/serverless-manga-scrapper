@@ -2123,6 +2123,7 @@ __metadata:
     serverless-offline: ^10.0.0
     serverless-plugin-common-excludes: ^4.0.0
     serverless-plugin-monorepo: ^0.11.0
+    uuid: ^9.0.0
   languageName: unknown
   linkType: soft
 
@@ -6093,6 +6094,7 @@ __metadata:
     serverless-offline: ^10.0.0
     serverless-plugin-common-excludes: ^4.0.0
     serverless-plugin-monorepo: ^0.11.0
+    uuid: ^9.0.0
   languageName: unknown
   linkType: soft
 

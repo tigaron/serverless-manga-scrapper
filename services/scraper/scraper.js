@@ -96,8 +96,8 @@ function parseChapter ($, manga) {
     Chapter.set('_id', getSlug($('meta[property="og:url"]').attr('content')));
     Chapter.set('ChapterTitle', $('h1.entry-title').text().trim());
     Chapter.set('ChapterShortUrl', $('link[rel="shortlink"]').attr('href'));
-    Chapter.set('ChapterPrevSlug', getSlug(prevUrl));
-    Chapter.set('ChapterNextSlug', getSlug(nextUrl));
+    Chapter.set('ChapterPrevSlug', prevUrl ? getSlug(prevUrl) : null);
+    Chapter.set('ChapterNextSlug', nextUrl ? getSlug(nextUrl) : null);
     Chapter.set('ChapterContent', Array.from(ChapterContent));
     Chapter.set('ScrapeDate', new Date().toUTCString());
   } catch (error) {

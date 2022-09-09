@@ -26,6 +26,7 @@ function parseMangaList ($, provider) {
     });
   } catch (error) {
     logger.error(`parseMangaList failed: `, error.message);
+    logger.error(error.stack);
     MangaList.clear();
   }
   logger.debug(`parseMangaList result:`, MangaList);
@@ -71,6 +72,7 @@ function parseSeriesChapter ($, provider) {
     });
   } catch (error) {
     logger.error(`parseSeriesChapter failed: `, error.message);
+    logger.error(error.stack);
     Manga.clear();
     ChapterList.clear();
   }
@@ -102,6 +104,7 @@ function parseChapterList ($, provider) {
     });
   } catch (error) {
     logger.error(`parseChapterList failed: `, error.message);
+    logger.error(error.stack);
     ChapterList.clear();
   }
   logger.debug(`parseChapterList result:`, ChapterList);
@@ -122,12 +125,13 @@ function parseChapter ($, manga) {
     Chapter.set('_id', getSlug($('meta[property="og:url"]').attr('content')));
     Chapter.set('ChapterTitle', $('h1.entry-title').text().trim());
     Chapter.set('ChapterShortUrl', $('link[rel="shortlink"]').attr('href'));
-    Chapter.set('ChapterPrevSlug', getSlug(prevUrl));
-    Chapter.set('ChapterNextSlug', getSlug(nextUrl));
+    Chapter.set('ChapterPrevSlug', prevUrl ? getSlug(prevUrl) : null);
+    Chapter.set('ChapterNextSlug', nextUrl ? getSlug(nextUrl) : null);
     Chapter.set('ChapterContent', Array.from(ChapterContent));
     Chapter.set('ScrapeDate', new Date().toUTCString());
   } catch (error) {
     logger.error(`parseChapter failed: `, error.message);
+    logger.error(error.stack);
     Chapter.clear();
   }
   logger.debug(`parseChapter result:`, Chapter);
@@ -153,6 +157,7 @@ async function scraper (url, type, provider) {
     return result;
   } catch (error) {
     logger.error(`Scraper fail: `, error.message);
+    logger.error(error.stack);
     throw error;
   }
 }

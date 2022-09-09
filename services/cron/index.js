@@ -33,10 +33,9 @@ exports.handler = async () => {
     for await (const [key, value] of providerUpdates) {
       const series = await scraper(value, 'MangaList', key);
       const { followup: seriesFU } = await putType['MangaList'](series);
-      let chapterFU = null;
       for await (const element of series) {
         let result = null;
-        if (seriesFU.has(element.get('MangaUrl'))) {
+        if (seriesFU && seriesFU.has(element.get('MangaUrl'))) {
           result = await scraper(element.get('MangaUrl'), 'SeriesChapter', key);
         } else {
           result = await scraper(element.get('MangaUrl'), 'ChapterList', key);
@@ -44,17 +43,24 @@ exports.handler = async () => {
         const { Manga, ChapterList } = result;
         if (Manga) await putType['Manga'](Manga);
         if (ChapterList) {
-          chapterFU = await putType['ChapterList'](ChapterList);
+          const { followup } = await putType['ChapterList'](ChapterList);
+          if (followup) {
+            const array = Array.from(followup);
+            for await (const item of array) {
+              const chapter = await scraper(item.get('urlToScrape'), 'Chapter', item.get('_type'));
+              const prevChapterSlug = await putType['Chapter'](chapter);
+              if (array.indexOf(item) === array.length - 1 && prevChapterSlug) {
+                const prevChapter = await scraper(providerMap.get(key) + prevChapterSlug, 'Chapter', item.get('_type'));
+                await putType['Chapter'](prevChapter);
+              }
+            }
+          }
         }
       }
-      if (chapterFU) {
-        const chapter = await scraper(chapterFU.get('urlToScrape'), 'Chapter', chapterFU.get('_type'));
-        const prevChapter = await scraper(providerMap.get(key) + chapterFU.get('prevChapter'), 'Chapter', chapterFU.get('_type'));
-        await putType['Chapter'](chapter);
-        await putType['Chapter'](prevChapter);
-      }
     }
+    logger.info(`Cron finished at ${new Date().toUTCString()}`);
   } catch (error) {
     logger.error(`Cron failed: `, error.message);
+    logger.error(`Cron failed: `, error.stack);
   }
 };

@@ -25,6 +25,7 @@ async function putItem (table, item) {
   } catch (error) {
     if (error.name === 'ConditionalCheckFailedException') return true;
     logger.error(`putItem failed: `, error.message, item.get('_id'));
+    logger.error(error.stack);
     return error;
   }
 }
@@ -39,9 +40,11 @@ async function putSeriesCollection (data) {
       if (response instanceof Error) continue;
       followup.add(element.get('MangaUrl'));
     }
+    if (followup.size) logger.info(`putSeriesCollection success`, followup);
     return { 'followup': followup.size ? followup : undefined };
   } catch (error) {
     logger.error(`putSeriesCollection failed: `, error.message);
+    logger.error(error.stack);
     throw error;
   }
 }
@@ -57,12 +60,13 @@ async function putChapterCollection (data) {
       followup.add(new Map ([
         ['_type', element.get('_type')],
         ['urlToScrape', element.get('ChapterUrl')],
-        ['prevChapter', element.get('ChapterPrevSlug')],
       ]));
     }
-    return followup.size ? followup : undefined;
+    if (followup.size) logger.info(`putChapterCollection success`, followup);
+    return { 'followup': followup.size ? followup : undefined };
   } catch (error) {
     logger.error(`putChapterCollection failed: `, error.message);
+    logger.error(error.stack);
     throw error;
   }
 }
@@ -90,8 +94,10 @@ async function updateSeries (data) {
       'UpdateExpression': 'SET #MT = :mt, #MS = :ms, #MC = :mc, #SU = :su, #SD = :sd',
     };
     await ddbDocClient.send(new UpdateCommand(commandParams));
+    logger.info(`updateSeries success`, data.get('_id'));
   } catch (error) {
-    logger.error(`updateSeries failed: `, error.message, item.get('_id'));
+    logger.error(`updateSeries failed: `, error.message, data.get('_id'));
+    logger.error(error.stack);
     throw error;
   }
 }
@@ -121,8 +127,11 @@ async function updateChapter (data) {
       'UpdateExpression': 'SET #CT = :ct, #CS = :cs, #PS = :ps, #NS = :ns, #CC = :cc, #SD = :sd',
     };
     await ddbDocClient.send(new UpdateCommand(commandParams));
+    logger.info(`updateChapter success`, data.get('_id'));
+    return data.get('ChapterPrevSlug');
   } catch (error) {
-    logger.error(`updateChapter failed: `, error.message, item.get('_id'));
+    logger.error(`updateChapter failed: `, error.message, data.get('_id'));
+    logger.error(error.stack);
     throw error;
   }
 }

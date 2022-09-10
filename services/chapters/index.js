@@ -60,7 +60,7 @@ app.get('/series/:id/chapters', async function (req, res, next) {
     logger.debug(`GET chapters result: `, result);
     if (!result.size) {
       res.status(404);
-      throw new Error(`Not found: "${req.originalUrl}`);
+      throw new Error(`Not found: "${req.originalUrl}"`);
     }
     res.status(200).json({
       'status': 200,
@@ -87,7 +87,7 @@ app.post('/series/:id/chapters', async function (req, res, next) {
     const series = await dynamodb.getSeries(provider, id);
     if (!series) {
       res.status(404);
-      throw new Error(`Not found: "${req.originalUrl}`);
+      throw new Error(`Not found: "${req.originalUrl}"`);
     }
     const postRequest = {
       'urlToScrape': series['MangaUrl'],
@@ -122,7 +122,7 @@ app.get('/series/:id/chapter/:slug', async function (req, res, next) {
     logger.debug(`GET chapter result: `, chapter);
     if (!chapter) {
       res.status(404);
-      throw new Error(`Not found: "${req.originalUrl}`);
+      throw new Error(`Not found: "${req.originalUrl}"`);
     }
     res.status(200).json({
       'status': 200,
@@ -149,7 +149,7 @@ app.post('/series/:id/chapter/:slug', async function (req, res, next) {
     const chapter = await dynamodb.getChapter(provider, id, slug);
     if (!chapter) {
       res.status(404);
-      throw new Error(`Not found: "${req.originalUrl}`);
+      throw new Error(`Not found: "${req.originalUrl}"`);
     }
     const postRequest = {
       'urlToScrape': chapter['ChapterUrl'],

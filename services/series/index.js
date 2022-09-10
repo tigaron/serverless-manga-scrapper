@@ -59,7 +59,7 @@ app.get('/series', async function (req, res, next) {
     logger.debug(`GET series result: `, result);
     if (!result.size) {
       res.status(404);
-      throw new Error(`Not found: "${req.originalUrl}`);
+      throw new Error(`Not found: "${req.originalUrl}"`);
     }
     res.status(200).json({
       'status': 200,
@@ -115,7 +115,7 @@ app.get('/series/:id', async function (req, res, next) {
     logger.debug(`GET series by id result: `, series);
     if (!series) {
       res.status(404);
-      throw new Error(`Not found: "${req.originalUrl}`);
+      throw new Error(`Not found: "${req.originalUrl}"`);
     }
     res.status(200).json({
       'status': 200,
@@ -142,7 +142,7 @@ app.post('/series/:id', async function (req, res, next) {
     const series = await dynamodb.getSeries(provider, id);
     if (!series) {
       res.status(404);
-      throw new Error(`Not found: "${req.originalUrl}`);
+      throw new Error(`Not found: "${req.originalUrl}"`);
     }
     const postRequest = {
       'urlToScrape': series['MangaUrl'],

@@ -11,9 +11,9 @@
     "off": "serverless offline start"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.165.0",
-    "@aws-sdk/client-sqs": "^3.165.0",
-    "@aws-sdk/lib-dynamodb": "^3.165.0",
+    "@aws-sdk/client-dynamodb": "^3.168.0",
+    "@aws-sdk/client-sqs": "^3.168.0",
+    "@aws-sdk/lib-dynamodb": "^3.168.0",
     "express": "^4.18.1",
     "logger": "1.0.0",
     "morgan": "^1.10.0",
@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "serverless": "^3.22.0",
-    "serverless-offline": "^10.0.0",
+    "serverless-offline": "^10.0.1",
     "serverless-plugin-common-excludes": "^4.0.0",
     "serverless-plugin-monorepo": "^0.11.0"
   }

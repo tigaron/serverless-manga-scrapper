@@ -55,7 +55,7 @@ app.get('/search/:id', async function (req, res, next) {
     logger.debug(`Search result for "${id}": `, result);
     if (!result.size) {
       res.status(404);
-      throw new Error(`Not found: "${req.originalUrl}`);
+      throw new Error(`Not found: "${req.originalUrl}"`);
     }
     res.status(200).json({
       'status': 200,

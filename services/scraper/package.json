@@ -13,14 +13,14 @@
   },
   "devDependencies": {
     "serverless": "^3.22.0",
-    "serverless-offline": "^10.0.0",
+    "serverless-offline": "^10.0.1",
     "serverless-plugin-common-excludes": "^4.0.0",
     "serverless-plugin-monorepo": "^0.11.0"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.165.0",
-    "@aws-sdk/client-sqs": "^3.165.0",
-    "@aws-sdk/lib-dynamodb": "^3.165.0",
+    "@aws-sdk/client-dynamodb": "^3.168.0",
+    "@aws-sdk/client-sqs": "^3.168.0",
+    "@aws-sdk/lib-dynamodb": "^3.168.0",
     "cheerio": "^1.0.0-rc.12",
     "crawler": "1.0.0",
     "logger": "1.0.0",

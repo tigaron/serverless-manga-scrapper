@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "serverless deploy --stage dev --verbose",
     "prod": "serverless deploy --stage prod --verbose",
-    "fun": "serverless deploy function --function Search --stage dev --verbose",
+    "fun:dev": "serverless deploy function --function Search --stage dev --verbose",
+    "fun:prod": "serverless deploy function --function Search --stage prod --verbose",
     "inv": "serverless invoke --function Search",
     "loc": "serverless invoke local --function Search",
     "del": "serverless remove --stage dev --verbose",

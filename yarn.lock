@@ -1422,6 +1422,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@shelf/dynamodb-parallel-scan@npm:^3.3.0":
+  version: 3.3.0
+  resolution: "@shelf/dynamodb-parallel-scan@npm:3.3.0"
+  dependencies:
+    debug: 4.3.4
+    lodash.chunk: 4.2.0
+    lodash.clonedeep: 4.5.0
+    lodash.times: 4.3.2
+    p-map: 4.0.0
+  peerDependencies:
+    "@aws-sdk/client-dynamodb": 3.x.x
+    "@aws-sdk/lib-dynamodb": 3.x.x
+  checksum: fb913f74550b5a873ae031401cfe81ab08fa045d84794b974398abb42ae30c35d836ff006929cf598b81b665979cc4d638fbceeb5549af85ab2cf3f34363ed1e
+  languageName: node
+  linkType: hard
+
 "@sindresorhus/is@npm:^4.0.0":
   version: 4.6.0
   resolution: "@sindresorhus/is@npm:4.6.0"
@@ -4536,6 +4552,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lodash.chunk@npm:4.2.0":
+  version: 4.2.0
+  resolution: "lodash.chunk@npm:4.2.0"
+  checksum: 6286c6d06814fbeda502164015c42ef53a9194e6ebaac52ec2b41e83344aefe7bc3d94fdfec525adcd2c66cefdf05dc333b6a1128e4de739797342315c17cbc7
+  languageName: node
+  linkType: hard
+
+"lodash.clonedeep@npm:4.5.0":
+  version: 4.5.0
+  resolution: "lodash.clonedeep@npm:4.5.0"
+  checksum: 92c46f094b064e876a23c97f57f81fbffd5d760bf2d8a1c61d85db6d1e488c66b0384c943abee4f6af7debf5ad4e4282e74ff83177c9e63d8ff081a4837c3489
+  languageName: node
+  linkType: hard
+
 "lodash.defaults@npm:^4.2.0":
   version: 4.2.0
   resolution: "lodash.defaults@npm:4.2.0"
@@ -4603,6 +4633,13 @@ __metadata:
   version: 4.1.1
   resolution: "lodash.once@npm:4.1.1"
   checksum: d768fa9f9b4e1dc6453be99b753906f58990e0c45e7b2ca5a3b40a33111e5d17f6edf2f768786e2716af90a8e78f8f91431ab8435f761fef00f9b0c256f6d245
+  languageName: node
+  linkType: hard
+
+"lodash.times@npm:4.3.2":
+  version: 4.3.2
+  resolution: "lodash.times@npm:4.3.2"
+  checksum: d26a9022e025d6061d356d3098fd80cdc062e7bf896bbbb56e643b2ae39156bf19b6167a4b046aa924b6d572a1e717853e552342ce34016fc5183308e329b575
   languageName: node
   linkType: hard
 
@@ -5419,7 +5456,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"p-map@npm:^4.0.0":
+"p-map@npm:4.0.0, p-map@npm:^4.0.0":
   version: 4.0.0
   resolution: "p-map@npm:4.0.0"
   dependencies:
@@ -6929,6 +6966,7 @@ __metadata:
   dependencies:
     "@aws-sdk/client-dynamodb": ^3.168.0
     "@aws-sdk/lib-dynamodb": ^3.168.0
+    "@shelf/dynamodb-parallel-scan": ^3.3.0
     express: ^4.18.1
     logger: 1.0.0
     morgan: ^1.10.0

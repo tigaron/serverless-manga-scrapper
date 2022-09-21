@@ -44,13 +44,23 @@ app.get('/search/:id', async function (req, res, next) {
     let result = null;
     const decodedIdArray = decodeURIComponent(id).replace(/[-[\]{}()*+!<=:?.\/\\^$|#\s,]/g, '-').split('-').filter(Boolean);
     const EAV = new Map();
-    decodedIdArray.forEach((element, index) => EAV.set(`:${element.substring(0, 3)}${index}`, element));
-    const FE = decodedIdArray.map((element, index) => `contains (#MS, :${element.substring(0, 3)}${index}) OR contains (#MT, :${element.substring(0, 3)}${index})`).join(' OR ');
+    decodedIdArray.forEach((element, index) => {
+      EAV.set(`:${element.substring(0, 3)}${index}`, element);
+      EAV.set(`:${element.substring(0, 3)}${index}lo`, element.toLowerCase());
+      EAV.set(`:${element.substring(0, 3)}${index}up`, element.toUpperCase());
+      EAV.set(`:${element.substring(0, 3)}${index}ca`, element.charAt(0).toUpperCase() + element.substring(1).toLowerCase());
+
+    });
+    const FE = new Set();
+    for (const key of EAV.keys()) {
+      FE.add(`contains (#MS, ${key})`);
+      FE.add(`contains (#MT, ${key})`);
+    }
     if (provider) {
       EAV.set(`:t`, provider);
-      result = await dynamodb.queryTable(Object.fromEntries(EAV), FE);
+      result = await dynamodb.queryTable(Object.fromEntries(EAV), Array.from(FE).join(' OR '));
     } else {
-      result = await dynamodb.scanTable(Object.fromEntries(EAV), FE);
+      result = await dynamodb.scanTable(Object.fromEntries(EAV), Array.from(FE).join(' OR '));
     }
     logger.debug(`Search result for "${id}": `, result);
     if (!result.size) {

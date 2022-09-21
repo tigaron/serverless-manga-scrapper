@@ -1,15 +1,7 @@
-const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { DynamoDBDocumentClient, ScanCommand } = require('@aws-sdk/lib-dynamodb');
+const { parallelScan } = require('@shelf/dynamodb-parallel-scan');
 const logger = require('logger');
 
-const { region, chapterTable } = process.env;
-
-const marshallOptions = { convertEmptyValues: true, removeUndefinedValues: true, convertClassInstanceToMap: true };
-const unmarshallOptions = { wrapNumbers: false };
-const translateConfig = { marshallOptions, unmarshallOptions };
-
-const ddbClient = new DynamoDBClient({ region });
-const ddbDocClient = DynamoDBDocumentClient.from(ddbClient, translateConfig);
+const { chapterTable } = process.env;
 
 async function scanTable (date) {
   try {
@@ -20,11 +12,11 @@ async function scanTable (date) {
       'ExpressionAttributeValues': { ':d': date },
       'FilterExpression': 'begins_with (#SD, :d)',
     };
-    const { Count, Items } = await ddbDocClient.send(new ScanCommand(commandParams));
+    const data = await parallelScan(commandParams, {concurrency: 50});
     const result = new Map();
-    if (Count) {
-      result.set('count', Count);
-      result.set('result', Items);
+    if (data.length) {
+      result.set('count', data.length);
+      result.set('result', data);
     }
     return result;
   } catch (error) {

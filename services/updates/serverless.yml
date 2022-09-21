@@ -17,6 +17,7 @@ provider:
       statements:
         - Effect: Allow
           Action:
+            - dynamodb:DescribeTable
             - dynamodb:Scan
           Resource:
             - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.stack}-ChapterTable-${sls:stage}
